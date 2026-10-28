@@ -8,13 +8,19 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.aquaica.dto.HistorialTecnicoDTO;
 import com.aquaica.dto.PersonalRequestDTO;
 import com.aquaica.dto.PersonalResponseDTO;
 import com.aquaica.dto.TecnicoDisponibleDTO;
+import com.aquaica.entity.Asignacion;
 import com.aquaica.entity.Especialidad;
+import com.aquaica.entity.InformeTecnico;
 import com.aquaica.entity.Personal;
+import com.aquaica.entity.Reporte;
+import com.aquaica.entity.Suministro;
 import com.aquaica.entity.Usuario;
 import com.aquaica.repository.AsignacionRepository;
+import com.aquaica.repository.InformeTecnicoRepository;
 import com.aquaica.repository.PersonalRepository;
 import com.aquaica.repository.UsuarioRepository;
 
@@ -27,17 +33,20 @@ public class PersonalService {
     private final PersonalRepository personalRepository;
     private final UsuarioRepository usuarioRepository;
     private final AsignacionRepository asignacionRepository;
+    private final InformeTecnicoRepository informeTecnicoRepository;
     private final PasswordEncoder passwordEncoder;
 
     public PersonalService(
             PersonalRepository personalRepository,
             UsuarioRepository usuarioRepository,
             AsignacionRepository asignacionRepository,
+            InformeTecnicoRepository informeTecnicoRepository,
             PasswordEncoder passwordEncoder) {
 
         this.personalRepository = personalRepository;
         this.usuarioRepository = usuarioRepository;
         this.asignacionRepository = asignacionRepository;
+        this.informeTecnicoRepository = informeTecnicoRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -248,11 +257,17 @@ public class PersonalService {
                             ESTADOS_OCUPADO
                     );
 
+            String etiqueta = tecnico.getEspecialidad();
+            try {
+                etiqueta = Especialidad.valueOf(tecnico.getEspecialidad()).getEtiqueta();
+            } catch (Exception ignored) {
+            }
+
             resultado.add(new TecnicoDisponibleDTO(
                     tecnico.getId(),
                     tecnico.getNombre(),
                     tecnico.getEspecialidad(),
-                    especialidad.getEtiqueta(),
+                    etiqueta,
                     !ocupado
             ));
         }
@@ -301,5 +316,90 @@ public class PersonalService {
                 throw new RuntimeException("El rol es obligatorio");
             }
         }
+    }
+
+    public PersonalResponseDTO obtenerMiPerfil(String username) {
+        return personalRepository.obtenerPersonalPorUsername(username)
+                .orElseThrow(() ->
+                        new RuntimeException("Perfil de personal no encontrado para el usuario: " + username)
+                );
+    }
+
+    @Transactional
+    public PersonalResponseDTO actualizarMiPerfil(String username, PersonalRequestDTO datos) {
+        Usuario usuario = usuarioRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        Personal personal = usuario.getPersonal();
+        if (personal == null) {
+            throw new RuntimeException("El usuario no tiene una ficha de personal asociada");
+        }
+
+        if (datos.getTelefono() != null) {
+            personal.setTelefono(datos.getTelefono().trim());
+        }
+        personalRepository.save(personal);
+
+        if (datos.getPassword() != null && !datos.getPassword().isBlank()) {
+            if (datos.getPassword().trim().length() < 6) {
+                throw new RuntimeException("La contraseña debe tener al menos 6 caracteres");
+            }
+            usuario.setPassword(passwordEncoder.encode(datos.getPassword().trim()));
+            usuarioRepository.save(usuario);
+        }
+
+        return obtenerMiPerfil(username);
+    }
+
+    @Transactional(readOnly = true)
+    public List<HistorialTecnicoDTO> obtenerHistorialTecnico(Long personalId) {
+        List<Asignacion> asignaciones = asignacionRepository.obtenerHistorialFinalizadasPorPersonal(personalId);
+        List<HistorialTecnicoDTO> resultado = new ArrayList<>();
+
+        for (Asignacion a : asignaciones) {
+            Reporte r = a.getReporte();
+            Suministro s = (r != null) ? r.getSuministroId() : null;
+
+            InformeTecnico informe = informeTecnicoRepository.findByAsignacionId(a.getId())
+                    .orElseGet(() -> r != null
+                            ? informeTecnicoRepository.findFirstByReporteIdOrderByFechaCreacionDesc(r.getId()).orElse(null)
+                            : null);
+
+            LocalDateTime fechaResolucion = (informe != null && informe.getFechaCreacion() != null)
+                    ? informe.getFechaCreacion()
+                    : a.getFechaAsignacion();
+
+            HistorialTecnicoDTO dto = new HistorialTecnicoDTO(
+                    a.getId(),
+                    r != null ? r.getId() : null,
+                    r != null ? r.getTipoProblema() : "SIN_TIPO",
+                    r != null ? r.getDescripcion() : "",
+                    r != null ? r.getEstado() : "RESUELTO",
+                    a.getEstado(),
+                    r != null ? r.getPrioridad() : "MEDIA",
+                    s != null ? s.getCodigoSuministro() : "-",
+                    s != null ? s.getDireccion() : "-",
+                    a.getFechaAsignacion(),
+                    fechaResolucion,
+                    informe != null ? informe.getDiagnostico() : "Atención completada",
+                    informe != null ? informe.getTrabajoRealizado() : "Trabajo finalizado en campo",
+                    informe != null ? informe.getResultado() : "SOLUCIONADO",
+                    a.getObservaciones()
+            );
+
+            resultado.add(dto);
+        }
+
+        return resultado;
+    }
+
+    @Transactional(readOnly = true)
+    public List<HistorialTecnicoDTO> obtenerHistorialPorUsername(String username) {
+        Usuario usuario = usuarioRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        if (usuario.getPersonal() == null) {
+            return List.of();
+        }
+        return obtenerHistorialTecnico(usuario.getPersonal().getId());
     }
 }

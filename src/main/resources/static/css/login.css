@@ -161,34 +161,47 @@
 
 
 .login-brand {
-
     display: flex;
     align-items: center;
     justify-content: center;
-
-    margin-bottom: 30px;
+    gap: 16px;
+    margin-bottom: 28px;
 }
 
 .login-brand-text h1 {
     margin: 0;
-    color: #0077b6;
-    font-size: 28px;
+    color: #0a74c9;
+    font-size: 30px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    line-height: 1.1;
 }
 
 .login-brand-text span {
     display: block;
     margin-top: 3px;
-    color: #64748b;
+    color: #5d7389;
     font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.2px;
 }
 
 .login-logo {
-
-
-    width: 70px;
-    height: 70px;
-
+    width: 66px;
+    height: 66px;
     object-fit: contain;
+    border-radius: 16px;
+    background: #ffffff;
+    padding: 3px;
+    box-shadow: 0 8px 22px rgba(10, 116, 201, 0.16);
+    border: 1px solid rgba(18, 168, 230, 0.20);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    flex-shrink: 0;
+}
+
+.login-logo:hover {
+    transform: scale(1.05);
+    box-shadow: 0 10px 26px rgba(10, 116, 201, 0.24);
 }
 
 .login-header {

@@ -6,7 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Aqualca - Reporta un problema con tu servicio de agua.">
 
-    <title>Aqualca | Reportar problema</title>
+    <title>AquaIca | Reportar problema</title>
+
+    <link rel="icon" type="image/png" href="images/favicon-64.png">
+    <link rel="apple-touch-icon" href="images/favicon-64.png">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -30,16 +33,16 @@
 
     <header class="public-header">
 
-        <div class="public-brand">
+        <a href="index.html" class="public-brand" style="text-decoration:none; color:inherit;">
 
-            <div class="public-logo">A</div>
+            <img src="images/aquaica-logo.png" alt="AquaIca" class="public-logo-img">
 
             <div>
-                <h2>Aqualca</h2>
-                <span>Servicio de agua</span>
+                <h2>AquaIca</h2>
+                <span>Atención ciudadana</span>
             </div>
 
-        </div>
+        </a>
 
         <nav class="public-nav">
 
@@ -79,7 +82,7 @@
 
                     <label for="codigoSuministro">
                         <svg class="icon-svg field-icon" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 9h18M7 15h4"/></svg>
-                        Código de suministro
+                        Número de suministro (8 dígitos)
                     </label>
 
                     <div class="suministro-busqueda">
@@ -88,7 +91,9 @@
                             type="text"
                             id="codigoSuministro"
                             name="codigoSuministro"
-                            placeholder="Ej. 000123456"
+                            placeholder="Ej. 12345678"
+                            maxlength="8"
+                            inputmode="numeric"
                             required
                         >
 
@@ -97,12 +102,12 @@
                             id="buscarSuministro"
                             class="buscar-button">
                             <svg class="icon-svg" viewBox="0 0 24 24" style="width:14px;height:14px"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.3-4.3"/></svg>
-                            Buscar
+                            Validar
                         </button>
 
                     </div>
 
-                    <small>Puedes encontrarlo en tu recibo de agua.</small>
+                    <small>Válido ingresando los 8 dígitos numéricos de tu suministro.</small>
 
                 </div>
 
@@ -185,7 +190,7 @@
                             type="file"
                             id="evidencia"
                             name="evidencia"
-                            accept="image/jpeg,image/png,image/webp"
+                            accept="image/jpeg,image/png,image/webp,image/*"
                         >
                         <label for="evidencia" class="file-upload-label">
                             <svg class="icon-svg" viewBox="0 0 24 24" style="width:15px;height:15px"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v3a2 2 0 002 2h12a2 2 0 002-2v-3"/></svg>
@@ -193,7 +198,7 @@
                         </label>
                     </div>
 
-                    <small>Puedes adjuntar una fotografía que ayude a identificar el problema. Esta evidencia es opcional.</small>
+                    <small>Fotografía JPG, PNG o WEBP (máx. 20 MB). La evidencia es opcional.</small>
 
                 </div>
 

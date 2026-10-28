@@ -39,11 +39,22 @@ public class Reporte {
     @Column(name = "fecha_creacion", nullable = false)
     private LocalDateTime fechaCreacion;
 
+    @Column(name = "afectados_count", nullable = false)
+    private Integer afectadosCount = 1;
+
     public Reporte() {
     }
 
     public Long getId() {
         return id;
+    }
+
+    public Integer getAfectadosCount() {
+        return afectadosCount != null ? afectadosCount : 1;
+    }
+
+    public void setAfectadosCount(Integer afectadosCount) {
+        this.afectadosCount = (afectadosCount != null && afectadosCount >= 1) ? afectadosCount : 1;
     }
 
     public Suministro getSuministroId() {

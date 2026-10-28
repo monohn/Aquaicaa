@@ -78,4 +78,14 @@ public class AsignacionController {
                         .obtenerAsignacionesPorPersonal(personalId)
         );
     }
+
+    @GetMapping("/asignaciones")
+    public ResponseEntity<List<AsignacionResponseDTO>> obtenerAsignaciones(
+            @RequestParam(required = false) Boolean soloActivas) {
+
+        if (Boolean.TRUE.equals(soloActivas)) {
+            return ResponseEntity.ok(asignacionService.obtenerAsignacionesActivas());
+        }
+        return ResponseEntity.ok(asignacionService.obtenerTodasLasAsignaciones());
+    }
 }

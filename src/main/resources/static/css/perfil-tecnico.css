@@ -1,0 +1,317 @@
+/* =========================================================
+   AquaIca — Perfil Técnico
+   Diseño UX/UI Pro: Tarjetas estilizadas, métricas y edición
+   ========================================================= */
+
+.tp-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* Card Hero de Perfil */
+.tp-hero-card {
+    background: #ffffff;
+    border-radius: 20px;
+    border: 1px solid #e1e9f0;
+    box-shadow: 0 4px 20px rgba(10, 116, 201, 0.06);
+    padding: 28px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+    position: relative;
+    overflow: hidden;
+}
+
+.tp-hero-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 5px;
+    background: linear-gradient(90deg, #0a74c9, #12a8e6, #00d2d3);
+}
+
+.tp-hero-info {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.tp-avatar-lg {
+    width: 80px;
+    height: 80px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, #0a74c9, #12a8e6);
+    color: #ffffff;
+    font-size: 32px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 24px rgba(10, 116, 201, 0.25);
+    flex-shrink: 0;
+}
+
+.tp-hero-text h2 {
+    margin: 0 0 6px;
+    font-size: 24px;
+    font-weight: 700;
+    color: #0b2a4a;
+    letter-spacing: -0.3px;
+}
+
+.tp-badges-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.tp-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12.5px;
+    font-weight: 600;
+}
+
+.tp-badge-role {
+    background: #e1f0fa;
+    color: #0a74c9;
+}
+
+.tp-badge-specialty {
+    background: #e8f5e9;
+    color: #2e7d32;
+    border: 1px solid #c8e6c9;
+}
+
+.tp-badge-status {
+    background: #f1f8e9;
+    color: #33691e;
+}
+
+.tp-badge-status::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #4caf50;
+}
+
+/* Quick Metrics Row */
+.tp-hero-metrics {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+.tp-metric-box {
+    text-align: center;
+    padding: 0 16px;
+    border-left: 1px solid #edf2f7;
+}
+
+.tp-metric-box:first-child {
+    border-left: none;
+}
+
+.tp-metric-box span {
+    display: block;
+    font-size: 12px;
+    color: #718096;
+    font-weight: 500;
+    margin-bottom: 2px;
+}
+
+.tp-metric-box strong {
+    font-size: 22px;
+    font-weight: 700;
+    color: #0b2a4a;
+}
+
+/* Grilla de dos columnas */
+.tp-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+
+@media (max-width: 900px) {
+    .tp-grid-2 {
+        grid-template-columns: 1fr;
+    }
+}
+
+.tp-card {
+    background: #ffffff;
+    border-radius: 18px;
+    border: 1px solid #e1e9f0;
+    box-shadow: 0 4px 18px rgba(10, 116, 201, 0.04);
+    padding: 26px 28px;
+}
+
+.tp-card-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 22px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid #edf2f7;
+}
+
+.tp-card-header-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: #eef6fc;
+    color: #0a74c9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.tp-card-header-icon svg {
+    width: 22px;
+    height: 22px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.tp-card-header h3 {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 600;
+    color: #0b2a4a;
+}
+
+.tp-card-header p {
+    margin: 2px 0 0;
+    font-size: 12.5px;
+    color: #718096;
+}
+
+/* Campos de Formulario */
+.tp-form-group {
+    margin-bottom: 18px;
+}
+
+.tp-form-group:last-child {
+    margin-bottom: 0;
+}
+
+.tp-form-group label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #2d3748;
+    margin-bottom: 6px;
+}
+
+.tp-form-group input {
+    width: 100%;
+    height: 44px;
+    padding: 0 14px;
+    border-radius: 10px;
+    border: 1px solid #cbd5e1;
+    font-family: inherit;
+    font-size: 14px;
+    color: #1e293b;
+    background: #ffffff;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-sizing: border-box;
+}
+
+.tp-form-group input:focus {
+    outline: none;
+    border-color: #0a74c9;
+    box-shadow: 0 0 0 3px rgba(10, 116, 201, 0.15);
+}
+
+.tp-form-group input.readonly {
+    background: #f8fafc;
+    color: #64748b;
+    cursor: not-allowed;
+    border-color: #e2e8f0;
+}
+
+.tp-hint {
+    display: block;
+    font-size: 12px;
+    color: #94a3b8;
+    margin-top: 5px;
+}
+
+/* Footer de acciones */
+.tp-footer-actions {
+    background: #ffffff;
+    border-radius: 16px;
+    border: 1px solid #e1e9f0;
+    padding: 18px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    box-shadow: 0 4px 16px rgba(10, 116, 201, 0.04);
+}
+
+.tp-alerta {
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 13.5px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.tp-alerta.exito {
+    background: #ecfdf5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+}
+
+.tp-alerta.error {
+    background: #fef2f2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+
+.tp-btn-guardar {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 28px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #0a74c9, #12a8e6);
+    color: #ffffff;
+    font-size: 14.5px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(10, 116, 201, 0.25);
+    transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+}
+
+.tp-btn-guardar:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(10, 116, 201, 0.32);
+}
+
+.tp-btn-guardar:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+}

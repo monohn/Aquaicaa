@@ -5,10 +5,61 @@ import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import com.aquaica.dto.AsignacionResponseDTO;
 import com.aquaica.entity.Asignacion;
 public interface AsignacionRepository extends JpaRepository<Asignacion, Long> {
+
+    @Query("""
+        SELECT new com.aquaica.dto.AsignacionResponseDTO(
+            a.id,
+            r.id,
+            p.id,
+            p.nombre,
+            p.dni,
+            p.especialidad,
+            a.fechaAsignacion,
+            a.observaciones,
+            a.estado
+        )
+        FROM Asignacion a
+        JOIN a.reporte r
+        JOIN a.personal p
+        WHERE a.estado IN ('ACTIVA', 'EN_ATENCION', 'PENDIENTE')
+        ORDER BY a.fechaAsignacion DESC
+        """)
+    List<AsignacionResponseDTO> obtenerAsignacionesActivas();
+
+    @Query("""
+        SELECT new com.aquaica.dto.AsignacionResponseDTO(
+            a.id,
+            r.id,
+            p.id,
+            p.nombre,
+            p.dni,
+            p.especialidad,
+            a.fechaAsignacion,
+            a.observaciones,
+            a.estado
+        )
+        FROM Asignacion a
+        JOIN a.reporte r
+        JOIN a.personal p
+        ORDER BY a.fechaAsignacion DESC
+        """)
+    List<AsignacionResponseDTO> obtenerTodasLasAsignaciones();
+
+    @Query("""
+        SELECT a
+        FROM Asignacion a
+        JOIN FETCH a.reporte r
+        JOIN FETCH r.suministro s
+        WHERE a.personal.id = :personalId
+          AND (a.estado = 'FINALIZADA' OR r.estado = 'RESUELTO')
+        ORDER BY a.fechaAsignacion DESC
+        """)
+    List<Asignacion> obtenerHistorialFinalizadasPorPersonal(@Param("personalId") Long personalId);
 
     @Query("""
         SELECT new com.aquaica.dto.AsignacionResponseDTO(

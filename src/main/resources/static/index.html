@@ -3,314 +3,277 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Aqualca - Sistema de reportes y seguimiento de incidencias del servicio de agua potable.">
-    <title>Aqualca | Servicio de Agua</title>
+    <meta name="description" content="AquaIca - Mira en tiempo real las incidencias del servicio de agua en Ica. Reporta fugas, cortes y más.">
+    <title>AquaIca | Portal Ciudadano del Agua - Ica</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/index.css">
+    <link rel="icon" type="image/png" href="images/favicon-64.png">
+    <link rel="apple-touch-icon" href="images/favicon-64.png">
+
+    <!-- Leaflet CSS para el mapa -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <link rel="stylesheet" href="css/feed.css">
 </head>
 
-<body class="public-body">
+<body class="feed-body">
 
-    <!-- HEADER -->
-    <header class="public-header">
+    <!-- ========== HEADER ========== -->
+    <header class="feed-header">
 
-        <div class="public-brand">
-            <div class="public-logo">A</div>
-            <div class="brand-text">
-                <h2>Aqualca</h2>
-                <span>Servicio de agua</span>
+        <div class="header-left">
+            <button class="menu-btn" id="menuBtn" aria-label="Abrir menú de navegación" title="Abrir menú">
+                <span></span><span></span><span></span>
+            </button>
+            <a href="index.html" class="header-brand">
+                <img src="images/aquaica-logo.png" alt="AquaIca Logo" class="header-logo-img">
+                <div class="header-brand-text">
+                    <strong>AquaIca</strong>
+                    <span>Portal Ciudadano</span>
+                </div>
+            </a>
+        </div>
+
+        <div class="header-center">
+            <div class="header-search">
+                <svg class="search-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+                <input type="text" id="searchInput" placeholder="Buscar por calle o distrito de Ica...">
             </div>
         </div>
 
-        <input type="checkbox" id="nav-toggle" class="nav-toggle">
-        <label for="nav-toggle" class="nav-toggle-label" aria-label="Abrir menú de navegación">
-            <span></span>
-            <span></span>
-            <span></span>
-        </label>
-
-        <nav class="public-nav">
-            <a href="#inicio" class="active-link">Inicio</a>
-            <a href="#como-funciona">¿Cómo funciona?</a>
-            <a href="mis-reportes.html">Mis reportes</a>
-            <a href="#ayuda">Ayuda</a>
-            <a href="login.html" class="personal-button">
-                <span class="btn-icon"><svg class="icon-svg" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg></span> Iniciar sesión
-            </a>
-        </nav>
+        <div class="header-right" id="headerAuthArea">
+            <!-- Renderizado dinámico vía JS: botón login o perfil de usuario -->
+            <a href="login.html" class="btn-header-login">Iniciar sesión</a>
+            <a href="registro.html" class="btn-header-registro">Registrarme</a>
+        </div>
 
     </header>
 
 
-    <!-- MAIN CONTENT -->
-    <main>
+    <!-- ========== MENÚ LATERAL (DRAWER CIUDADANO) ========== -->
+    <div class="drawer-overlay" id="drawerOverlay"></div>
+    <aside class="drawer" id="drawer">
 
-        <!-- HERO SECTION -->
-        <section id="inicio" class="hero-public">
-
-            <!-- burbujas decorativas fijas -->
-            <span class="deco-bubble b1" aria-hidden="true"></span>
-            <span class="deco-bubble b2" aria-hidden="true"></span>
-            <span class="deco-bubble b3" aria-hidden="true"></span>
-            <span class="deco-bubble b4" aria-hidden="true"></span>
-            <span class="deco-bubble b5" aria-hidden="true"></span>
-
-            <div class="hero-inner">
-
-                <div class="hero-content">
-
-                    <span class="hero-institution">
-                        Sistema de atención ciudadana
-                    </span>
-
-                    <h1>
-                        ¿Tienes un problema<br>
-                        con el servicio de agua?
-                    </h1>
-
-                    <p>
-                        Reporta fugas, cortes, baja presión y otros inconvenientes
-                        de manera rápida y sencilla.
-                    </p>
-
-                    <div class="hero-buttons">
-                        <a href="reporte.html" class="hero-button primary">
-                            <span class="btn-icon"><svg class="icon-svg" viewBox="0 0 24 24"><path d="M12 2C8 8 5 11.5 5 15a7 7 0 0014 0c0-3.5-3-7-7-13z"/></svg></span> Reportar un problema
-                        </a>
-                        <a href="#como-funciona" class="hero-button secondary">
-                            <span class="btn-icon"><svg class="icon-svg" viewBox="0 0 24 24" style="width:11px;height:11px"><path d="M6 4l14 8-14 8V4z" fill="currentColor" stroke="none"/></svg></span> ¿Cómo funciona?
-                        </a>
-                    </div>
-
-                    <p class="hero-check">
-                        <span class="check-icon"><svg class="icon-svg" viewBox="0 0 24 24"><path d="M4 12l5 5L20 6"/></svg></span>
-                        Tu reporte ayuda a mejorar el servicio para todos.
-                    </p>
-
-                </div>
-
-                
-
+        <div class="drawer-header">
+            <img src="images/aquaica-logo.png" alt="AquaIca Logo" class="drawer-header-logo-img">
+            <div class="drawer-header-info">
+                <strong>AquaIca</strong>
+                <span id="drawerUserStatus">Atención Ciudadana</span>
             </div>
+            <button class="drawer-close-btn" id="drawerCloseBtn" aria-label="Cerrar menú" title="Cerrar menú">
+                <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
 
-            <!-- ola decorativa de transición -->
-            <svg class="hero-wave" viewBox="0 0 1440 110" preserveAspectRatio="none" aria-hidden="true">
-                <path d="M0,60 C240,110 480,10 720,45 C960,80 1200,20 1440,55 L1440,110 L0,110 Z"></path>
-            </svg>
+        <nav class="drawer-nav">
+            <!-- VISTAS PRIORITARIAS DEL CIUDADANO -->
+            <div class="drawer-section-title">Principal</div>
 
-        </section>
-
-
-        <!-- SERVICES / FEATURES SECTION -->
-        <section class="services-section">
-
-            <div class="services-grid">
-
-                <div class="service-card card-blue">
-                    <div class="service-icon"><svg class="icon-svg" viewBox="0 0 24 24"><path d="M12 2C8 8 5 11.5 5 15a7 7 0 0014 0c0-3.5-3-7-7-13z"/></svg></div>
-                    <div class="service-content">
-                        <h3>1. Reporta tu incidencia</h3>
-                        <p>
-                            Registra el problema indicando el código de suministro,
-                            tipo de incidencia, descripción y ubicación.
-                        </p>
-                    </div>
-                    <div class="service-arrow">&rarr;</div>
-                </div>
-
-                <div class="service-card card-mint">
-                    <div class="service-icon"><svg class="icon-svg" viewBox="0 0 24 24"><path d="M12 21s7-6.5 7-12a7 7 0 10-14 0c0 5.5 7 12 7 12z"/><circle cx="12" cy="9" r="2.5"/></svg></div>
-                    <div class="service-content">
-                        <h3>2. Ubicación y evidencia</h3>
-                        <p>
-                            Georreferencia el lugar de la incidencia y adjunta
-                            fotografías que ayuden a evaluar el problema.
-                        </p>
-                    </div>
-                    <div class="service-arrow">&rarr;</div>
-                </div>
-
-                <div class="service-card card-lavender">
-                    <div class="service-icon"><svg class="icon-svg" viewBox="0 0 24 24"><path d="M4 20V10M12 20V4M20 20v-7"/></svg></div>
-                    <div class="service-content">
-                        <h3>3. Seguimiento del caso</h3>
-                        <p>
-                            Consulta el estado de tu reporte y conoce las acciones
-                            realizadas hasta su atención y resolución.
-                        </p>
-                    </div>
-                    <div class="service-arrow">&rarr;</div>
-                </div>
-
-            </div>
-
-        </section>
-
-
-        <!-- PROCESS SECTION -->
-        <section id="como-funciona" class="process-section">
-
-            <span class="deco-bubble b6" aria-hidden="true"></span>
-            <span class="deco-bubble b7" aria-hidden="true"></span>
-            <span class="deco-bubble b8" aria-hidden="true"></span>
-
-            <div class="process-intro">
-                <span>AQUALCA</span>
-                <h2>Atención más rápida y transparente</h2>
-                <p>Conoce cómo funciona nuestro proceso de atención ciudadana.</p>
-            </div>
-
-            <div class="process-steps">
-
-                <div class="process-step">
-                    <div class="step-number">PASO 01</div>
-                    <div class="step-icon icon-blue">	<svg class="icon-svg" viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 3.5h6v3H9zM9 11h6M9 15h4"/></svg></div>
-                    <h3>Registra tu caso</h3>
-                    <p>Completa los datos de ubicación y descripción del inconveniente.</p>
-                </div>
-
-                <div class="step-connector" aria-hidden="true">→</div>
-
-                <div class="process-step">
-                    <div class="step-number">PASO 02</div>
-                    <div class="step-icon icon-mint"><svg class="icon-svg" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.3-4.3"/></svg></div>
-                    <h3>Validación y asignación</h3>
-                    <p>La incidencia es revisada y derivada al personal técnico correspondiente.</p>
-                </div>
-
-                <div class="step-connector" aria-hidden="true">→</div>
-
-                <div class="process-step">
-                    <div class="step-number">PASO 03</div>
-                    <div class="step-icon icon-lavender">	<svg class="icon-svg" viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 00-5.6 5.1L4 16.5V20h3.5l5.1-5.1a4 4 0 005.1-5.6l-2.6 2.6-2-2 2.6-2.6z"/></svg></div>
-                    <h3>Atención y solución</h3>
-                    <p>El personal atiende el problema y registra las acciones realizadas para resolverlo.</p>
-                </div>
-
-            </div>
-
-        </section>
-
-
-        <!-- STATS SECTION -->
-        <section id="mis-reportes" class="stats-section">
-            <div class="stats-bar">
-
-                <div class="stat-item">
-                    <div class="stat-icon"><svg class="icon-svg" viewBox="0 0 24 24"><path d="M12 2C8 8 5 11.5 5 15a7 7 0 0014 0c0-3.5-3-7-7-13z"/></svg></div>
-                    <div class="stat-text">
-                        <strong>+1,250</strong>
-                        <span>Reportes atendidos este año</span>
-                    </div>
-                </div>
-
-                <div class="stat-item">
-                    <div class="stat-icon">	<svg class="icon-svg" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M2 20c0-3 3-5 7-5s7 2 7 5"/><circle cx="17" cy="9" r="2.5"/><path d="M16 13.2c2.5.3 4 1.8 4 3.8"/></svg></div>
-                    <div class="stat-text">
-                        <strong>98%</strong>
-                        <span>Incidencias resueltas satisfactoriamente</span>
-                    </div>
-                </div>
-
-                <div class="stat-item">
-                    <div class="stat-icon">	<svg class="icon-svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div>
-                    <div class="stat-text">
-                        <strong>24 h</strong>
-                        <span>Tiempo promedio de respuesta</span>
-                    </div>
-                </div>
-
-                <div class="stat-item">
-                    <div class="stat-icon"><svg class="icon-svg" viewBox="0 0 24 24"><path d="M12 3l7 3v6c0 5-3 8-7 9-4-1-7-4-7-9V6z"/><path d="M9 12l2 2 4-4"/></svg></div>
-                    <div class="stat-text">
-                        <strong>Compromiso</strong>
-                        <span>Trabajamos por un servicio eficiente y confiable</span>
-                    </div>
-                </div>
-
-            </div>
-        </section>
-
-
-        <!-- CTA SECTION -->
-        <section class="report-cta">
-
-            <span class="deco-bubble b9" aria-hidden="true"></span>
-            <span class="deco-bubble b10" aria-hidden="true"></span>
-
-            <div class="cta-left">
-                <div class="cta-avatar"><svg class="icon-svg" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg></div>
-                <div>
-                    <span>¿Necesitas ayuda?</span>
-                    <h2>Reporta tu incidencia ahora</h2>
-                    <p>El proceso es rápido, sencillo y tu reporte hace la diferencia.</p>
-                </div>
-            </div>
-
-            <a href="reporte.html" class="cta-button">
-                <span class="btn-icon">	<svg class="icon-svg" viewBox="0 0 24 24"><path d="M12 2C8 8 5 11.5 5 15a7 7 0 0014 0c0-3.5-3-7-7-13z"/></svg></span> Crear reporte
+            <a href="index.html" class="drawer-link active">
+                <span class="drawer-icon">
+                    <svg class="drawer-svg" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="7" y1="8" x2="17" y2="8"/><line x1="7" y1="12" x2="13" y2="12"/><line x1="7" y1="16" x2="11" y2="16"/></svg>
+                </span>
+                <span>Feed Comunitario</span>
             </a>
+
+            <a href="mapa.html" class="drawer-link" id="drawerMapaLink">
+                <span class="drawer-icon">
+                    <svg class="drawer-svg" viewBox="0 0 24 24"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+                </span>
+                <span>Mapa de Incidencias</span>
+            </a>
+
+            <a href="reporte.html" class="drawer-link" id="drawerReportarLink">
+                <span class="drawer-icon">
+                    <svg class="drawer-svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                </span>
+                <span>Reportar Problema</span>
+            </a>
+
+            <a href="mis-reportes.html" class="drawer-link" id="drawerMisReportesLink">
+                <span class="drawer-icon">
+                    <svg class="drawer-svg" viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/><path d="m9 14 2 2 4-4"/></svg>
+                </span>
+                <span>Mis Reportes</span>
+            </a>
+
+            <a href="seguimiento.html" class="drawer-link">
+                <span class="drawer-icon">
+                    <svg class="drawer-svg" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/></svg>
+                </span>
+                <span>Consultar por Código</span>
+            </a>
+
+            <a href="perfil.html" class="drawer-link" id="drawerPerfilLink">
+                <span class="drawer-icon">
+                    <svg class="drawer-svg" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                </span>
+                <span>Mi Perfil</span>
+            </a>
+        </nav>
+
+        <div class="drawer-footer" id="drawerFooter">
+            <a href="login.html" class="drawer-login-btn">
+                <svg class="drawer-btn-svg" viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+                <span>Acceder con mi cuenta</span>
+            </a>
+        </div>
+
+    </aside>
+
+
+    <!-- ========== CONTENIDO PRINCIPAL (FEED + MAPA) ========== -->
+    <main class="feed-main">
+
+        <!-- Columna izquierda: Feed de tarjetas -->
+        <section class="feed-column">
+
+            <!-- Franja interactiva de estado comunitario -->
+            <div class="community-live-strip" id="communityLiveStrip">
+                <div class="live-strip-left">
+                    <span class="live-pulse-dot" title="Monitoreo activo"></span>
+                    <div class="live-strip-info">
+                        <strong>Red de Agua Ica en Vivo</strong>
+                        <span id="liveStatusText">Monitoreando incidencias en tiempo real...</span>
+                    </div>
+                </div>
+                <div class="live-strip-badges">
+                    <span class="live-chip chip-blue" title="Reportes vecinales en seguimiento">
+                        <svg viewBox="0 0 24 24" class="chip-svg"><path d="M12 2.7s6 6.1 6 10.3a6 6 0 0 1-12 0c0-4.2 6-10.3 6-10.3z"/></svg>
+                        <span id="chipReportesCount">0</span> reportes
+                    </span>
+                    <span class="live-chip chip-green" title="Casos solucionados">
+                        <svg viewBox="0 0 24 24" class="chip-svg"><path d="M20 6L9 17l-5-5"/></svg>
+                        <span id="chipResueltosCount">0</span> resueltos
+                    </span>
+                    <span class="live-chip chip-amber" title="Avisos oficiales de corte">
+                        <svg viewBox="0 0 24 24" class="chip-svg"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                        <span id="chipComunicadosCount">0</span> avisos EMAPICA
+                    </span>
+                </div>
+            </div>
+
+            <!-- Barra de composición inteligente -->
+            <div class="feed-composer" id="feedComposer">
+                <!-- Se actualiza por JS según si el ciudadano inició sesión o no -->
+                <div class="composer-left">
+                    <div class="composer-avatar" id="composerAvatar">?</div>
+                    <div class="composer-text-wrap">
+                        <strong id="composerTitle">¿Problemas de agua en tu zona?</strong>
+                        <span id="composerSubtitle">Inicia sesión para registrar una incidencia con tu suministro.</span>
+                    </div>
+                </div>
+                <button type="button" class="composer-btn" id="composerBtn">Reportar problema</button>
+            </div>
+
+            <!-- Filtros por distrito y categoría -->
+            <div class="feed-filters">
+                <div class="filter-select-wrap">
+                    <select id="filtroDistrito" class="filter-select">
+                        <option value="todos">Todos los distritos de Ica</option>
+                    </select>
+                </div>
+                <div class="filter-tabs">
+                    <button class="filter-tab active" data-cat="todos">Todos</button>
+                    <button class="filter-tab" data-cat="comunicados">Comunicados EMAPICA</button>
+                    <button class="filter-tab" data-cat="fuga">Fugas de agua</button>
+                    <button class="filter-tab" data-cat="sin_agua">Cortes / Sin agua</button>
+                </div>
+            </div>
+
+            <!-- Contenedor del listado de tarjetas -->
+            <div class="feed-list" id="feedList">
+                <div class="feed-loading" id="feedLoading">
+                    <div class="spinner"></div>
+                    <p>Cargando incidencias en tiempo real...</p>
+                </div>
+            </div>
+
+            <!-- Botón cargar más -->
+            <button class="load-more-btn" id="loadMoreBtn" style="display:none;">Ver más reportes anteriores</button>
+
+            <!-- Estado vacío -->
+            <div class="feed-empty" id="feedEmpty" style="display:none;">
+                <p>No se encontraron incidencias con los filtros seleccionados.</p>
+                <button class="feed-empty-btn" onclick="resetFiltros()">Restablecer filtros</button>
+            </div>
+
+        </section>
+
+
+        <!-- Columna derecha: Mapa interactivo -->
+        <section class="map-column" id="mapa-section">
+
+            <div class="map-card">
+                <div class="map-card-header">
+                    <div class="map-card-header-left">
+                        <strong>Mapa en tiempo real</strong>
+                        <span>Incidencias registradas en Ica</span>
+                    </div>
+                    <span class="map-live-badge">En vivo</span>
+                </div>
+                <div id="mapaFeed" class="map-container"></div>
+                <div class="map-legend">
+                    <span class="legend-item"><span class="legend-dot dot-red"></span> Reportado</span>
+                    <span class="legend-item"><span class="legend-dot dot-yellow"></span> En atención</span>
+                    <span class="legend-item"><span class="legend-dot dot-green"></span> Resuelto</span>
+                    <span class="legend-item"><span class="legend-dot dot-blue"></span> Corte oficial</span>
+                </div>
+            </div>
 
         </section>
 
     </main>
 
 
-    <!-- FOOTER -->
-    <footer id="ayuda" class="public-footer">
-
-        <svg class="footer-wave" viewBox="0 0 1440 60" preserveAspectRatio="none" aria-hidden="true">
-            <path d="M0,30 C240,60 480,0 720,25 C960,50 1200,10 1440,30 L1440,0 L0,0 Z"></path>
-        </svg>
-
-        <div class="footer-grid">
-
-            <div class="footer-col footer-brand-col">
-                <div class="footer-brand-head">
-                    <div class="public-logo small">A</div>
-                    <strong>Aqualca</strong>
-                </div>
-                <span>Sistema de gestión del servicio de agua</span>
-
-                <div class="footer-social">
-                    <a href="#" aria-label="Facebook"><svg class="icon-svg" viewBox="0 0 24 24" style="width:14px;height:14px"><path d="M15 8h2V5h-2c-2 0-3 1.2-3 3v2H10v3h2v7h3v-7h2.2l.8-3H15V8.5c0-.3.2-.5.5-.5z" fill="currentColor" stroke="none"/></svg></a>
-                    <a href="#" aria-label="Twitter">🐦</a>
-                    <a href="#" aria-label="Instagram"><svg class="icon-svg" viewBox="0 0 24 24" style="width:14px;height:14px"><rect x="4" y="4" width="16" height="16" rx="4"/><circle cx="12" cy="12" r="3.5"/><circle cx="16.5" cy="7.5" r="1"/></svg></a>
-                </div>
+    <!-- ========== MODAL INICIAR SESIÓN PARA REPORTAR ========== -->
+    <div class="modal-overlay" id="authPromptModal">
+        <div class="modal-card">
+            <div class="modal-icon">💧</div>
+            <h3>Inicia sesión para reportar</h3>
+            <p>
+                Para registrar una incidencia formal con tu código de suministro y hacerle seguimiento directo a la cuadrilla técnica, necesitas acceder a tu cuenta ciudadana.
+            </p>
+            <div class="modal-actions">
+                <a href="login.html" class="modal-btn primary">Iniciar sesión</a>
+                <a href="registro.html" class="modal-btn secondary">Crear cuenta ciudadana</a>
+                <button type="button" class="modal-btn text" id="closeAuthModal">Solo mirar el feed</button>
             </div>
-
-            <div class="footer-col">
-                <h4>Atención ciudadana eficiente</h4>
-                <p>Mejoramos cada día para brindarte un servicio de calidad.</p>
-            </div>
-
-            <div class="footer-col">
-                <h4>Enlaces útiles</h4>
-                <a href="#como-funciona">¿Cómo funciona?</a>
-                <a href="#mis-reportes">Mis reportes</a>
-                <a href="#ayuda">Ayuda y soporte</a>
-                <a href="#">Política de privacidad</a>
-            </div>
-
-            <div class="footer-col">
-                <h4>Contáctanos</h4>
-                <span><svg class="icon-svg" viewBox="0 0 24 24" style="width:13px;height:13px"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4c0 1-1 2-2 2A16 16 0 013 6c0-1 1-2 2-2z"/></svg>(056) 123 456</span>
-                <span><svg class="icon-svg" viewBox="0 0 24 24" style="width:13px;height:13px"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg> contacto@aqualca.pe</span>
-                <span><svg class="icon-svg" viewBox="0 0 24 24"><path d="M12 21s7-6.5 7-12a7 7 0 10-14 0c0 5.5 7 12 7 12z"/><circle cx="12" cy="9" r="2.5"/></svg>Ica, Perú</span>
-            </div>
-
         </div>
+    </div>
 
-        <div class="footer-bottom">
-            © 2026 Aqualca. Todos los derechos reservados.
+
+    <!-- Toggle móvil para alternar Feed y Mapa -->
+    <div class="mobile-tabs">
+        <button class="mobile-tab active" id="tabFeed">Feed Comunitario</button>
+        <button class="mobile-tab" id="tabMapa">Mapa en Vivo</button>
+    </div>
+
+
+    <!-- Botón flotante para reportar -->
+    <button type="button" class="fab" id="fabReportar" title="Reportar una incidencia" aria-label="Reportar incidencia">
+        <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+    </button>
+
+    <!-- ========== LIGHTBOX MODAL PARA EVIDENCIAS ========== -->
+    <div class="lightbox-overlay" id="imageLightboxModal" role="dialog" aria-modal="true" aria-label="Vista previa de evidencia">
+        <button type="button" class="lightbox-close" id="lightboxCloseBtn" aria-label="Cerrar imagen">&times;</button>
+        <div class="lightbox-content">
+            <img id="lightboxImg" src="" alt="Evidencia ampliada">
+            <p id="lightboxCaption" class="lightbox-caption"></p>
         </div>
+    </div>
 
-    </footer>
+    <!-- ========== TOAST NOTIFICACIÓN COMUNITARIA ========== -->
+    <div class="feed-toast" id="feedToast" aria-live="polite"></div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script src="js/feed.js"></script>
 
 </body>
 </html>

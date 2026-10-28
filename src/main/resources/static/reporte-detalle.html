@@ -11,6 +11,9 @@
 
     <title>AquaIca | Detalle del reporte</title>
 
+    <link rel="icon" type="image/png" href="images/favicon-64.png">
+    <link rel="apple-touch-icon" href="images/favicon-64.png">
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -51,9 +54,7 @@
 
         <div class="sidebar-brand">
 
-            <div class="brand-logo">
-                A
-            </div>
+            <div class="brand-logo"><img src="images/aquaica-logo.png" alt="AquaIca"></div>
 
             <div>
 
@@ -71,75 +72,7 @@
 
 
 
-        <nav class="sidebar-menu">
-
-
-            <a
-                href="dashboard.html"
-                class="menu-item">
-
-                <span class="menu-icon">
-                    <svg class="icon-svg" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="2"/><rect x="14" y="3" width="7" height="5" rx="2"/><rect x="14" y="12" width="7" height="9" rx="2"/><rect x="3" y="16" width="7" height="5" rx="2"/></svg>
-                </span>
-
-                Dashboard
-
-            </a>
-
-
-            <a
-                href="reportes.html"
-                class="menu-item active">
-
-                <span class="menu-icon">
-                    <svg class="icon-svg" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h6M9 17h6"/></svg>
-                </span>
-
-                Reportes
-
-            </a>
-
-
-            <a
-                href="asignaciones.html"
-                class="menu-item">
-
-                <span class="menu-icon">
-                    <svg class="icon-svg" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>
-                </span>
-
-                Asignaciones
-
-            </a>
-
-
-            <a
-                href="seguimientos.html"
-                class="menu-item">
-
-                <span class="menu-icon">
-                    <svg class="icon-svg" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 1 3 6.7"/><path d="M3 21v-6h6"/></svg>
-                </span>
-
-                Seguimientos
-
-            </a>
-
-
-            <a
-                href="evidencias.html"
-                class="menu-item">
-
-                <span class="menu-icon">
-                    <svg class="icon-svg" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>
-                </span>
-
-                Evidencias
-
-            </a>
-
-
-        </nav>
+        <nav class="sidebar-menu" id="sidebarMenu"></nav>
 
 
 
@@ -657,7 +590,7 @@
 </div>
 
 <small id="tecnicoAyuda">
-    Solo se muestran técnicos de la especialidad del reporte.
+    Se muestran técnicos de la especialidad y técnicos de atención general.
 </small>
 
         </div>
@@ -714,9 +647,9 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-    <script src="js/reporte-detalle.js"></script>
+    <script src="js/menu.js"></script>
 
-    <script src="js/menu-personal.js"></script>
+    <script src="js/reporte-detalle.js"></script>
 
 </body>
 

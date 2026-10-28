@@ -62,6 +62,22 @@
 
 .public-brand { display: flex; align-items: center; gap: 11px; }
 
+.public-logo-img {
+    width: 42px;
+    height: 42px;
+    object-fit: contain;
+    border-radius: 12px;
+    background: #ffffff;
+    padding: 3px;
+    border: 1px solid rgba(0, 119, 182, 0.15);
+    box-shadow: 0 4px 14px rgba(0, 119, 182, 0.18);
+    transition: transform 0.2s ease;
+}
+
+.public-brand:hover .public-logo-img {
+    transform: scale(1.05);
+}
+
 .public-logo {
     width: 42px; height: 42px;
     display: flex; align-items: center; justify-content: center;
@@ -69,6 +85,13 @@
     background: linear-gradient(135deg, var(--color-primary), #00a6d6);
     color: white; font-size: 18px; font-weight: 700;
     box-shadow: 0 6px 16px rgba(0, 119, 182, 0.22);
+}
+
+.public-logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border-radius: 11px;
 }
 
 .public-brand h2 { margin: 0; color: var(--color-primary); font-size: 19px; font-weight: 700; }

@@ -27,20 +27,37 @@ public class ClienteController {
     public ClienteController(ClienteService clienteService) { this.clienteService = clienteService; }
 
     @GetMapping("/me")
-public ResponseEntity<ClienteResponseDTO> obtenerMiPerfil(
-        @AuthenticationPrincipal CustomUserDetails userDetails) {
+    public ResponseEntity<ClienteResponseDTO> obtenerMiPerfil(
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
 
-    if (userDetails == null
-            || userDetails.getUsuario().getCliente() == null
-            || !"CIUDADANO".equals(userDetails.getUsuario().getRol())) {
-        throw new AccessDeniedException(
-                "No tienes permiso para consultar este perfil");
+        if (userDetails == null
+                || userDetails.getUsuario().getCliente() == null
+                || !"CIUDADANO".equals(userDetails.getUsuario().getRol())) {
+            throw new AccessDeniedException(
+                    "No tienes permiso para consultar este perfil");
+        }
+
+        Long clienteId = userDetails.getUsuario().getCliente().getId();
+
+        return ResponseEntity.ok(clienteService.buscar(clienteId));
     }
 
-    Long clienteId = userDetails.getUsuario().getCliente().getId();
+    @PutMapping("/me")
+    public ResponseEntity<ClienteResponseDTO> actualizarMiPerfil(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestBody ClienteRequestDTO datos) {
 
-    return ResponseEntity.ok(clienteService.buscar(clienteId));
-}
+        if (userDetails == null
+                || userDetails.getUsuario().getCliente() == null
+                || !"CIUDADANO".equals(userDetails.getUsuario().getRol())) {
+            throw new AccessDeniedException(
+                    "No tienes permiso para actualizar este perfil");
+        }
+
+        Long clienteId = userDetails.getUsuario().getCliente().getId();
+
+        return ResponseEntity.ok(clienteService.actualizar(clienteId, datos));
+    }
 
     @GetMapping
     public ResponseEntity<List<ClienteResponseDTO>> listar() { return ResponseEntity.ok(clienteService.listar()); }

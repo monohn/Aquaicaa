@@ -16,20 +16,14 @@ async function apiFetch(url, options = {}) {
     });
 
     if (response.status === 401) {
-
-        localStorage.removeItem("token");
-        localStorage.removeItem("username");
-        localStorage.removeItem("rol");
-
+        ["token", "username", "rol", "personalId", "clienteId"].forEach(c => localStorage.removeItem(c));
         window.location.href = "login.html";
-
-        throw new Error("Sesión expirada");
+        throw new Error("Sesión expirada. Redirigiendo a inicio de sesión...");
     }
 
     if (response.status === 403) {
-
         throw new Error(
-            "No tienes permisos para realizar esta operación"
+            "No tienes permisos suficientes para realizar esta acción"
         );
     }
 

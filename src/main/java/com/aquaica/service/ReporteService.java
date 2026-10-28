@@ -25,6 +25,7 @@ public class ReporteService {
 
     private final ReporteRepository reporteRepository;
     private final SuministroRepository suministroRepository;
+    private final SuministroService suministroService;
     private final PrioridadService prioridadService;
     private final SeguimientoRepository seguimientoRepository;
     private final PersonalRepository personalRepository;
@@ -32,12 +33,14 @@ public class ReporteService {
     public ReporteService(
             ReporteRepository reporteRepository,
             SuministroRepository suministroRepository,
+            SuministroService suministroService,
             PrioridadService prioridadService,
             SeguimientoRepository seguimientoRepository,
             PersonalRepository personalRepository) {
 
         this.reporteRepository = reporteRepository;
         this.suministroRepository = suministroRepository;
+        this.suministroService = suministroService;
         this.prioridadService = prioridadService;
         this.seguimientoRepository = seguimientoRepository;
         this.personalRepository = personalRepository;
@@ -49,10 +52,11 @@ public class ReporteService {
             String descripcion) {
 
         
-        Suministro suministro = suministroRepository
-                .findByCodigoSuministro(codigoSuministro)
-                .orElseThrow(() ->
-                        new RuntimeException("Suministro no encontrado"));
+        Suministro suministro = suministroService.buscarPorCodigo(codigoSuministro)
+                .orElseGet(() -> suministroRepository
+                        .findByCodigoSuministro(codigoSuministro)
+                        .orElseThrow(() ->
+                                new RuntimeException("Suministro no encontrado")));
 
         
         Reporte reporte = new Reporte();

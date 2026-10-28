@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AquaIca | Perfil Administrador</title>
+    <link rel="icon" type="image/png" href="images/favicon-64.png">
+    <link rel="apple-touch-icon" href="images/favicon-64.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/sidebar-pro.css">
+    <link rel="stylesheet" href="css/dashboard-pro.css">
+    <link rel="stylesheet" href="css/perfil-tecnico.css">
+</head>
+
+<body class="dashboard-body">
+
+    <div class="dashboard-bg-decor" aria-hidden="true">
+        <span class="deco-bubble db1"></span>
+        <span class="deco-bubble db2"></span>
+        <span class="deco-bubble db3"></span>
+        <span class="deco-bubble db4"></span>
+        <span class="deco-bubble db5"></span>
+    </div>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar sidebar-pro">
+        <div class="sidebar-brand">
+            <div class="brand-logo"><img src="images/aquaica-logo.png" alt="AquaIca"></div>
+            <div>
+                <h2>AquaIca</h2>
+                <span>Sistema de Gestión</span>
+            </div>
+        </div>
+
+        <nav class="sidebar-menu" id="sidebarMenu"></nav>
+
+        <div class="sidebar-bottom">
+            <button id="logoutButton" class="logout-button">Cerrar sesión</button>
+        </div>
+    </aside>
+
+    <script src="js/menu.js"></script>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="dashboard-main dp-main">
+
+        <!-- CABECERA -->
+        <header class="dp-top">
+            <div class="dp-titulo">
+                <span>Mi Cuenta</span>
+                <h1>Perfil Administrador</h1>
+            </div>
+
+            <div class="dp-acciones">
+                <div class="dp-usuario">
+                    <button type="button" class="dp-usuario-btn" id="usuarioBtn" aria-haspopup="true" aria-expanded="false">
+                        <span class="user-avatar" id="userAvatar">A</span>
+                        <span class="dp-usuario-txt">
+                            <strong id="usernameDisplay">admin</strong>
+                            <small id="roleDisplay">Administrador</small>
+                        </span>
+                        <svg class="dp-ico chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+                    </button>
+
+                    <div class="dp-menu" id="usuarioMenu">
+                        <button type="button" id="logoutMenu">
+                            <svg class="dp-ico" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5M21 12H9"/></svg>
+                            Cerrar sesión
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="tp-container">
+
+            <!-- HERO / RESUMEN DEL ADMIN -->
+            <section class="tp-hero-card">
+                <div class="tp-hero-info">
+                    <div class="tp-avatar-lg" id="perfilAvatarGrande">A</div>
+                    <div class="tp-hero-text">
+                        <h2 id="perfilNombreHero">Administrador Principal</h2>
+                        <div class="tp-badges-row">
+                            <span class="tp-badge tp-badge-role">Administrador del Sistema</span>
+                            <span class="tp-badge tp-badge-specialty">Gestión Integral</span>
+                            <span class="tp-badge tp-badge-status">Sesión Activa</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tp-hero-metrics">
+                    <div class="tp-metric-box">
+                        <span>Reportes</span>
+                        <strong id="metricReportes">0</strong>
+                    </div>
+                    <div class="tp-metric-box">
+                        <span>Clientes</span>
+                        <strong id="metricClientes">0</strong>
+                    </div>
+                    <div class="tp-metric-box">
+                        <span>Técnicos</span>
+                        <strong id="metricTecnicos">9</strong>
+                    </div>
+                </div>
+            </section>
+
+            <!-- FORMULARIO DE EDICIÓN Y SEGURIDAD -->
+            <form id="perfilAdminForm">
+                <div class="tp-grid-2">
+
+                    <!-- Columna 1: Información de Identidad -->
+                    <div class="tp-card">
+                        <div class="tp-card-header">
+                            <div class="tp-card-header-icon">
+                                <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                            </div>
+                            <div>
+                                <h3>Información de Identidad</h3>
+                                <p>Datos del funcionario o responsable administrativo.</p>
+                            </div>
+                        </div>
+
+                        <div class="tp-form-group">
+                            <label for="adminNombre">Nombres y Apellidos</label>
+                            <input type="text" id="adminNombre" class="readonly" readonly value="Administrador AquaIca">
+                        </div>
+
+                        <div class="tp-form-group">
+                            <label for="adminDni">Documento Nacional de Identidad (DNI)</label>
+                            <input type="text" id="adminDni" class="readonly" readonly value="00000001">
+                        </div>
+
+                        <div class="tp-form-group">
+                            <label for="adminRol">Nivel de Privilegios</label>
+                            <input type="text" id="adminRol" class="readonly" readonly value="ADMIN — Control Total del Sistema">
+                        </div>
+
+                        <div class="tp-form-group">
+                            <label for="adminTelefono">Teléfono / Celular de Contacto</label>
+                            <input type="tel" id="adminTelefono" name="telefono" placeholder="Ej. 956 100 200" maxlength="15">
+                            <span class="tp-hint">Número de contacto para alertas de seguridad y coordinación.</span>
+                        </div>
+                    </div>
+
+                    <!-- Columna 2: Seguridad y Credenciales -->
+                    <div class="tp-card">
+                        <div class="tp-card-header">
+                            <div class="tp-card-header-icon">
+                                <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                            </div>
+                            <div>
+                                <h3>Seguridad y Contraseña</h3>
+                                <p>Actualiza la clave maestra de acceso administrativo.</p>
+                            </div>
+                        </div>
+
+                        <div class="tp-form-group">
+                            <label for="adminUsername">Usuario de Sistema</label>
+                            <input type="text" id="adminUsername" class="readonly" readonly value="admin">
+                        </div>
+
+                        <div class="tp-form-group">
+                            <label for="adminPassword">Nueva Contraseña</label>
+                            <input type="password" id="adminPassword" name="password" placeholder="Ingresa nueva contraseña (mínimo 6 caracteres)">
+                            <span class="tp-hint">Deja en blanco si deseas conservar tu contraseña actual.</span>
+                        </div>
+
+                        <div class="tp-form-group">
+                            <label for="adminConfirmarPassword">Confirmar Nueva Contraseña</label>
+                            <input type="password" id="adminConfirmarPassword" placeholder="Repite la nueva contraseña">
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Footer de Guardado -->
+                <div class="tp-footer-actions">
+                    <div>
+                        <div id="adminAlerta" class="tp-alerta" style="display:none;"></div>
+                    </div>
+                    <div>
+                        <button type="submit" class="tp-btn-guardar" id="btnGuardarAdmin">
+                            <svg class="dp-ico" viewBox="0 0 24 24" style="width:18px;height:18px;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                            Guardar cambios
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+        </div>
+
+    </main>
+
+    <script src="js/api.js"></script>
+    <script src="js/panel-comun.js"></script>
+    <script src="js/perfil-admin.js"></script>
+</body>
+
+</html>

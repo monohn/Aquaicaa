@@ -13,7 +13,17 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (rol === "CIUDADANO") {
-        window.location.href = "ciudadano.html";
+        window.location.href = "index.html";
+        return;
+    }
+
+    if (rol === "TECNICO") {
+        window.location.href = "asignaciones.html";
+        return;
+    }
+
+    if (!["ADMIN", "SOPORTE"].includes(rol)) {
+        window.location.href = "login.html";
         return;
     }
 
@@ -178,7 +188,7 @@ document.addEventListener("DOMContentLoaded", () => {
     $("campanaMenu").addEventListener("click", e => e.stopPropagation());
 
     let reportes = [];
-    let solicitudes = [];
+    let clientes = [];
 
     let mapa = null;
     let capasMapa = [];
@@ -232,26 +242,17 @@ document.addEventListener("DOMContentLoaded", () => {
         deltaPorcentual(reportes, "fechaCreacion", esEnProceso, true, "deltaProceso");
         deltaPorcentual(reportes, "fechaCreacion", r => normalizar(r.estado) === "RESUELTO", true, "deltaResueltos");
 
-        if (!puedeVerSolicitudes) {
-            $("kpiSolicitudes").hidden = true;
-            return;
+        if ($("totalClientes")) {
+            $("totalClientes").textContent = clientes.length;
+            const activos = clientes.filter(c => c.estado === "ACTIVO").length;
+            $("subClientes").textContent = `${activos} activos en padrón`;
         }
-
-        const pendientes = solicitudes.filter(s => normalizar(s.estado) === "PENDIENTE").length;
-
-        $("totalSolicitudes").textContent = solicitudes.length;
-        $("subSolicitudes").textContent = `${pendientes} pendientes de revisión`;
-        deltaPorcentual(solicitudes, "fechaSolicitud", () => true, true, "deltaSolicitudes");
     }
 
     function renderizarCampana() {
 
         const repPend = reportes.filter(r => normalizar(r.estado) === "PENDIENTE").length;
-        const solPend = puedeVerSolicitudes
-            ? solicitudes.filter(s => normalizar(s.estado) === "PENDIENTE").length
-            : 0;
-
-        const total = repPend + solPend;
+        const total = repPend;
         const insignia = $("campanaBadge");
 
         insignia.hidden = total === 0;
@@ -267,17 +268,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 </a>`);
         }
 
-        if (solPend) {
-            filas.push(`
-                <div class="dp-notif">
-                    <span class="dp-cab-ico c-morado">${svg('<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/>')}</span>
-                    <span><strong>${solPend} ${solPend === 1 ? "solicitud por revisar" : "solicitudes por revisar"}</strong><small>Nuevas solicitudes de conexión</small></span>
-                </div>`);
-        }
-
         $("campanaLista").innerHTML = filas.length
             ? filas.join("")
-            : '<div class="dp-notif-ok">Estás al día. No hay pendientes.</div>';
+            : '<div class="dp-notif-ok">Estás al día. No hay reportes pendientes.</div>';
     }
 
 
@@ -558,53 +551,19 @@ document.addEventListener("DOMContentLoaded", () => {
         vincularFilas(contenedor);
     }
 
-    function renderizarSolicitudesRecientes() {
-
-        const tarjeta = $("cardSolicitudes");
-
-        if (!puedeVerSolicitudes) {
-            tarjeta.hidden = true;
-            $("filaTablas").style.gridTemplateColumns = "repeat(2, minmax(0, 1fr))";
-            return;
-        }
-
-        const contenedor = $("tablaSolicitudes");
-
-        const recientes = [...solicitudes]
-            .sort((a, b) => new Date(b.fechaSolicitud) - new Date(a.fechaSolicitud))
-            .slice(0, 5);
-
-        if (!recientes.length) {
-            contenedor.innerHTML = '<div class="dp-vacio-mini">Aún no hay solicitudes.</div>';
-            return;
-        }
-
-        contenedor.innerHTML = recientes.map(s => `
-            <div class="dp-fila-t t-sol">
-                <span class="id">#S${String(s.id).padStart(3, "0")}</span>
-                <span class="dp-celda">
-                    <span class="dp-mini-ico c-azul">${svg('<path d="M12 2.7s6 6.1 6 10.3a6 6 0 0 1-12 0c0-4.2 6-10.3 6-10.3z"/>')}</span>
-                    <span>Nueva conexión</span>
-                </span>
-                ${pillEstado(ESTADOS_SOLICITUD, s.estado)}
-            </div>`).join("");
-    }
-
     async function iniciar() {
 
         iniciarMapa();
 
-        const [respuestaReportes, respuestaSolicitudes] = await Promise.all([
+        const [respuestaReportes, respuestaClientes] = await Promise.all([
             apiFetch("/api/reportes").catch(error => {
                 console.error("Error al cargar los reportes:", error);
                 return null;
             }),
-            puedeVerSolicitudes
-                ? apiFetch("/api/solicitudes-servicio").catch(error => {
-                    console.error("Error al cargar las solicitudes:", error);
-                    return [];
-                })
-                : Promise.resolve([])
+            apiFetch("/api/clientes").catch(error => {
+                console.error("Error al cargar clientes:", error);
+                return [];
+            })
         ]);
 
         if (!Array.isArray(respuestaReportes)) {
@@ -612,12 +571,11 @@ document.addEventListener("DOMContentLoaded", () => {
             $("tablaReportes").innerHTML = aviso;
             $("tablaAsignaciones").innerHTML = aviso;
             $("dona").innerHTML = aviso;
-            renderizarSolicitudesRecientes();
             return;
         }
 
         reportes = respuestaReportes;
-        solicitudes = Array.isArray(respuestaSolicitudes) ? respuestaSolicitudes : [];
+        clientes = Array.isArray(respuestaClientes) ? respuestaClientes : [];
 
         renderizarKpis();
         renderizarCampana();
@@ -625,7 +583,6 @@ document.addEventListener("DOMContentLoaded", () => {
         dibujarMapa();
         renderizarDona();
         renderizarReportesRecientes();
-        renderizarSolicitudesRecientes();
         renderizarAsignacionesActivas();
     }
 

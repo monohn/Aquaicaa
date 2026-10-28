@@ -50,10 +50,13 @@ public class EvidenciaService {
 
         Files.createDirectories(carpetaReporte);
 
-        String nombreArchivo = archivo.getOriginalFilename();
-
-        if (nombreArchivo == null || nombreArchivo.isBlank()) {
-            throw new RuntimeException("El archivo no tiene nombre");
+        String original = archivo.getOriginalFilename();
+        if (original == null || original.isBlank()) {
+            original = "evidencia_" + System.currentTimeMillis() + ".jpg";
+        }
+        String nombreArchivo = Paths.get(original).getFileName().toString().replaceAll("[^a-zA-Z0-9._-]", "_");
+        if (nombreArchivo.isBlank()) {
+            nombreArchivo = "evidencia_" + System.currentTimeMillis() + ".jpg";
         }
 
         Path rutaArchivo =
@@ -69,7 +72,7 @@ public class EvidenciaService {
         evidencia.setReporte(reporte);
         evidencia.setNombreArchivo(nombreArchivo);
         evidencia.setRutaArchivo(rutaArchivo.toString());
-        evidencia.setTipoArchivo(archivo.getContentType());
+        evidencia.setTipoArchivo(archivo.getContentType() != null ? archivo.getContentType() : "image/jpeg");
         evidencia.setOrigen("CIUDADANO");
         evidencia.setFechaCreacion(LocalDateTime.now());
 

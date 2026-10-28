@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (rol === "TECNICO") {
-        window.location.href = "dashboard.html";
+        window.location.href = "asignaciones.html";
         return;
     }
 

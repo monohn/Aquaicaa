@@ -57,7 +57,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 
-    if (!personalId) {
+    const esAdmin = rol === "ADMIN" || rol === "SOPORTE";
+
+    if (!esAdmin && !personalId) {
 
         container.innerHTML = `
 
@@ -82,14 +84,36 @@ document.addEventListener("DOMContentLoaded", () => {
 
     }
 
+    if (esAdmin) {
+        const tituloSec = document.querySelector(".dp-titulo");
+        if (tituloSec) {
+            tituloSec.innerHTML = `<span>Supervisión Operativa</span><h1>Asignaciones Activas</h1>`;
+        }
+        const bannerTxt = document.querySelector(".as-banner-texto");
+        if (bannerTxt) {
+            bannerTxt.innerHTML = `<h2>Asignaciones de Cuadrillas</h2><p>Monitorea los reportes asignados a los técnicos de campo y su avance en tiempo real.</p>`;
+        }
+    }
+
     async function cargarAsignaciones() {
 
         try {
 
-            const asignaciones =
-                await apiFetch(
-                    `/api/personal/${personalId}/asignaciones`
-                );
+            let asignaciones = [];
+
+            if (esAdmin) {
+                try {
+                    asignaciones = await apiFetch("/api/asignaciones");
+                } catch (errApi) {
+                    const reps = await apiFetch("/api/reportes").catch(() => []);
+                    const res = await Promise.all((reps || []).map(r =>
+                        apiFetch(`/api/reportes/${r.reporteId}/asignaciones`).catch(() => [])
+                    ));
+                    asignaciones = res.flat();
+                }
+            } else {
+                asignaciones = await apiFetch(`/api/personal/${personalId}/asignaciones`);
+            }
 
 
 

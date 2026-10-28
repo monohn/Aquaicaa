@@ -228,4 +228,12 @@ public class AsignacionService {
         return asignacionRepository
                 .obtenerAsignacionesPorPersonal(personalId);
     }
+
+    public List<AsignacionResponseDTO> obtenerTodasLasAsignaciones() {
+        return asignacionRepository.obtenerTodasLasAsignaciones();
+    }
+
+    public List<AsignacionResponseDTO> obtenerAsignacionesActivas() {
+        return asignacionRepository.obtenerAsignacionesActivas();
+    }
 }

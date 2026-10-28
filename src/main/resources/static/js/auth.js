@@ -56,18 +56,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
             console.log("Inicio de sesión exitoso:", data.rol);
 
-            // Redirección según el rol
+            // Redirección estricta según el rol
             if (data.rol === "CIUDADANO") {
-                if (data.clienteId == null) {
-                    throw new Error(
-                        "La cuenta ciudadana no tiene un cliente asociado."
-                    );
-                }
-
-                window.location.href = "ciudadano.html";
-            } else if (
-                ["ADMIN", "SOPORTE", "TECNICO"].includes(data.rol)
-            ) {
+                // El ciudadano va directo a la vista principal tipo Facebook (Feed Comunitario)
+                window.location.href = "index.html";
+            } else if (data.rol === "TECNICO") {
+                // El técnico va directo a su lista operativa de asignaciones de campo
+                window.location.href = "asignaciones.html";
+            } else if (["ADMIN", "SOPORTE"].includes(data.rol)) {
+                // Solo administración y soporte ven el dashboard de métricas y KPIs
                 window.location.href = "dashboard.html";
             } else {
                 localStorage.removeItem("token");

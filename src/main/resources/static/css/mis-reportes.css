@@ -98,6 +98,22 @@ body {
 }
 
 
+.mr-logo-img {
+    width: 42px;
+    height: 42px;
+    object-fit: contain;
+    border-radius: 12px;
+    background: #ffffff;
+    padding: 3px;
+    border: 1px solid rgba(8, 126, 164, 0.18);
+    box-shadow: 0 4px 14px rgba(8, 126, 164, 0.16);
+    transition: transform 0.2s ease;
+}
+
+.mr-brand:hover .mr-logo-img {
+    transform: scale(1.05);
+}
+
 .mr-logo {
 
     width: 43px;
@@ -127,6 +143,13 @@ body {
     box-shadow:
         0 7px 16px rgba(8, 126, 164, 0.20);
 
+}
+
+.mr-logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border-radius: 11px;
 }
 
 

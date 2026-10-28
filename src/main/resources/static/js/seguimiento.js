@@ -1,5 +1,15 @@
 document.addEventListener('DOMContentLoaded', () => {
 
+    const sesionRol = localStorage.getItem("rol");
+    if (sesionRol === "ADMIN" || sesionRol === "SOPORTE") {
+        window.location.href = "dashboard.html";
+        return;
+    }
+    if (sesionRol === "TECNICO") {
+        window.location.href = "asignaciones.html";
+        return;
+    }
+
     const params = new URLSearchParams(window.location.search);
     const id = params.get('id');
     const codigo = params.get('codigo');

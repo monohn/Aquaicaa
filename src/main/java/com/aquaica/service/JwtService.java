@@ -17,8 +17,9 @@ public class JwtService {
     private static final String SECRET_KEY =
             "AquaIca-Secret-Key-Para-JWT-2026-Seguridad-123456789";
 
+    // Duración de sesión de 7 días para evitar expiraciones abruptas durante el uso
     private static final long EXPIRATION_TIME =
-            1000 * 60 * 60;
+            1000L * 60 * 60 * 24 * 7;
 
     private final SecretKey secretKey;
 

@@ -7,7 +7,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     "use strict";
 
-    const sesion = Panel.iniciar(["ADMIN", "SOPORTE", "TECNICO"]);
+    const rolUsuario = localStorage.getItem("rol");
+    if (rolUsuario === "TECNICO") {
+        window.location.replace("asignaciones.html");
+        return;
+    }
+
+    const sesion = Panel.iniciar(["ADMIN", "SOPORTE"]);
 
     if (!sesion) {
         return;

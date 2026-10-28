@@ -109,6 +109,12 @@ document.addEventListener("DOMContentLoaded", () => {
     );
 
 
+    const backBtn = document.querySelector(".back-button");
+    if (backBtn && rol === "TECNICO") {
+        backBtn.href = "asignaciones.html";
+        backBtn.textContent = "← Volver a mis asignaciones";
+    }
+
     if (!id) {
 
         alert(
@@ -116,7 +122,7 @@ document.addEventListener("DOMContentLoaded", () => {
         );
 
         window.location.href =
-            "reportes.html";
+            rol === "TECNICO" ? "asignaciones.html" : "reportes.html";
 
         return;
     }
@@ -130,6 +136,11 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById(
             "asignarButton"
         );
+
+    // Ocultar opción de asignar técnico en perfiles de técnico
+    if (asignarButton && rol === "TECNICO") {
+        asignarButton.style.display = "none";
+    }
 
     const reabrirButton =
     document.getElementById(
@@ -1202,7 +1213,7 @@ function formatearFecha(fecha) {
     asignarButton.addEventListener(
         "click",
         async () => {
-
+            if (rol === "TECNICO") return;
             abrirModal();
 
             await cargarTecnicos();
@@ -1211,7 +1222,7 @@ function formatearFecha(fecha) {
     );
 
     function abrirModal() {
-
+        if (rol === "TECNICO") return;
         asignacionModal.classList.add(
             "show"
         );
@@ -1276,7 +1287,7 @@ function formatearFecha(fecha) {
     const tecnicoAyuda = document.getElementById("tecnicoAyuda");
 
     const AYUDA_BASE =
-        "Solo se muestran técnicos de la especialidad del reporte.";
+        "Se muestran técnicos de la especialidad y técnicos de atención general.";
 
     tecnicoTrigger.addEventListener("click", () => {
         tecnicoDropdown.classList.toggle("abierto");
@@ -1346,14 +1357,14 @@ function formatearFecha(fecha) {
             );
 
             tecnicoAyuda.textContent =
-                `Mostrando técnicos de ${tecnicos[0].especialidadEtiqueta}.`;
+                "Técnicos especialistas y de atención general disponibles.";
             tecnicoTriggerTexto.textContent = "Selecciona un técnico";
 
             tecnicos.forEach(tecnico => {
 
                 const option = document.createElement("option");
                 option.value = tecnico.id;
-                option.textContent = tecnico.nombre;
+                option.textContent = `${tecnico.nombre} (${tecnico.especialidadEtiqueta})`;
                 tecnicoSelect.appendChild(option);
 
                 const item = document.createElement("button");

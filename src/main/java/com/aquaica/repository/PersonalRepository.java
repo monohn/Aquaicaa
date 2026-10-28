@@ -71,13 +71,31 @@ public interface PersonalRepository extends JpaRepository<Personal, Long> {
     Optional<PersonalResponseDTO> obtenerPersonalPorId(@Param("id") Long id);
 
     @Query("""
+        SELECT new com.aquaica.dto.PersonalResponseDTO(
+            p.id,
+            p.nombre,
+            p.dni,
+            p.telefono,
+            p.especialidad,
+            p.estado,
+            p.fechaRegistro,
+            u.username,
+            u.rol
+        )
+        FROM Personal p
+        JOIN Usuario u ON u.personal.id = p.id
+        WHERE u.username = :username
+        """)
+    Optional<PersonalResponseDTO> obtenerPersonalPorUsername(@Param("username") String username);
+
+    @Query("""
         SELECT p
         FROM Personal p
         JOIN Usuario u ON u.personal.id = p.id
-        WHERE p.especialidad = :especialidad
+        WHERE (p.especialidad = :especialidad OR p.especialidad = 'GENERAL')
           AND p.estado = 'ACTIVO'
           AND u.rol = 'TECNICO'
-        ORDER BY p.nombre ASC
+        ORDER BY CASE WHEN p.especialidad = :especialidad THEN 0 ELSE 1 END, p.nombre ASC
         """)
     List<Personal> obtenerTecnicosActivosPorEspecialidad(
             @Param("especialidad") String especialidad);

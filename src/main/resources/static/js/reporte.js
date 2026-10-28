@@ -1,5 +1,15 @@
 document.addEventListener("DOMContentLoaded", () => {
 
+    const sesionRol = localStorage.getItem("rol");
+    if (sesionRol === "ADMIN" || sesionRol === "SOPORTE") {
+        window.location.href = "dashboard.html";
+        return;
+    }
+    if (sesionRol === "TECNICO") {
+        window.location.href = "asignaciones.html";
+        return;
+    }
+
     const formulario =
         document.getElementById("reporteForm");
 
@@ -30,140 +40,64 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let suministroEncontrado = false;
 
-    buscarButton.addEventListener("click", async () => {
-
-        const codigo =
-            codigoInput.value.trim();
-
-
-        if (!codigo) {
-
-            mostrarMensaje(
-                "Ingresa un código de suministro.",
-                "error"
-            );
-
+    async function validarSuministroRapido(codigo) {
+        if (!/^\d{8}$/.test(codigo)) {
+            suministroEncontrado = false;
+            datosSuministro.style.display = "none";
+            mostrarMensaje("El número de suministro debe contener exactamente 8 dígitos.", "error");
             return;
         }
 
+        // Válido de inmediato con los 8 dígitos
+        suministroEncontrado = true;
+        titularSuministro.textContent = localStorage.getItem("username") || "Titular de Suministro";
+        dniSuministro.textContent = codigo;
+        direccionSuministro.textContent = "Ica, Perú";
+        datosSuministro.style.display = "block";
+        mostrarMensaje("Número de suministro aceptado (8 dígitos).", "success");
 
-        buscarButton.disabled = true;
-
-        buscarButton.textContent =
-            "Buscando...";
-
-
+        // Consulta en segundo plano para enriquecer datos si ya existe registrado
         try {
-
-            const respuesta = await fetch(
-                `/api/suministros/${encodeURIComponent(codigo)}`
-            );
-
-
-            if (respuesta.status === 404) {
-
-                suministroEncontrado = false;
-
-                datosSuministro.style.display =
-                    "none";
-
-                mostrarMensaje(
-                    "No encontramos un suministro asociado a ese código.",
-                    "error"
-                );
-
-                return;
+            const respuesta = await fetch(`/api/suministros/${encodeURIComponent(codigo)}`);
+            if (respuesta.ok) {
+                const s = await respuesta.json();
+                if (s.nombreTitular || s.nombreCliente) {
+                    titularSuministro.textContent = s.nombreTitular || s.nombreCliente;
+                }
+                if (s.dni || s.dniCliente) {
+                    dniSuministro.textContent = s.dni || s.dniCliente;
+                }
+                if (s.direccion) {
+                    direccionSuministro.textContent = s.direccion;
+                }
             }
-
-
-            if (!respuesta.ok) {
-
-                throw new Error(
-                    "Error al consultar el suministro"
-                );
-            }
-
-
-            const suministro =
-                await respuesta.json();
-
-
-            console.log(
-                "Suministro encontrado:",
-                suministro
-            );
-
-
-            titularSuministro.textContent =
-                suministro.nombreTitular ?? "-";
-
-            dniSuministro.textContent =
-                suministro.dni ?? "-";
-
-            direccionSuministro.textContent =
-                suministro.direccion ?? "-";
-
-
-            datosSuministro.style.display =
-                "block";
-
-
-            suministroEncontrado = true;
-
-
-            mostrarMensaje(
-                "Suministro validado correctamente.",
-                "success"
-            );
-
-
-        } catch (error) {
-
-            console.error(
-                "Error al buscar suministro:",
-                error
-            );
-
-
-            suministroEncontrado = false;
-
-            datosSuministro.style.display =
-                "none";
-
-
-            mostrarMensaje(
-                "No se pudo consultar el suministro.",
-                "error"
-            );
-
-
-        } finally {
-
-            buscarButton.disabled = false;
-
-            buscarButton.textContent =
-                "Buscar";
+        } catch (e) {
+            console.log("Consulta complementaria en segundo plano:", e);
         }
+    }
 
+    buscarButton.addEventListener("click", async () => {
+        const codigo = codigoInput.value.trim();
+        validarSuministroRapido(codigo);
     });
-
 
     codigoInput.addEventListener("input", () => {
+        // Permitir solo números y máximo 8 dígitos
+        codigoInput.value = codigoInput.value.replace(/\D/g, '').slice(0, 8);
+        const val = codigoInput.value;
 
-        suministroEncontrado = false;
-
-        datosSuministro.style.display =
-            "none";
-
-        limpiarMensaje();
-
+        if (val.length === 8) {
+            validarSuministroRapido(val);
+        } else {
+            suministroEncontrado = false;
+            datosSuministro.style.display = "none";
+            limpiarMensaje();
+        }
     });
-
 
     formulario.addEventListener("submit", async (event) => {
 
         event.preventDefault();
-
 
         const codigoSuministro =
             codigoInput.value.trim();
@@ -175,7 +109,6 @@ document.addEventListener("DOMContentLoaded", () => {
             document.getElementById("descripcion")
                 .value
                 .trim();
-
 
         const archivo =
             evidenciaInput.files[0];
@@ -192,50 +125,46 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-
-        if (!suministroEncontrado) {
-
+        // Validación de 8 dígitos
+        if (!/^\d{8}$/.test(codigoSuministro)) {
             mostrarMensaje(
-                "Primero debes validar tu código de suministro.",
+                "El número de suministro debe tener exactamente 8 dígitos.",
                 "error"
             );
-
             return;
         }
+        suministroEncontrado = true;
 
         if (archivo) {
-
             const tiposPermitidos = [
                 "image/jpeg",
+                "image/jpg",
                 "image/png",
-                "image/webp"
+                "image/webp",
+                "image/heic",
+                "image/heif"
             ];
+            const extensionesPermitidas = [".jpg", ".jpeg", ".png", ".webp", ".heic", ".heif"];
+            const nombre = (archivo.name || "").toLowerCase();
+            const esImagen = tiposPermitidos.includes((archivo.type || "").toLowerCase()) ||
+                             extensionesPermitidas.some(ext => nombre.endsWith(ext)) ||
+                             (archivo.type && archivo.type.startsWith("image/"));
 
-
-            if (!tiposPermitidos.includes(
-                archivo.type
-            )) {
-
+            if (!esImagen) {
                 mostrarMensaje(
-                    "La evidencia debe ser una imagen JPG, PNG o WEBP.",
+                    "La evidencia debe ser una imagen (JPG, PNG o WEBP).",
                     "error"
                 );
-
                 return;
             }
 
-
-            const tamañoMaximo =
-                5 * 1024 * 1024;
-
+            const tamañoMaximo = 20 * 1024 * 1024; // 20 MB
 
             if (archivo.size > tamañoMaximo) {
-
                 mostrarMensaje(
-                    "La imagen no puede superar los 5 MB.",
+                    "La imagen no puede superar los 20 MB.",
                     "error"
                 );
-
                 return;
             }
         }
@@ -324,63 +253,58 @@ document.addEventListener("DOMContentLoaded", () => {
             );
 
             if (archivo) {
+                const evidenciaData = new FormData();
+                evidenciaData.append("archivo", archivo);
 
-                const evidenciaData =
-                    new FormData();
+                const headers = {};
+                const token = localStorage.getItem("token");
+                if (token) {
+                    headers["Authorization"] = `Bearer ${token}`;
+                }
 
-
-                evidenciaData.append(
-                    "archivo",
-                    archivo
+                const respuestaEvidencia = await fetch(
+                    `/api/reportes/${reporte.id}/evidencias`,
+                    {
+                        method: "POST",
+                        headers: headers,
+                        body: evidenciaData
+                    }
                 );
 
-
-                const respuestaEvidencia =
-                    await fetch(
-                        `/api/reportes/${reporte.id}/evidencias`,
-                        {
-                            method: "POST",
-
-                            body: evidenciaData
-                        }
-                    );
-
-
                 if (!respuestaEvidencia.ok) {
-
-                    console.error(
-                        "El reporte se creó, pero la evidencia no pudo guardarse."
-                    );
-
-
+                    let detalleError = "";
+                    try {
+                        const errJson = await respuestaEvidencia.json();
+                        detalleError = errJson.message || "";
+                    } catch (e) {
+                        detalleError = await respuestaEvidencia.text().catch(() => "");
+                    }
+                    console.error("Error al guardar la evidencia:", respuestaEvidencia.status, detalleError);
                     mostrarMensaje(
-                        `Reporte #${reporte.id} registrado, pero no se pudo guardar la evidencia.`,
+                        `Reporte #${reporte.id} registrado, pero la evidencia no pudo guardarse: ${detalleError || 'Error de subida'}`,
                         "error"
                     );
-
                     return;
                 }
 
-
-                console.log(
-                    "Evidencia guardada correctamente."
-                );
+                console.log("Evidencia guardada correctamente.");
             }
 
             mostrarMensaje(
-                `Reporte registrado correctamente. Código: #${reporte.id}`,
+                `Reporte registrado correctamente. Código: #${reporte.id}. Redirigiendo al muro de incidencias...`,
                 "success"
             );
 
-
             formulario.reset();
-
 
             datosSuministro.style.display =
                 "none";
 
-
             suministroEncontrado = false;
+
+            setTimeout(() => {
+                window.location.href = "index.html";
+            }, 1800);
 
 
         } catch (error) {
@@ -429,13 +353,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
 });
 
-// PREFILL_CODIGO: si llegas desde el portal (reporte.html?codigo=...), busca el suministro de una vez
+// PREFILL_CODIGO: si llegas desde el portal (reporte.html?codigo=...) o tienes suministro guardado en tu perfil
 document.addEventListener("DOMContentLoaded", () => {
-    const codigo = new URLSearchParams(window.location.search).get("codigo");
+    const urlCodigo = new URLSearchParams(window.location.search).get("codigo");
+    const perfilCodigo = localStorage.getItem("perfil_suministro");
+    const codigoFinal = urlCodigo || perfilCodigo;
+
     const input = document.getElementById("codigoSuministro");
     const boton = document.getElementById("buscarSuministro");
-    if (codigo && input && boton) {
-        input.value = codigo;
+    if (codigoFinal && input && boton && !input.value) {
+        input.value = codigoFinal;
         boton.click();
     }
 });

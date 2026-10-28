@@ -1,9 +1,24 @@
 let codigoConsultadoActual = "";
 document.addEventListener("DOMContentLoaded", () => {
 
+    const sesionRol = localStorage.getItem("rol");
+    if (sesionRol === "ADMIN" || sesionRol === "SOPORTE") {
+        window.location.href = "dashboard.html";
+        return;
+    }
+    if (sesionRol === "TECNICO") {
+        window.location.href = "asignaciones.html";
+        return;
+    }
+
     const inputCodigo = document.getElementById("codigoSuministro");
     const botonBuscar = document.getElementById("buscarReportesButton");
 
+    if (inputCodigo) {
+        inputCodigo.addEventListener("input", () => {
+            inputCodigo.value = inputCodigo.value.replace(/\D/g, '').slice(0, 8);
+        });
+    }
 
     botonBuscar.addEventListener("click", buscarReportes);
 
@@ -29,14 +44,20 @@ async function buscarReportes() {
     codigoConsultadoActual = codigo;
 
     if (!codigo) {
-
         mostrarMensaje(
-            "Ingresa tu código de suministro.",
+            "Ingresa los 8 dígitos de tu número de suministro.",
             "error"
         );
-
         inputCodigo.focus();
+        return;
+    }
 
+    if (!/^\d{8}$/.test(codigo)) {
+        mostrarMensaje(
+            "El número de suministro debe tener exactamente 8 dígitos numéricos.",
+            "error"
+        );
+        inputCodigo.focus();
         return;
     }
 

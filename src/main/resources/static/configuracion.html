@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AquaIca | Configuraciones del Sistema</title>
+    <link rel="icon" type="image/png" href="images/favicon-64.png">
+    <link rel="apple-touch-icon" href="images/favicon-64.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/sidebar-pro.css">
+    <link rel="stylesheet" href="css/dashboard-pro.css">
+    <link rel="stylesheet" href="css/perfil-tecnico.css">
+</head>
+
+<body class="dashboard-body">
+
+    <div class="dashboard-bg-decor" aria-hidden="true">
+        <span class="deco-bubble db1"></span>
+        <span class="deco-bubble db2"></span>
+        <span class="deco-bubble db3"></span>
+        <span class="deco-bubble db4"></span>
+    </div>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar sidebar-pro">
+        <div class="sidebar-brand">
+            <div class="brand-logo"><img src="images/aquaica-logo.png" alt="AquaIca"></div>
+            <div>
+                <h2>AquaIca</h2>
+                <span>Sistema de Gestión</span>
+            </div>
+        </div>
+
+        <nav class="sidebar-menu" id="sidebarMenu"></nav>
+
+        <div class="sidebar-bottom">
+            <button id="logoutButton" class="logout-button">Cerrar sesión</button>
+        </div>
+    </aside>
+
+    <script src="js/menu.js"></script>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="dashboard-main dp-main">
+
+        <!-- CABECERA -->
+        <header class="dp-top">
+            <div class="dp-titulo">
+                <span>Administración del Sistema</span>
+                <h1>Configuraciones</h1>
+            </div>
+
+            <div class="dp-acciones">
+                <div class="dp-usuario">
+                    <button type="button" class="dp-usuario-btn" id="usuarioBtn" aria-haspopup="true" aria-expanded="false">
+                        <span class="user-avatar" id="userAvatar">U</span>
+                        <span class="dp-usuario-txt">
+                            <strong id="usernameDisplay">Usuario</strong>
+                            <small id="roleDisplay">Administrador</small>
+                        </span>
+                        <svg class="dp-ico chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+                    </button>
+
+                    <div class="dp-menu" id="usuarioMenu">
+                        <button type="button" id="logoutMenu">
+                            <svg class="dp-ico" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5M21 12H9"/></svg>
+                            Cerrar sesión
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="tp-container">
+
+            <!-- BANNER -->
+            <section class="tp-hero-card" style="padding: 24px 28px;">
+                <div class="tp-hero-info">
+                    <div class="tp-avatar-lg" style="background: linear-gradient(135deg, #0b2a4a, #0a74c9);">
+                        <svg class="dp-ico" viewBox="0 0 24 24" style="width:36px;height:36px;"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                    </div>
+                    <div class="tp-hero-text">
+                        <h2>Parámetros Operativos del Sistema</h2>
+                        <p style="margin:2px 0 0;font-size:13.5px;color:#64748b;">Administra tiempos de respuesta (SLAs), alertas automáticas, umbrales de red e información de contacto municipal.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- FORMULARIO DE AJUSTES -->
+            <form id="configForm">
+                <div class="tp-grid-2">
+
+                    <!-- Columna 1: SLAs y Tiempos de Atención -->
+                    <div class="tp-card">
+                        <div class="tp-card-header">
+                            <div class="tp-card-header-icon">
+                                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                            </div>
+                            <div>
+                                <h3>Tiempos de Atención (SLAs)</h3>
+                                <p>Plazo máximo estimado para la atención y solución de incidencias.</p>
+                            </div>
+                        </div>
+
+                        <div class="tp-form-group">
+                            <label for="slaAlta">SLA Prioridad Alta (Horas)</label>
+                            <input type="number" id="slaAlta" min="1" max="72" value="4" required>
+                            <span class="tp-hint">Aplica a fugas matrices y cortes generales imprevistos.</span>
+                        </div>
+
+                        <div class="tp-form-group">
+                            <label for="slaMedia">SLA Prioridad Media (Horas)</label>
+                            <input type="number" id="slaMedia" min="1" max="168" value="12" required>
+                            <span class="tp-hint">Aplica a baja presión persistente y fugas menores en vereda.</span>
+                        </div>
+
+                        <div class="tp-form-group">
+                            <label for="slaBaja">SLA Prioridad Baja (Horas)</label>
+                            <input type="number" id="slaBaja" min="1" max="336" value="24" required>
+                            <span class="tp-hint">Aplica a inspecciones y reclamos de facturación.</span>
+                        </div>
+                    </div>
+
+                    <!-- Columna 2: Red y Parámetros Hidráulicos -->
+                    <div class="tp-card">
+                        <div class="tp-card-header">
+                            <div class="tp-card-header-icon">
+                                <svg viewBox="0 0 24 24"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
+                            </div>
+                            <div>
+                                <h3>Red y Parámetros Hidráulicos</h3>
+                                <p>Valores de referencia para monitoreo y alertas en el mapa.</p>
+                            </div>
+                        </div>
+
+                        <div class="tp-form-group">
+                            <label for="presionOptima">Presión Óptima de Red (bar)</label>
+                            <input type="number" step="0.1" id="presionOptima" value="2.5" required>
+                            <span class="tp-hint">Presión objetivo en matrices de distribución primaria.</span>
+                        </div>
+
+                        <div class="tp-form-group">
+                            <label for="umbralAlerta">Umbral Mínimo para Alerta (bar)</label>
+                            <input type="number" step="0.1" id="umbralAlerta" value="0.8" required>
+                            <span class="tp-hint">Activa el semáforo amarillo/rojo en el mapa de incidencias.</span>
+                        </div>
+
+                        <div class="tp-form-group">
+                            <label for="radioAlertaMetros">Radio de Afectación Territorial (Metros)</label>
+                            <input type="number" id="radioAlertaMetros" value="500" required>
+                            <span class="tp-hint">Área circular dibujada en el mapa en vivo por rotura matriz.</span>
+                        </div>
+                    </div>
+
+                    <!-- Columna 3: Información Institucional -->
+                    <div class="tp-card">
+                        <div class="tp-card-header">
+                            <div class="tp-card-header-icon">
+                                <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 8h10M7 12h10M7 16h6"/></svg>
+                            </div>
+                            <div>
+                                <h3>Información Institucional</h3>
+                                <p>Datos de contacto visibles en el portal ciudadano y comunicados.</p>
+                            </div>
+                        </div>
+
+                        <div class="tp-form-group">
+                            <label for="entidadNombre">Entidad Emisora / Empresa Prestadora</label>
+                            <input type="text" id="entidadNombre" value="EMAPICA S.A. / AquaIca" required>
+                        </div>
+
+                        <div class="tp-form-group">
+                            <label for="centralEmergencias">Central Telefónica de Emergencias</label>
+                            <input type="text" id="centralEmergencias" value="(056) 234567 / 956 100 200" required>
+                        </div>
+
+                        <div class="tp-form-group">
+                            <label for="correoSoporte">Correo Institucional de Atención</label>
+                            <input type="email" id="correoSoporte" value="atencion@aquaica.gob.pe" required>
+                        </div>
+                    </div>
+
+                    <!-- Columna 4: Estado del Sistema -->
+                    <div class="tp-card">
+                        <div class="tp-card-header">
+                            <div class="tp-card-header-icon">
+                                <svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+                            </div>
+                            <div>
+                                <h3>Estado de la Plataforma</h3>
+                                <p>Detalles técnicos del entorno de servidores y conectividad.</p>
+                            </div>
+                        </div>
+
+                        <div class="tp-form-group">
+                            <label>Versión del Sistema</label>
+                            <input type="text" class="readonly" value="AquaIca v4.1.0 — Release Oficial" readonly>
+                        </div>
+
+                        <div class="tp-form-group">
+                            <label>Base de Datos PostgreSQL</label>
+                            <input type="text" class="readonly" value="PostgreSQL 17.11 (Conectado / Puerto 5432)" readonly>
+                        </div>
+
+                        <div class="tp-form-group">
+                            <label>Servidor Web y Seguridad</label>
+                            <input type="text" class="readonly" value="Apache Tomcat / Spring Security JWT (Activo)" readonly>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Footer de Guardado -->
+                <div class="tp-footer-actions">
+                    <div>
+                        <div id="configAlerta" class="tp-alerta" style="display:none;"></div>
+                    </div>
+                    <div>
+                        <button type="submit" class="tp-btn-guardar" id="btnGuardarConfig">
+                            <svg class="dp-ico" viewBox="0 0 24 24" style="width:18px;height:18px;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                            Guardar configuración
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+        </div>
+
+    </main>
+
+    <script src="js/api.js"></script>
+    <script src="js/panel-comun.js"></script>
+    <script src="js/configuracion.js"></script>
+</body>
+
+</html>

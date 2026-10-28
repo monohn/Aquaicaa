@@ -12,6 +12,15 @@ import com.aquaica.entity.Reporte;
 
 public interface ReporteRepository extends JpaRepository<Reporte, Long> {
 
+    List<Reporte> findAllByOrderByFechaCreacionDesc();
+
+    @Query("""
+        SELECT r FROM Reporte r
+        LEFT JOIN FETCH r.suministro s
+        ORDER BY r.fechaCreacion DESC
+        """)
+    List<Reporte> findAllConSuministro();
+
     @Query("""
         SELECT new com.aquaica.dto.ReporteResponseDTO(
             r.id,
@@ -28,7 +37,8 @@ public interface ReporteRepository extends JpaRepository<Reporte, Long> {
             r.fechaCreacion
         )
         FROM Reporte r
-        JOIN r.suministro s
+        LEFT JOIN r.suministro s
+        ORDER BY r.fechaCreacion DESC
         """)
     List<ReporteResponseDTO> obtenerTodosLosReportes();
 
@@ -49,7 +59,7 @@ public interface ReporteRepository extends JpaRepository<Reporte, Long> {
             r.fechaCreacion
         )
         FROM Reporte r
-        JOIN r.suministro s
+        LEFT JOIN r.suministro s
         WHERE r.id = :id
         """)
     Optional<ReporteResponseDTO> obtenerReportePorId(Long id);

@@ -16,6 +16,7 @@ public class ReporteResponseDTO {
     private String estado;
     private String prioridad;
     private LocalDateTime fechaCreacion;
+    private Integer afectadosCount = 1;
 
     public ReporteResponseDTO(
             Long reporteId,
@@ -31,6 +32,25 @@ public class ReporteResponseDTO {
             String prioridad,
             LocalDateTime fechaCreacion) {
 
+        this(reporteId, codigoSuministro, nombreTitular, dni, direccion, latitud, longitud,
+             tipoProblema, descripcion, estado, prioridad, fechaCreacion, 1);
+    }
+
+    public ReporteResponseDTO(
+            Long reporteId,
+            String codigoSuministro,
+            String nombreTitular,
+            String dni,
+            String direccion,
+            Double latitud,
+            Double longitud,
+            String tipoProblema,
+            String descripcion,
+            String estado,
+            String prioridad,
+            LocalDateTime fechaCreacion,
+            Integer afectadosCount) {
+
         this.reporteId = reporteId;
         this.codigoSuministro = codigoSuministro;
         this.nombreTitular = nombreTitular;
@@ -43,6 +63,7 @@ public class ReporteResponseDTO {
         this.estado = estado;
         this.prioridad = prioridad;
         this.fechaCreacion = fechaCreacion;
+        this.afectadosCount = afectadosCount != null ? afectadosCount : 1;
     }
 
     public Long getReporteId() {
@@ -91,5 +112,13 @@ public class ReporteResponseDTO {
 
     public LocalDateTime getFechaCreacion() {
         return fechaCreacion;
+    }
+
+    public Integer getAfectadosCount() {
+        return afectadosCount != null ? afectadosCount : 1;
+    }
+
+    public void setAfectadosCount(Integer afectadosCount) {
+        this.afectadosCount = afectadosCount != null ? afectadosCount : 1;
     }
 }

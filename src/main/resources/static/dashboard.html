@@ -6,6 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AquaIca | Dashboard</title>
 
+    <link rel="icon" type="image/png" href="images/favicon-64.png">
+    <link rel="apple-touch-icon" href="images/favicon-64.png">
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -30,7 +33,7 @@
     <aside class="sidebar sidebar-pro">
 
         <div class="sidebar-brand">
-            <div class="brand-logo"><img src="images/logo-aquaica.png" alt="Logo Aqualca"></div>
+            <div class="brand-logo"><img src="images/aquaica-logo.png" alt="AquaIca"></div>
             <div>
                 <h2>AquaIca</h2>
                 <span>Sistema de Gestión</span>
@@ -159,16 +162,14 @@
                 </div>
             </article>
 
-            <article class="dp-kpi k-morado" id="kpiSolicitudes">
+            <article class="dp-kpi k-morado" id="kpiClientes">
                 <div class="dp-kpi-ico">
-                    <svg class="dp-ico" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    <svg class="dp-ico" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M16 11h6"/></svg>
                 </div>
-                <svg class="dp-kpi-barras" viewBox="0 0 24 24"><rect x="3" y="12" width="4" height="9" rx="1"/><rect x="10" y="6" width="4" height="15" rx="1"/><rect x="17" y="9" width="4" height="12" rx="1"/></svg>
                 <div class="dp-kpi-cuerpo">
-                    <span>Solicitudes</span>
-                    <strong id="totalSolicitudes">0</strong>
-                    <em id="deltaSolicitudes" class="dp-delta"></em>
-                    <small id="subSolicitudes">Nuevas solicitudes</small>
+                    <span>Padrón Clientes</span>
+                    <strong id="totalClientes">0</strong>
+                    <small id="subClientes">Titulares registrados</small>
                 </div>
             </article>
 
@@ -271,20 +272,6 @@
                 <div class="dp-tabla">
                     <div class="dp-th t-asi"><span>Técnico</span><span>Tarea</span><span>Prioridad</span></div>
                     <div id="tablaAsignaciones"><div class="dp-vacio-mini">Cargando...</div></div>
-                </div>
-            </div>
-
-            <div class="dp-card" id="cardSolicitudes">
-                <header class="dp-card-cab">
-                    <div class="dp-cab-ico c-azul">
-                        <svg class="dp-ico" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg>
-                    </div>
-                    <div class="dp-cab-txt"><h3>Solicitudes recientes</h3></div>
-                </header>
-
-                <div class="dp-tabla">
-                    <div class="dp-th t-sol"><span>ID</span><span>Tipo de solicitud</span><span>Estado</span></div>
-                    <div id="tablaSolicitudes"><div class="dp-vacio-mini">Cargando...</div></div>
                 </div>
             </div>
 

@@ -40,6 +40,9 @@ public class SecurityConfig {
                 // PÁGINAS Y RECURSOS PÚBLICOS
                 .requestMatchers(
                     "/", "/index.html",
+                    "/mapa.html", "/perfil.html",
+                    "/perfil-tecnico.html", "/perfil-admin.html", "/historial-tecnico.html",
+                    "/configuracion.html",
                     "/instalaciones.html",
                     "/solicitudes.html", "/lecturas.html", "/login.html", "/registro.html", "/ciudadano.html","/reporte.html", "/reporte-detalle.html",
                     "/dashboard.html", "/reportes.html", "/asignaciones.html", "/mis-reportes.html",
@@ -47,8 +50,11 @@ public class SecurityConfig {
                     "/clientes.html", "/suministros.html", "/css/**", "/js/**", "/images/**", "/favicon.ico"
                 ).permitAll()
 
-                // AUTENTICACIÓN
+                // AUTENTICACIÓN Y APIS PÚBLICAS (FEED COMUNITARIO Y MAPA)
                 .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/api/public/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/comunicados/activos").permitAll()
+                .requestMatchers("/api/comunicados/**").hasAnyRole("ADMIN", "SOPORTE")
 
                 // CREAR REPORTE CIUDADANO
                 .requestMatchers(HttpMethod.POST, "/api/reportes").permitAll()
@@ -75,23 +81,28 @@ public class SecurityConfig {
                 // CLIENTES
                 // PERFIL DEL CIUDADANO AUTENTICADO
                 .requestMatchers(HttpMethod.GET, "/api/clientes/me").hasRole("CIUDADANO")
+                .requestMatchers(HttpMethod.PUT, "/api/clientes/me").hasRole("CIUDADANO")
 
                 // CLIENTES - GESTIÓN ADMINISTRATIVA
                 .requestMatchers("/api/clientes/**").hasAnyRole("ADMIN", "SOPORTE")
 
-                // PERSONAL / ASIGNACIONES
+                // PERSONAL / ASIGNACIONES / HISTORIAL
+                .requestMatchers(HttpMethod.GET, "/api/personal/me").hasAnyRole("ADMIN", "SOPORTE", "TECNICO")
+                .requestMatchers(HttpMethod.PUT, "/api/personal/me").hasAnyRole("ADMIN", "SOPORTE", "TECNICO")
+                .requestMatchers(HttpMethod.GET, "/api/personal/me/historial").hasAnyRole("ADMIN", "SOPORTE", "TECNICO")
+                .requestMatchers(HttpMethod.GET, "/api/personal/*/historial").hasAnyRole("ADMIN", "SOPORTE", "TECNICO")
                 .requestMatchers(HttpMethod.GET, "/api/personal/*/asignaciones").hasAnyRole("ADMIN", "SOPORTE", "TECNICO")
                 .requestMatchers("/api/personal/**").hasAnyRole("ADMIN", "SOPORTE")
 
-                // REPORTES - ADMIN / SOPORTE / TECNICO
-                .requestMatchers(HttpMethod.GET, "/api/reportes").hasAnyRole("ADMIN", "SOPORTE", "TECNICO")
+                // REPORTES - ADMIN / SOPORTE (TECNICO no tiene acceso al listado general de reportes)
+                .requestMatchers(HttpMethod.GET, "/api/reportes").hasAnyRole("ADMIN", "SOPORTE")
 
                 // EVIDENCIAS DE REPORTES
                 .requestMatchers(HttpMethod.GET, "/api/reportes/*/evidencias").hasAnyRole("ADMIN", "SOPORTE", "TECNICO")
                 .requestMatchers(HttpMethod.POST, "/api/reportes/*/evidencias").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/reportes/*/evidencias/tecnico").hasRole("TECNICO")
                 .requestMatchers(HttpMethod.GET, "/api/evidencias").hasAnyRole("ADMIN", "SOPORTE", "TECNICO")
-                .requestMatchers(HttpMethod.GET, "/api/evidencias/archivo/**").hasAnyRole("ADMIN", "SOPORTE", "TECNICO")
+                .requestMatchers("/api/evidencias/archivo/**").permitAll()
 
                 // SEGUIMIENTOS
                 .requestMatchers(HttpMethod.GET, "/api/reportes/*/seguimientos").hasAnyRole("ADMIN", "SOPORTE", "TECNICO")
@@ -99,6 +110,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/seguimientos").hasAnyRole("ADMIN", "SOPORTE", "TECNICO")
 
                 // ASIGNACIONES
+                .requestMatchers(HttpMethod.GET, "/api/asignaciones").hasAnyRole("ADMIN", "SOPORTE")
                 .requestMatchers(HttpMethod.POST, "/api/reportes/*/asignaciones").hasAnyRole("ADMIN", "SOPORTE")
                 .requestMatchers(HttpMethod.GET, "/api/reportes/*/asignaciones").hasAnyRole("ADMIN", "SOPORTE", "TECNICO")
                 .requestMatchers(HttpMethod.POST, "/api/asignaciones/*/iniciar").hasAnyRole("ADMIN", "SOPORTE", "TECNICO")
@@ -112,6 +124,7 @@ public class SecurityConfig {
                 // INFORME TÉCNICO
                 .requestMatchers(HttpMethod.POST, "/api/reportes/*/informe-tecnico").hasAnyRole("ADMIN", "SOPORTE", "TECNICO")
                 .requestMatchers(HttpMethod.GET, "/api/reportes/*/informe-tecnico").hasAnyRole("ADMIN", "SOPORTE", "TECNICO")
+                .requestMatchers(HttpMethod.GET, "/api/reportes/asignacion/*/informe-tecnico").hasAnyRole("ADMIN", "SOPORTE", "TECNICO")
 
                 // SUMINISTROS
                 .requestMatchers(HttpMethod.GET, "/api/suministros").hasAnyRole("ADMIN", "SOPORTE")

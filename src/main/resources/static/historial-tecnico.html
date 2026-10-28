@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AquaIca | Historial Técnico</title>
+    <link rel="icon" type="image/png" href="images/favicon-64.png">
+    <link rel="apple-touch-icon" href="images/favicon-64.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/sidebar-pro.css">
+    <link rel="stylesheet" href="css/dashboard-pro.css">
+    <link rel="stylesheet" href="css/historial-tecnico.css">
+</head>
+
+<body class="dashboard-body">
+
+    <div class="dashboard-bg-decor" aria-hidden="true">
+        <span class="deco-bubble db1"></span>
+        <span class="deco-bubble db2"></span>
+        <span class="deco-bubble db3"></span>
+        <span class="deco-bubble db4"></span>
+        <span class="deco-bubble db5"></span>
+    </div>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar sidebar-pro">
+        <div class="sidebar-brand">
+            <div class="brand-logo"><img src="images/aquaica-logo.png" alt="AquaIca"></div>
+            <div>
+                <h2>AquaIca</h2>
+                <span>Sistema de Gestión</span>
+            </div>
+        </div>
+
+        <nav class="sidebar-menu" id="sidebarMenu"></nav>
+
+        <div class="sidebar-bottom">
+            <button id="logoutButton" class="logout-button">Cerrar sesión</button>
+        </div>
+    </aside>
+
+    <script src="js/menu.js"></script>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="dashboard-main dp-main">
+
+        <!-- CABECERA -->
+        <header class="dp-top">
+            <div class="dp-titulo">
+                <span>Trabajo de Campo</span>
+                <h1>Historial Técnico</h1>
+            </div>
+
+            <div class="dp-acciones">
+                <div class="dp-usuario">
+                    <button type="button" class="dp-usuario-btn" id="usuarioBtn" aria-haspopup="true" aria-expanded="false">
+                        <span class="user-avatar" id="userAvatar">U</span>
+                        <span class="dp-usuario-txt">
+                            <strong id="usernameDisplay">Usuario</strong>
+                            <small id="roleDisplay">Técnico</small>
+                        </span>
+                        <svg class="dp-ico chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+                    </button>
+
+                    <div class="dp-menu" id="usuarioMenu">
+                        <button type="button" id="logoutMenu">
+                            <svg class="dp-ico" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5M21 12H9"/></svg>
+                            Cerrar sesión
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- BANNER -->
+        <section class="ht-banner">
+            <div class="ht-banner-txt">
+                <h2>Reportes Atendidos y Finalizados</h2>
+                <p>Registro histórico de incidencias atendidas por tu cuadrilla, con sus informes de solución técnica y evidencias fotográficas.</p>
+            </div>
+            <div class="ht-banner-badge">
+                <span>Finalizados</span>
+                <strong id="bannerTotal">0 casos</strong>
+            </div>
+        </section>
+
+        <!-- KPIs -->
+        <section class="dp-kpis" style="margin-bottom: 22px;">
+            <article class="dp-kpi k-verde">
+                <div class="dp-kpi-ico">
+                    <svg class="dp-ico" viewBox="0 0 24 24"><path d="M8 12.5l2.5 2.5L16 9.5"/><circle cx="12" cy="12" r="9"/></svg>
+                </div>
+                <div class="dp-kpi-cuerpo">
+                    <span>Total finalizados</span>
+                    <strong id="kpiTotal">0</strong>
+                    <small>Casos concluidos</small>
+                </div>
+            </article>
+
+            <article class="dp-kpi k-azul">
+                <div class="dp-kpi-ico">
+                    <svg class="dp-ico" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                </div>
+                <div class="dp-kpi-cuerpo">
+                    <span>Con informe técnico</span>
+                    <strong id="kpiInformes">0</strong>
+                    <small>Fichas registradas</small>
+                </div>
+            </article>
+
+            <article class="dp-kpi k-celeste">
+                <div class="dp-kpi-ico">
+                    <svg class="dp-ico" viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                </div>
+                <div class="dp-kpi-cuerpo">
+                    <span>Eficacia técnica</span>
+                    <strong id="kpiEficacia">100%</strong>
+                    <small>Tasa de resolución</small>
+                </div>
+            </article>
+        </section>
+
+        <!-- BARRA DE BÚSQUEDA Y FILTROS -->
+        <section class="ht-filtros">
+            <div class="ht-buscador">
+                <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="search" id="buscarReporte" placeholder="Buscar por código (#), suministro, dirección o trabajo...">
+            </div>
+
+            <div>
+                <select id="filtroProblema" class="ht-select-filtro">
+                    <option value="">Todos los problemas</option>
+                    <option value="FUGA_AGUA">Fuga de agua</option>
+                    <option value="SIN_AGUA">Corte de agua</option>
+                    <option value="BAJA_PRESION">Baja presión</option>
+                    <option value="FACTURACION">Facturación</option>
+                    <option value="OTRO">Otro tipo</option>
+                </select>
+            </div>
+
+            <div>
+                <select id="filtroResultado" class="ht-select-filtro">
+                    <option value="">Todos los resultados</option>
+                    <option value="SOLUCIONADO">Solucionados</option>
+                    <option value="NO_RESUELTO">No resueltos / En revisión</option>
+                </select>
+            </div>
+        </section>
+
+        <!-- LISTA DE CASOS FINALIZADOS -->
+        <section id="historialContainer" class="ht-grid">
+            <div class="ht-vacio">
+                <svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 1 3 6.7"/><path d="M3 21v-6h6"/></svg>
+                <p>Cargando historial técnico...</p>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- MODAL DE FICHA TÉCNICA Y EVIDENCIAS -->
+    <div class="ht-modal-overlay" id="modalDetalle">
+        <div class="ht-modal-card">
+            <div class="ht-modal-header">
+                <div>
+                    <span class="dp-pill p-azul" id="modalReportePill">Reporte #--</span>
+                    <h3 id="modalTituloProblema">Detalle de Incidencia</h3>
+                </div>
+                <button type="button" class="ht-modal-close" id="btnCerrarModal" aria-label="Cerrar modal">
+                    <svg class="dp-ico" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+
+            <div class="ht-modal-body">
+                <!-- Información general -->
+                <div class="ht-seccion-modal">
+                    <h4>Datos del Suministro</h4>
+                    <div class="ht-info-grid">
+                        <div class="ht-info-item">
+                            <span>N° Suministro</span>
+                            <strong id="modalSuministro">—</strong>
+                        </div>
+                        <div class="ht-info-item">
+                            <span>Estado Final</span>
+                            <strong id="modalEstadoReporte">—</strong>
+                        </div>
+                        <div class="ht-info-item" style="grid-column: 1 / -1;">
+                            <span>Dirección / Ubicación</span>
+                            <strong id="modalDireccion">—</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Informe Técnico -->
+                <div class="ht-seccion-modal">
+                    <h4>Informe de Solución Técnica</h4>
+                    <div class="ht-card-informe-box" style="margin-bottom: 10px;">
+                        <strong>Diagnóstico en campo:</strong>
+                        <p id="modalDiagnostico" style="margin: 4px 0 0;">—</p>
+                    </div>
+
+                    <div class="ht-card-informe-box">
+                        <strong>Trabajo realizado:</strong>
+                        <p id="modalTrabajoRealizado" style="margin: 4px 0 0;">—</p>
+                    </div>
+                </div>
+
+                <!-- Evidencias Fotográficas -->
+                <div class="ht-seccion-modal">
+                    <h4>Evidencias Fotográficas del Caso</h4>
+                    <div id="modalEvidencias" class="ht-galeria">
+                        <p style="font-size:13px; color:#64748b;">Consultando evidencias...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/panel-comun.js"></script>
+    <script src="js/historial-tecnico.js"></script>
+</body>
+
+</html>

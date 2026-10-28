@@ -7,7 +7,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Aqualca - Consulta el estado de tus reportes del servicio de agua.">
 
-    <title>Aqualca | Mis reportes</title>
+    <title>AquaIca | Mis reportes</title>
+
+    <link rel="icon" type="image/png" href="images/favicon-64.png">
+    <link rel="apple-touch-icon" href="images/favicon-64.png">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -32,16 +35,16 @@
 
     <header class="mr-header">
 
-        <div class="mr-brand">
+        <a href="index.html" class="mr-brand" style="text-decoration:none; color:inherit;">
 
-            <div class="mr-logo">A</div>
+            <img src="images/aquaica-logo.png" alt="AquaIca" class="mr-logo-img">
 
             <div>
-                <h2>Aqualca</h2>
+                <h2>AquaIca</h2>
                 <span>Atención ciudadana</span>
             </div>
 
-        </div>
+        </a>
 
 
         <nav class="mr-nav">
@@ -103,8 +106,9 @@
                     <input
                         type="text"
                         id="codigoSuministro"
-                        placeholder="Ej. 000123456"
-                        maxlength="20"
+                        placeholder="Ej. 12345678"
+                        maxlength="8"
+                        inputmode="numeric"
                         autocomplete="off">
 
 

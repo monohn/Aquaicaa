@@ -103,4 +103,12 @@ public class SuministroDTO {
 
     public String getCategoria() { return categoria; }
     public void setCategoria(String categoria) { this.categoria = categoria; }
+
+    public String getNombreTitular() {
+        return nombreCliente != null ? nombreCliente : "Ciudadano AquaIca";
+    }
+
+    public String getDni() {
+        return dniCliente != null ? dniCliente : (codigoSuministro != null ? codigoSuministro : "");
+    }
 }

@@ -30,7 +30,7 @@ public class EvidenciaController {
     }
 
     @PostMapping("/{reporteId}/evidencias")
-    public ResponseEntity<Evidencia> subirEvidencia(
+    public ResponseEntity<EvidenciaResponseDTO> subirEvidencia(
             @PathVariable Long reporteId,
             @RequestParam("archivo") MultipartFile archivo) throws IOException {
 
@@ -39,11 +39,19 @@ public class EvidenciaController {
                 archivo
         );
 
-        return ResponseEntity.ok(evidencia);
+        return ResponseEntity.ok(new EvidenciaResponseDTO(
+                evidencia.getId(),
+                reporteId,
+                evidencia.getNombreArchivo(),
+                evidencia.getRutaArchivo(),
+                evidencia.getTipoArchivo(),
+                evidencia.getFechaCreacion(),
+                evidencia.getOrigen()
+        ));
     }
 
     @PostMapping("/{reporteId}/evidencias/tecnico")
-public ResponseEntity<Evidencia> subirEvidenciaTecnico(
+    public ResponseEntity<EvidenciaResponseDTO> subirEvidenciaTecnico(
         @PathVariable Long reporteId,
         @RequestParam("archivo") MultipartFile archivo) throws IOException {
 
@@ -80,7 +88,15 @@ public ResponseEntity<Evidencia> subirEvidenciaTecnico(
                     personalId
             );
 
-    return ResponseEntity.ok(evidencia);
+    return ResponseEntity.ok(new EvidenciaResponseDTO(
+            evidencia.getId(),
+            reporteId,
+            evidencia.getNombreArchivo(),
+            evidencia.getRutaArchivo(),
+            evidencia.getTipoArchivo(),
+            evidencia.getFechaCreacion(),
+            evidencia.getOrigen()
+    ));
 }
 
 

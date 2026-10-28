@@ -3,14 +3,22 @@
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AquaIca | Lecturas</title>
+  <link rel="icon" type="image/png" href="images/favicon-64.png">
+  <link rel="apple-touch-icon" href="images/favicon-64.png">
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css"><link rel="stylesheet" href="css/dashboard.css"><link rel="stylesheet" href="css/clientes.css"><link rel="stylesheet" href="css/solicitudes.css"><link rel="stylesheet" href="css/lecturas.css">
 </head>
 <body class="dashboard-body">
+  <script>
+    (function() {
+      const r = localStorage.getItem("rol");
+      window.location.replace(r === "TECNICO" ? "asignaciones.html" : "dashboard.html");
+    })();
+  </script>
   <div class="dashboard-bg-decor" aria-hidden="true"><span class="deco-bubble db1"></span><span class="deco-bubble db2"></span><span class="deco-bubble db3"></span><span class="deco-bubble db4"></span></div>
   <aside class="sidebar">
-    <div class="sidebar-brand"><div class="brand-logo">A</div><div><h2>AquaIca</h2><span>Sistema de Gestión</span></div></div>
+    <div class="sidebar-brand"><div class="brand-logo"><img src="images/aquaica-logo.png" alt="AquaIca"></div><div><h2>AquaIca</h2><span>Sistema de Gestión</span></div></div>
     <nav class="sidebar-menu" id="sidebarMenu"></nav>
     <div class="sidebar-bottom"><button id="logoutButton" class="logout-button">Cerrar sesión</button></div>
   </aside>

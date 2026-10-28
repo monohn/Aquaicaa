@@ -127,7 +127,11 @@ window.Panel = (function () {
         }
 
         if (!roles.includes(rol)) {
-            window.location.href = "dashboard.html";
+            if (rol === "TECNICO") {
+                window.location.href = "asignaciones.html";
+            } else {
+                window.location.href = "dashboard.html";
+            }
             return null;
         }
 
