@@ -457,8 +457,8 @@ document.addEventListener("DOMContentLoaded", () => {
             if (badge) {
                 badge.className = "geoloc-badge pendiente";
                 badge.textContent = esAutomatico
-                    ? "📍 Solicitando permiso de ubicación al navegador..."
-                    : "📍 Detectando señal satelital GPS...";
+                    ? "Solicitando permiso de ubicación al navegador..."
+                    : "Detectando señal satelital GPS...";
             }
             if (btnTxt) btnTxt.textContent = "Detectando...";
             if (btnManual) btnManual.disabled = true;
@@ -477,7 +477,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                     if (badge) {
                         badge.className = "geoloc-badge exito";
-                        badge.textContent = `✅ Ubicación GPS detectada (±${prec} m)`;
+                        badge.textContent = `Ubicación GPS detectada (±${prec} m)`;
                     }
                     if (coordsSpan) {
                         coordsSpan.textContent = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
@@ -517,9 +517,9 @@ document.addEventListener("DOMContentLoaded", () => {
                     if (badge) {
                         badge.className = "geoloc-badge aviso";
                         if (err.code === err.PERMISSION_DENIED) {
-                            badge.textContent = "ℹ️ Permiso de ubicación no concedido. Puedes continuar ingresando tu dirección.";
+                            badge.textContent = "Permiso de ubicación no concedido. Puedes ingresar tu dirección manualmente.";
                         } else {
-                            badge.textContent = "⚠️ Señal satelital no disponible en este instante.";
+                            badge.textContent = "Señal satelital no disponible en este instante.";
                         }
                     }
                     if (btnTxt) btnTxt.textContent = "Reintentar GPS";
@@ -541,10 +541,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
 });
 
-// PREFILL_CODIGO: si llegas desde el portal (reporte.html?codigo=...) o tienes suministro guardado en tu perfil
+// PREFILL_CODIGO: solo si llegas desde el portal con ?codigo=... o el usuario logueado tiene suministro propio
 document.addEventListener("DOMContentLoaded", () => {
     const urlCodigo = new URLSearchParams(window.location.search).get("codigo");
-    const perfilCodigo = localStorage.getItem("perfil_suministro");
+    const username = localStorage.getItem("username");
+    const perfilCodigo = username ? localStorage.getItem(`perfil_${username}_suministro`) : null;
     const codigoFinal = urlCodigo || perfilCodigo;
 
     const input = document.getElementById("codigoSuministro");

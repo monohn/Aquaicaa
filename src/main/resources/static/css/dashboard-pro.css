@@ -7,6 +7,8 @@
 }
 
 .dp-main { padding: 24px 32px 36px; }
+.dp-main em { font-style: normal; }
+.dp-main strong { font-weight: 600; }
 
 .dp-ico {
     width: 22px;

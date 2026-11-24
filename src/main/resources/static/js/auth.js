@@ -47,6 +47,19 @@ document.addEventListener("DOMContentLoaded", () => {
                 throw new Error("La respuesta del servidor está incompleta.");
             }
 
+            // Limpiar posibles claves heredadas sin prefijo de usuario para evitar mezcla de perfiles/avatares
+            [
+                "aquaica_avatar",
+                "perfil_nombre",
+                "perfil_dni",
+                "perfil_telefono",
+                "perfil_email",
+                "perfil_suministro",
+                "perfil_distrito",
+                "perfil_direccion",
+                "perfil_referencia"
+            ].forEach(k => localStorage.removeItem(k));
+
             // Guardar la sesión
             localStorage.setItem("token", data.token);
             localStorage.setItem("username", data.username || username);

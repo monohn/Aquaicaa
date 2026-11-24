@@ -66,13 +66,35 @@ public class DataInitializer implements CommandLineRunner {
     @Transactional
     public void run(String... args) {
         if (usuarioRepository.count() == 0) {
-            log.info("🌱 Inicializando datos base para demostración de AquaIca...");
+            log.info("Inicializando datos base de AquaIca...");
             inicializarDatosBase();
         } else {
-            log.info("ℹ️ La base de datos ya cuenta con registros base.");
+            log.info("La base de datos ya cuenta con registros base.");
+            limpiarPerfilPruebaMaria();
         }
 
         garantizarTecnicosRequeridos();
+    }
+
+    private void limpiarPerfilPruebaMaria() {
+        try {
+            usuarioRepository.findByUsername("mariaquispe").ifPresent(usuarioRepository::delete);
+            suministroRepository.findByCodigoSuministro("SUM-00125").ifPresent(s1 -> {
+                if (reporteRepository.obtenerReportesPorCodigoSuministro("SUM-00125").isEmpty()) {
+                    suministroRepository.delete(s1);
+                }
+            });
+            clienteRepository.findByDni("71234567").ifPresent(c -> {
+                if ("María Quispe Ramos".equalsIgnoreCase(c.getNombreCompleto())) {
+                    if (suministroRepository.findByClienteId(c.getId()).isEmpty()
+                            && usuarioRepository.findByClienteId(c.getId()).isEmpty()) {
+                        clienteRepository.delete(c);
+                    }
+                }
+            });
+        } catch (Exception e) {
+            log.debug("No se pudo limpiar registro previo de prueba: {}", e.getMessage());
+        }
     }
 
     private void inicializarDatosBase() {
@@ -113,25 +135,7 @@ public class DataInitializer implements CommandLineRunner {
         tecnicoUser1.setFechaCreacion(LocalDateTime.now().minusDays(20));
         usuarioRepository.save(tecnicoUser1);
 
-        // 2. Clientes ciudadanos
-        Cliente cliente1 = new Cliente();
-        cliente1.setDni("71234567");
-        cliente1.setNombreCompleto("María Quispe Ramos");
-        cliente1.setEmail("maria.quispe@gmail.com");
-        cliente1.setTelefono("956111222");
-        cliente1.setEstado("ACTIVO");
-        cliente1.setFechaRegistro(LocalDateTime.now().minusDays(15));
-        clienteRepository.save(cliente1);
-
-        Usuario ciudadanoUser = new Usuario();
-        ciudadanoUser.setUsername("mariaquispe");
-        ciudadanoUser.setPassword(passwordEncoder.encode("ciudadano123456"));
-        ciudadanoUser.setRol("CIUDADANO");
-        ciudadanoUser.setEstado("ACTIVO");
-        ciudadanoUser.setCliente(cliente1);
-        ciudadanoUser.setFechaCreacion(LocalDateTime.now().minusDays(15));
-        usuarioRepository.save(ciudadanoUser);
-
+        // 2. Clientes ciudadanos de referencia
         Cliente cliente2 = new Cliente();
         cliente2.setDni("72345678");
         cliente2.setNombreCompleto("Jorge Ramos Alvites");
@@ -159,19 +163,8 @@ public class DataInitializer implements CommandLineRunner {
         s0.setLatitud(-14.0678);
         s0.setLongitud(-75.7286);
         s0.setCategoria("DOMESTICO");
-        s0.setCliente(cliente1);
+        s0.setCliente(cliente2);
         suministroRepository.save(s0);
-
-        Suministro s1 = new Suministro();
-        s1.setCodigoSuministro("SUM-00125");
-        s1.setNombreTitular("María Quispe Ramos");
-        s1.setDni("71234567");
-        s1.setDireccion("Av. San Martín 845, Ica Cercado");
-        s1.setLatitud(-14.0620);
-        s1.setLongitud(-75.7330);
-        s1.setCategoria("DOMESTICO");
-        s1.setCliente(cliente1);
-        suministroRepository.save(s1);
 
         Suministro s2 = new Suministro();
         s2.setCodigoSuministro("SUM-00126");
@@ -203,7 +196,7 @@ public class DataInitializer implements CommandLineRunner {
         s4.setLatitud(-14.0678);
         s4.setLongitud(-75.7286);
         s4.setCategoria("COMERCIAL");
-        s4.setCliente(cliente1);
+        s4.setCliente(cliente2);
         suministroRepository.save(s4);
 
         // 4. Reportes de prueba para el Feed
@@ -228,7 +221,7 @@ public class DataInitializer implements CommandLineRunner {
         reporteRepository.save(r2);
 
         Reporte r3 = new Reporte();
-        r3.setSuministroId(s1);
+        r3.setSuministroId(s4);
         r3.setTipoProblema("BAJA_PRESION");
         r3.setDescripcion("Baja presión constante de agua durante el mediodía. Dificulta el llenado de tanques.");
         r3.setEstado("RESUELTO");

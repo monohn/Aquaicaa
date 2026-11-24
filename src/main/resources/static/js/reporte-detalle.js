@@ -614,7 +614,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 const icono =
                     evento.tipo === "BITACORA"
 
-                        ? "📝"
+                        ? "•"
 
                         : (
                             esActual
@@ -708,7 +708,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             <div class="seguimiento-vacio error">
 
-                <span>⚠️</span>
+                <svg class="icon-svg" viewBox="0 0 24 24" style="width:22px;height:22px;color:#b91c1c;"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>
 
                 <p>
                     No se pudieron cargar las actualizaciones.

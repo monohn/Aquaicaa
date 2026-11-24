@@ -74,7 +74,9 @@ document.addEventListener("DOMContentLoaded", async () => {
             if (avatarTxt) avatarTxt.textContent = inicial;
 
             const username = localStorage.getItem("username") || "tecnico";
-            const savedAvatar = localStorage.getItem("aquaica_avatar_" + username) || localStorage.getItem("aquaica_avatar");
+            const rolActual = localStorage.getItem("rol") || "TECNICO";
+            localStorage.removeItem("aquaica_avatar");
+            const savedAvatar = localStorage.getItem(`aquaica_avatar_${rolActual}_${username}`);
             if (savedAvatar && avatarImg) {
                 avatarImg.src = savedAvatar;
                 avatarImg.style.display = "block";
@@ -222,8 +224,9 @@ document.addEventListener("DOMContentLoaded", async () => {
                     ctx.drawImage(tempImg, 0, 0, w, h);
                     const dataUrl = canvas.toDataURL("image/jpeg", 0.88);
 
-                    localStorage.setItem("aquaica_avatar_" + username, dataUrl);
-                    localStorage.setItem("aquaica_avatar", dataUrl);
+                    const rolActual = localStorage.getItem("rol") || "TECNICO";
+                    localStorage.setItem(`aquaica_avatar_${rolActual}_${username}`, dataUrl);
+                    localStorage.removeItem("aquaica_avatar");
 
                     if (img) {
                         img.src = dataUrl;

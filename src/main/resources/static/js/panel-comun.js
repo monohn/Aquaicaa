@@ -131,7 +131,8 @@ window.Panel = (function () {
         $("roleDisplay").textContent = rol;
 
         const avatar = $("userAvatar");
-        const savedAvatar = localStorage.getItem("aquaica_avatar_" + username) || localStorage.getItem("aquaica_avatar");
+        localStorage.removeItem("aquaica_avatar");
+        const savedAvatar = localStorage.getItem(`aquaica_avatar_${rol}_${username}`);
         if (savedAvatar) {
             avatar.innerHTML = `<img src="${savedAvatar}" alt="${username}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
             avatar.style.background = "transparent";

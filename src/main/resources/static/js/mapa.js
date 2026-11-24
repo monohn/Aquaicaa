@@ -437,8 +437,8 @@ function renderizarZonasSemaforo(zonas) {
                 <strong>${escapeHtml(z.titulo)}</strong>
                 <p>${escapeHtml(z.motivo)}</p>
                 <div class="popup-zona-meta">
-                    <div>💧 Presión: <strong>${escapeHtml(z.presion)}</strong></div>
-                    <div>📋 Reportes activos: <strong>${z.reportes}</strong></div>
+                    <div>Presión: <strong>${escapeHtml(z.presion)}</strong></div>
+                    <div>Reportes activos: <strong>${z.reportes}</strong></div>
                 </div>
             </div>
         `;

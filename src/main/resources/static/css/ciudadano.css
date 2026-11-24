@@ -31,6 +31,8 @@ body {
 
 a { color: inherit; text-decoration: none; }
 button { font-family: inherit; }
+em { font-style: normal; }
+strong, b { font-weight: 600; }
 
 .ico {
     width: 20px;

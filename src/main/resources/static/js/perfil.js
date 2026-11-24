@@ -60,7 +60,9 @@ async function initPerfil() {
     const drawerUserStatus = document.getElementById('drawerUserStatus');
     const drawerFooter = document.getElementById('drawerFooter');
     const inicial = username.charAt(0).toUpperCase();
-    const savedAvatar = localStorage.getItem('aquaica_avatar_' + username) || localStorage.getItem('aquaica_avatar');
+    const avatarKey = `aquaica_avatar_${rol || 'CIUDADANO'}_${username}`;
+    localStorage.removeItem('aquaica_avatar');
+    const savedAvatar = localStorage.getItem(avatarKey);
 
     const avatarHtml = savedAvatar
         ? `<img src="${savedAvatar}" alt="${escapeHtml(username)}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`
@@ -220,19 +222,20 @@ function cargarDatosEnFormulario(data, username) {
 
 function cargarDesdeLocalStorage(username) {
     document.getElementById('perfilNombreHeader').textContent = username;
-    document.getElementById('nombreCompleto').value = localStorage.getItem('perfil_nombre') || '';
-    document.getElementById('dni').value = localStorage.getItem('perfil_dni') || '';
-    document.getElementById('telefono').value = localStorage.getItem('perfil_telefono') || '';
-    document.getElementById('email').value = localStorage.getItem('perfil_email') || '';
+    document.getElementById('nombreCompleto').value = localStorage.getItem(`perfil_${username}_nombre`) || '';
+    document.getElementById('dni').value = localStorage.getItem(`perfil_${username}_dni`) || '';
+    document.getElementById('telefono').value = localStorage.getItem(`perfil_${username}_telefono`) || '';
+    document.getElementById('email').value = localStorage.getItem(`perfil_${username}_email`) || '';
 
     cargarPreferenciasUbicacion();
 }
 
 function cargarPreferenciasUbicacion() {
-    const sum = localStorage.getItem('perfil_suministro') || '';
-    const dir = localStorage.getItem('perfil_direccion') || '';
-    const dis = localStorage.getItem('perfil_distrito') || 'Ica';
-    const ref = localStorage.getItem('perfil_referencia') || '';
+    const username = localStorage.getItem('username') || 'anon';
+    const sum = localStorage.getItem(`perfil_${username}_suministro`) || '';
+    const dir = localStorage.getItem(`perfil_${username}_direccion`) || '';
+    const dis = localStorage.getItem(`perfil_${username}_distrito`) || 'Ica';
+    const ref = localStorage.getItem(`perfil_${username}_referencia`) || '';
 
     const inputSum = document.getElementById('codigoSuministro');
     if (inputSum) {
@@ -421,18 +424,19 @@ async function guardarPerfil(e) {
     btn.disabled = true;
     btn.textContent = 'Guardando cambios...';
 
-    // 1. Guardar en almacenamiento local para persistencia inmediata
-    localStorage.setItem('perfil_nombre', nombreCompleto);
-    localStorage.setItem('perfil_dni', dni);
-    localStorage.setItem('perfil_telefono', telefono);
-    localStorage.setItem('perfil_email', email);
-    localStorage.setItem('perfil_suministro', suministro);
-    localStorage.setItem('perfil_distrito', distrito);
-    localStorage.setItem('perfil_direccion', direccion);
-    localStorage.setItem('perfil_referencia', referencia);
+    const username = localStorage.getItem('username') || 'anon';
+    // 1. Guardar en almacenamiento local aislado por usuario
+    localStorage.setItem(`perfil_${username}_nombre`, nombreCompleto);
+    localStorage.setItem(`perfil_${username}_dni`, dni);
+    localStorage.setItem(`perfil_${username}_telefono`, telefono);
+    localStorage.setItem(`perfil_${username}_email`, email);
+    localStorage.setItem(`perfil_${username}_suministro`, suministro);
+    localStorage.setItem(`perfil_${username}_distrito`, distrito);
+    localStorage.setItem(`perfil_${username}_direccion`, direccion);
+    localStorage.setItem(`perfil_${username}_referencia`, referencia);
 
     // Actualizar badges visuales
-    document.getElementById('perfilNombreHeader').textContent = nombreCompleto || localStorage.getItem('username');
+    document.getElementById('perfilNombreHeader').textContent = nombreCompleto || username;
     document.getElementById('perfilSuministroTag').textContent = suministro ? `Suministro: ${suministro}` : 'Suministro: No asignado';
     document.getElementById('perfilDistritoTag').textContent = `Distrito: ${distrito}`;
 
@@ -457,13 +461,13 @@ async function guardarPerfil(e) {
 
         alerta.style.display = 'inline-block';
         alerta.className = 'perfil-alert success';
-        alerta.textContent = '✅ ¡Tus datos generales y de suministro se actualizaron con éxito!';
+        alerta.textContent = 'Tus datos generales y de suministro se actualizaron con éxito.';
 
     } catch (err) {
         console.warn('Sincronización remota fallida, datos guardados localmente:', err);
         alerta.style.display = 'inline-block';
         alerta.className = 'perfil-alert success';
-        alerta.textContent = '✅ Datos guardados y actualizados en tu sesión local.';
+        alerta.textContent = 'Datos guardados y actualizados en tu sesión.';
     } finally {
         btn.disabled = false;
         btn.innerHTML = `
@@ -532,8 +536,9 @@ function configurarSubidaAvatarCiudadano(username) {
                 ctx.drawImage(tempImg, 0, 0, w, h);
                 const dataUrl = canvas.toDataURL('image/jpeg', 0.88);
 
-                localStorage.setItem('aquaica_avatar_' + username, dataUrl);
-                localStorage.setItem('aquaica_avatar', dataUrl);
+                const rolUsuario = localStorage.getItem('rol') || 'CIUDADANO';
+                localStorage.setItem(`aquaica_avatar_${rolUsuario}_${username}`, dataUrl);
+                localStorage.removeItem('aquaica_avatar');
 
                 if (img) {
                     img.src = dataUrl;

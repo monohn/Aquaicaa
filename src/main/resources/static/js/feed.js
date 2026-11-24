@@ -88,7 +88,8 @@ function initAuthUI() {
         const inicial = username.charAt(0).toUpperCase();
         const esAdmin = rol === 'ADMIN' || rol === 'SOPORTE';
 
-        const savedAvatar = localStorage.getItem("aquaica_avatar_" + username) || localStorage.getItem("aquaica_avatar");
+        localStorage.removeItem("aquaica_avatar");
+        const savedAvatar = localStorage.getItem(`aquaica_avatar_${rol || 'CIUDADANO'}_${username}`);
         const avatarContent = savedAvatar
             ? `<img src="${savedAvatar}" alt="${escapeHtml(username)}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`
             : inicial;
@@ -863,7 +864,7 @@ async function apoyarReporte(btn, reporteId) {
         if (countEl) countEl.textContent = `(${data.afectadosCount})`;
         if (txtEl) txtEl.textContent = 'Me afecta';
 
-        mostrarToast('💧 ¡Registrado! Has sumado tu apoyo a esta incidencia vecinal.');
+        mostrarToast('Registrado. Has sumado tu apoyo a esta incidencia vecinal.');
 
     } catch (e) {
         // En caso de que el backend no responda, actualizar en UI de forma optimista
@@ -875,7 +876,7 @@ async function apoyarReporte(btn, reporteId) {
             const actual = parseInt(countEl.textContent.replace(/\D/g, '') || '1', 10);
             countEl.textContent = `(${actual + 1})`;
         }
-        mostrarToast('💧 ¡Apoyo registrado!');
+        mostrarToast('Apoyo registrado.');
     }
 }
 
@@ -883,11 +884,11 @@ async function apoyarReporte(btn, reporteId) {
 // ====== INTERACCIÓN: COMPARTIR REPORTE ======
 function compartirReporte(id, titulo, ubicacion) {
     const url = window.location.origin + window.location.pathname + `#reporte-card-${id}`;
-    const texto = `💧 [AquaIca] ${titulo}${ubicacion ? ' en ' + ubicacion : ''}. Mira los detalles y el mapa aquí: ${url}`;
+    const texto = `[AquaIca] ${titulo}${ubicacion ? ' en ' + ubicacion : ''}. Mira los detalles y el mapa aquí: ${url}`;
 
     if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(texto).then(() => {
-            mostrarToast('📋 ¡Datos del reporte copiados al portapapeles!');
+            mostrarToast('Datos del reporte copiados al portapapeles.');
         }).catch(() => {
             promptCopiar(texto);
         });

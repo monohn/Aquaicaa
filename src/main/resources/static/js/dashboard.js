@@ -153,6 +153,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     (function pintarAvatar() {
         const avatar = $("userAvatar");
+        localStorage.removeItem("aquaica_avatar");
+        const savedAvatar = localStorage.getItem(`aquaica_avatar_${rol}_${username}`);
+        if (savedAvatar) {
+            avatar.innerHTML = `<img src="${savedAvatar}" alt="${esc(username)}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+            avatar.style.background = "transparent";
+            return;
+        }
         avatar.textContent = username.charAt(0).toUpperCase();
 
         const paleta = [

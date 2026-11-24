@@ -140,7 +140,7 @@ async function buscarReportes() {
     } finally {
 
         botonBuscar.disabled = false;
-        botonBuscar.textContent = "🔍 Consultar";
+        botonBuscar.textContent = "Consultar";
 
     }
 

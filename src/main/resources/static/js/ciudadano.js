@@ -217,9 +217,22 @@
         const nombre = nombreCompleto();
         const inicial = nombre.charAt(0).toUpperCase();
 
+        const usernameActual = localStorage.getItem("username") || "";
+        const rolActual = localStorage.getItem("rol") || "CIUDADANO";
+        localStorage.removeItem("aquaica_avatar");
+        const savedAvatar = usernameActual ? localStorage.getItem(`aquaica_avatar_${rolActual}_${usernameActual}`) : null;
+
         $("#userName").textContent = nombre;
-        $("#userAvatar").textContent = inicial;
-        $("#perfilAvatar").textContent = inicial;
+        if (savedAvatar) {
+            const imgHtml = `<img src="${savedAvatar}" alt="${esc(nombre)}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+            $("#userAvatar").innerHTML = imgHtml;
+            $("#userAvatar").style.background = "transparent";
+            $("#perfilAvatar").innerHTML = imgHtml;
+            $("#perfilAvatar").style.background = "transparent";
+        } else {
+            $("#userAvatar").textContent = inicial;
+            $("#perfilAvatar").textContent = inicial;
+        }
 
         $("#perfilNombre").textContent = nombre;
         $("#perfilDni").textContent = datos.perfil?.dni || "—";
