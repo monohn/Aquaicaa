@@ -156,9 +156,9 @@
 }
 
 .asignacion-card[data-estado="PENDIENTE"],
-.asignacion-card[data-estado="ACTIVA"]      { --ec: #f08a00; }
-.asignacion-card[data-estado="EN_ATENCION"] { --ec: #12a8e6; }
-.asignacion-card[data-estado="FINALIZADA"]  { --ec: #14a463; }
+.asignacion-card[data-estado="ACTIVA"]      { --ec: #f59e0b; }
+.asignacion-card[data-estado="EN_ATENCION"] { --ec: #0284c7; }
+.asignacion-card[data-estado="FINALIZADA"]  { --ec: #10b981; }
 
 .dashboard-main .asignacion-card-header { border-bottom-color: #edf3f7; }
 .dashboard-main .asignacion-card-header h3 { font-size: 18px; }
@@ -167,33 +167,37 @@
     display: inline-block;
     padding: 3px 10px;
     border-radius: 99px;
-    background: #e3f1fd;
-    color: #0a74c9;
-    font-size: 12px;
+    background: #f1f5f9;
+    color: #334155;
+    border: 1px solid #e2e8f0;
+    font-size: 11.5px;
+    font-weight: 600;
 }
 
-/* Etiqueta de estado con color */
+/* Etiqueta de estado suave y desaturada */
 .dashboard-main .asignacion-estado {
     gap: 7px;
-    padding: 7px 14px;
-    border: 0;
-    background: #dcf4fb;
-    color: #0b8fb8;
-    font-size: 12px;
+    padding: 4px 12px;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    background: #f0f9ff;
+    color: #0369a1;
+    font-size: 11.5px;
+    font-weight: 600;
 }
 
 .dashboard-main .asignacion-estado::before {
     content: "";
-    width: 7px;
-    height: 7px;
+    width: 6px;
+    height: 6px;
     border-radius: 50%;
     background: currentColor;
 }
 
 .asignacion-card[data-estado="PENDIENTE"] .asignacion-estado,
-.asignacion-card[data-estado="ACTIVA"] .asignacion-estado      { background: #ffeed6; color: #cc7a00; }
-.asignacion-card[data-estado="EN_ATENCION"] .asignacion-estado { background: #dcf4fb; color: #0b8fb8; }
-.asignacion-card[data-estado="FINALIZADA"] .asignacion-estado  { background: #dcf7ea; color: #0f8f57; }
+.asignacion-card[data-estado="ACTIVA"] .asignacion-estado      { background: #fffbeb; color: #b45309; border-color: #fde68a; }
+.asignacion-card[data-estado="EN_ATENCION"] .asignacion-estado { background: #f0f9ff; color: #0369a1; border-color: #e0f2fe; }
+.asignacion-card[data-estado="FINALIZADA"] .asignacion-estado  { background: #f0fdf4; color: #15803d; border-color: #dcfce7; }
 
 .dashboard-main .asignacion-info > div {
     border-color: #e6eff5;

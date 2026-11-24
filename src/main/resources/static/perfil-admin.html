@@ -84,13 +84,20 @@
             <!-- HERO / RESUMEN DEL ADMIN -->
             <section class="tp-hero-card">
                 <div class="tp-hero-info">
-                    <div class="tp-avatar-lg" id="perfilAvatarGrande">A</div>
+                    <div class="avatar-photo-wrapper">
+                        <div class="tp-avatar-lg" id="perfilAvatarGrande">
+                            <span id="perfilAvatarTxt">A</span>
+                            <img id="perfilAvatarImg" src="" alt="Foto de perfil" class="avatar-img-element" style="display:none;">
+                        </div>
+                        <label for="avatarFileInput" class="btn-avatar-cam" title="Subir foto de perfil">
+                            <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                        </label>
+                        <input type="file" id="avatarFileInput" accept="image/jpeg,image/png,image/webp" style="display:none;">
+                    </div>
                     <div class="tp-hero-text">
                         <h2 id="perfilNombreHero">Administrador Principal</h2>
                         <div class="tp-badges-row">
                             <span class="tp-badge tp-badge-role">Administrador del Sistema</span>
-                            <span class="tp-badge tp-badge-specialty">Gestión Integral</span>
-                            <span class="tp-badge tp-badge-status">Sesión Activa</span>
                         </div>
                     </div>
                 </div>
@@ -118,9 +125,6 @@
                     <!-- Columna 1: Información de Identidad -->
                     <div class="tp-card">
                         <div class="tp-card-header">
-                            <div class="tp-card-header-icon">
-                                <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                            </div>
                             <div>
                                 <h3>Información de Identidad</h3>
                                 <p>Datos del funcionario o responsable administrativo.</p>
@@ -152,9 +156,6 @@
                     <!-- Columna 2: Seguridad y Credenciales -->
                     <div class="tp-card">
                         <div class="tp-card-header">
-                            <div class="tp-card-header-icon">
-                                <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                            </div>
                             <div>
                                 <h3>Seguridad y Contraseña</h3>
                                 <p>Actualiza la clave maestra de acceso administrativo.</p>

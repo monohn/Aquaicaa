@@ -49,16 +49,8 @@ window.Panel = (function () {
     }
 
     function gradiente(nombre) {
-        const paleta = [
-            ["#0077b6", "#00a6d6"], ["#14b8a6", "#0ea5b7"], ["#7c3aed", "#a78bfa"],
-            ["#f59e0b", "#f97316"], ["#059669", "#10b981"], ["#ec4899", "#f472b6"]
-        ];
-        let hash = 0;
-        for (let i = 0; i < nombre.length; i++) {
-            hash = nombre.charCodeAt(i) + ((hash << 5) - hash);
-        }
-        const [a, b] = paleta[Math.abs(hash) % paleta.length];
-        return `linear-gradient(135deg, ${a}, ${b})`;
+        // Tono institucional unificado y sobrio para evitar saturación de colores
+        return "linear-gradient(135deg, #0a74c9, #0284c7)";
     }
 
     function pill(color, texto, punto = false) {
@@ -139,8 +131,14 @@ window.Panel = (function () {
         $("roleDisplay").textContent = rol;
 
         const avatar = $("userAvatar");
-        avatar.textContent = username.charAt(0).toUpperCase();
-        avatar.style.background = gradiente(username);
+        const savedAvatar = localStorage.getItem("aquaica_avatar_" + username) || localStorage.getItem("aquaica_avatar");
+        if (savedAvatar) {
+            avatar.innerHTML = `<img src="${savedAvatar}" alt="${username}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+            avatar.style.background = "transparent";
+        } else {
+            avatar.textContent = username.charAt(0).toUpperCase();
+            avatar.style.background = "#0a74c9";
+        }
 
         $("logoutButton")?.addEventListener("click", cerrarSesion);
         $("logoutMenu").addEventListener("click", cerrarSesion);

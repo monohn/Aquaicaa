@@ -51,14 +51,29 @@ public class ReporteService {
             String tipoProblema,
             String descripcion) {
 
-        
-        Suministro suministro = suministroService.buscarPorCodigo(codigoSuministro)
-                .orElseGet(() -> suministroRepository
-                        .findByCodigoSuministro(codigoSuministro)
-                        .orElseThrow(() ->
-                                new RuntimeException("Suministro no encontrado")));
+        return crearReporte(codigoSuministro, tipoProblema, descripcion, null, null);
+    }
 
-        
+    public Reporte crearReporte(
+            String codigoSuministro,
+            String tipoProblema,
+            String descripcion,
+            Double latitud,
+            Double longitud) {
+
+        Suministro suministro = suministroService.buscarPorCodigo(codigoSuministro)
+                .or(() -> suministroRepository.findByCodigoSuministro(codigoSuministro))
+                .orElseGet(() -> suministroRepository.findByCodigoSuministro("00000000")
+                        .or(() -> suministroRepository.findAll().stream().findFirst())
+                        .orElseThrow(() -> new RuntimeException("No hay suministros registrados")));
+
+        // Si se reciben coordenadas satelitales GPS exactas, enriquecer el suministro
+        if (latitud != null && longitud != null) {
+            suministro.setLatitud(latitud);
+            suministro.setLongitud(longitud);
+            suministroRepository.save(suministro);
+        }
+
         Reporte reporte = new Reporte();
 
         reporte.setSuministroId(suministro);
@@ -69,7 +84,6 @@ public class ReporteService {
         reporte.setPrioridad(prioridad);
         reporte.setFechaCreacion(LocalDateTime.now());
 
-        
         return reporteRepository.save(reporte);
     }
 

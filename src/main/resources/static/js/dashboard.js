@@ -106,9 +106,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const ESTADOS_REPORTE = {
         PENDIENTE:   { texto: "Pendiente",  color: "p-naranja" },
-        ASIGNADO:    { texto: "Asignado",   color: "p-azul" },
-        EN_PROCESO:  { texto: "En proceso", color: "p-celeste" },
-        EN_ATENCION: { texto: "En proceso", color: "p-celeste" },
+        ASIGNADO:    { texto: "Asignado",   color: "p-gris" },
+        EN_PROCESO:  { texto: "En proceso", color: "p-azul" },
+        EN_ATENCION: { texto: "En proceso", color: "p-azul" },
         RESUELTO:    { texto: "Resuelto",   color: "p-verde" },
         REABIERTO:   { texto: "Reabierto",  color: "p-morado" }
     };
@@ -116,8 +116,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const ESTADOS_SOLICITUD = {
         PENDIENTE:      { texto: "Pendiente",      color: "p-naranja" },
         EN_EVALUACION:  { texto: "En evaluación",  color: "p-azul" },
-        OBSERVADA:      { texto: "Observada",      color: "p-amarillo" },
-        APROBADA:       { texto: "Aprobada",       color: "p-celeste" },
+        OBSERVADA:      { texto: "Observada",      color: "p-gris" },
+        APROBADA:       { texto: "Aprobada",       color: "p-azul" },
         EN_INSTALACION: { texto: "En instalación", color: "p-morado" },
         ACTIVADA:       { texto: "Activada",       color: "p-verde" },
         RECHAZADA:      { texto: "Rechazada",      color: "p-rojo" },
@@ -133,8 +133,8 @@ document.addEventListener("DOMContentLoaded", () => {
     function pillPrioridad(prioridad) {
         const mapa = {
             ALTA:  ["Alta", "p-rojo"],
-            MEDIA: ["Media", "p-amarillo"],
-            BAJA:  ["Baja", "p-verde"]
+            MEDIA: ["Media", "p-gris"],
+            BAJA:  ["Baja", "p-gris"]
         };
         const [texto, color] = mapa[normalizar(prioridad)] || [titulo(prioridad || "—"), "p-gris"];
         return `<span class="dp-pill pri ${color}">${esc(texto)}</span>`;

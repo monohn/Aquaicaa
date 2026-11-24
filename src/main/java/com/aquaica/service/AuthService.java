@@ -106,10 +106,10 @@ public void registrarCiudadano(RegistroCiudadanoDTO request) {
     }
 
     if (request.getPassword() == null
-            || request.getPassword().length() < 10
+            || request.getPassword().length() < 6
             || request.getPassword().length() > 72) {
         throw new IllegalArgumentException(
-                "La contraseña debe tener entre 10 y 72 caracteres.");
+                "La contraseña debe tener entre 6 y 72 caracteres.");
     }
 
     if (request.getEmail() == null

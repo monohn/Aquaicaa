@@ -88,11 +88,16 @@ function initAuthUI() {
         const inicial = username.charAt(0).toUpperCase();
         const esAdmin = rol === 'ADMIN' || rol === 'SOPORTE';
 
+        const savedAvatar = localStorage.getItem("aquaica_avatar_" + username) || localStorage.getItem("aquaica_avatar");
+        const avatarContent = savedAvatar
+            ? `<img src="${savedAvatar}" alt="${escapeHtml(username)}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`
+            : inicial;
+
         if (esAdmin) {
             // Cabecera Administrador / Soporte
             headerAuthArea.innerHTML = `
                 <div class="user-profile-badge admin-badge" title="Sesión de ${escapeHtml(rol)} activa">
-                    <div class="user-badge-avatar" style="background:linear-gradient(135deg, #0a74c9, #0284c7);">${inicial}</div>
+                    <div class="user-badge-avatar" style="${savedAvatar ? 'background:transparent;' : 'background:#0a74c9;'}">${avatarContent}</div>
                     <div class="user-badge-info">
                         <span class="user-badge-name">${escapeHtml(username)}</span>
                         <span class="user-badge-role">${escapeHtml(rol === 'ADMIN' ? 'Administrador' : 'Soporte')}</span>
@@ -155,7 +160,7 @@ function initAuthUI() {
             // Cabecera Ciudadano Logueado
             headerAuthArea.innerHTML = `
                 <a href="perfil.html" class="user-profile-badge" style="text-decoration:none;" title="Ver y editar mis datos personales">
-                    <div class="user-badge-avatar">${inicial}</div>
+                    <div class="user-badge-avatar" style="${savedAvatar ? 'background:transparent;' : ''}">${avatarContent}</div>
                     <div class="user-badge-info">
                         <span class="user-badge-name">${escapeHtml(username)}</span>
                         <span class="user-badge-role">Ciudadano · Mi Perfil</span>

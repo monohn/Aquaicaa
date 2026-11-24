@@ -155,7 +155,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <tr data-cliente-id="${c.id}">
                     <td>
                         <div class="cliente-persona">
-                            <div class="cliente-avatar" style="background:${gradiente(c.nombreCompleto || "C")}">
+                            <div class="cliente-avatar">
                                 ${esc((c.nombreCompleto || "C").charAt(0).toUpperCase())}
                             </div>
                             <div>

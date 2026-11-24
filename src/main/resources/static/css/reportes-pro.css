@@ -205,14 +205,6 @@
 
 .rp-select:focus { border-color: #12a8e6; box-shadow: 0 0 0 3px rgba(18, 168, 230, .14); }
 
-/* El combo se tiñe según lo elegido */
-.rp-select[data-tono="PENDIENTE"]  { background: #fff1dc; border-color: #f3c777; color: #b3730a; }
-.rp-select[data-tono="EN_PROCESO"] { background: #dcf4fb; border-color: #8fd6ec; color: #0b7da0; }
-.rp-select[data-tono="RESUELTO"]   { background: #dcf7ea; border-color: #86dcb3; color: #0b7a4b; }
-.rp-select[data-tono="ALTA"]       { background: #fde7e7; border-color: #f2a6a6; color: #c23434; }
-.rp-select[data-tono="MEDIA"]      { background: #fff6c9; border-color: #e9d15b; color: #8a6d00; }
-.rp-select[data-tono="BAJA"]       { background: #dcf7ea; border-color: #86dcb3; color: #0b7a4b; }
-
 .rp-limpiar {
     display: inline-flex;
     align-items: center;
@@ -244,10 +236,13 @@
 .rp-mini {
     display: grid;
     place-items: center;
-    width: 30px;
-    height: 30px;
+    width: 28px;
+    height: 28px;
     flex-shrink: 0;
-    border-radius: 9px;
+    border-radius: 8px;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    color: #475569;
 }
 
 .rp-mini .dp-ico { width: 16px; height: 16px; }

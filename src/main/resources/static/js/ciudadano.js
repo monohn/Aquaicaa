@@ -672,7 +672,7 @@
             $("#compCuerpo").innerHTML = `
                 <div class="comp-cab">
                     <div class="comp-marca">
-                        <img src="images/logo-aquaica.png" alt="" width="40" height="40">
+                        <img src="images/aquaica-logo.png" alt="" width="40" height="40">
                         <div><strong>Aqualca</strong><span>Sistema de Gestión del Servicio de Agua</span></div>
                     </div>
                     <span class="comp-estado">${activada ? "Activada" : "Aprobada"}</span>

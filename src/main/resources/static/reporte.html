@@ -109,6 +109,14 @@
 
                     <small>Válido ingresando los 8 dígitos numéricos de tu suministro.</small>
 
+                    <div class="sin-suministro-box">
+                        <span>¿No tienes recibo a la mano o es una fuga en la calle?</span>
+                        <button type="button" id="btnSinSuministro" class="btn-sin-suministro">
+                            <svg class="icon-svg" viewBox="0 0 24 24" style="width:13px;height:13px;"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+                            Reportar como incidencia en vía pública
+                        </button>
+                    </div>
+
                 </div>
 
 
@@ -141,6 +149,29 @@
 
                     </div>
 
+                </div>
+
+                <!-- UBICACIÓN EXACTA / GEOLOCALIZACIÓN GPS -->
+                <div class="geoloc-card" id="geolocCard">
+                    <div class="geoloc-header">
+                        <div class="geoloc-info">
+                            <span class="geoloc-title">
+                                <svg class="icon-svg" viewBox="0 0 24 24" style="width:16px;height:16px;"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+                                Ubicación de la incidencia (GPS)
+                            </span>
+                            <p class="geoloc-desc" id="geolocDesc">Detección satelital automática para ubicar con precisión el incidente.</p>
+                        </div>
+                        <button type="button" class="btn-geoloc" id="btnGeolocManual" title="Detectar mi ubicación actual">
+                            <svg class="icon-svg" viewBox="0 0 24 24" style="width:13px;height:13px;"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+                            <span id="btnGeolocTxt">Detectar GPS</span>
+                        </button>
+                    </div>
+                    <div class="geoloc-status-bar" id="geolocStatusBar" style="display:none;">
+                        <span class="geoloc-badge" id="geolocBadge">📍 Solicitando permiso...</span>
+                        <span class="geoloc-coords" id="geolocCoords"></span>
+                    </div>
+                    <input type="hidden" id="reporteLatitud" name="latitud">
+                    <input type="hidden" id="reporteLongitud" name="longitud">
                 </div>
 
                 <div class="form-group">

@@ -141,20 +141,28 @@
         <!-- Banner de Bienvenida y Resumen del Perfil -->
         <section class="perfil-banner">
             <div class="perfil-banner-left">
-                <div class="perfil-avatar-big" id="perfilAvatarBig">?</div>
+                <div class="avatar-photo-wrapper">
+                    <div class="perfil-avatar-big" id="perfilAvatarBig">
+                        <span id="perfilAvatarTxt">?</span>
+                        <img id="perfilAvatarImg" src="" alt="Foto de perfil" class="avatar-img-element" style="display:none;">
+                    </div>
+                    <label for="avatarFileInput" class="btn-avatar-cam" title="Subir foto de perfil">
+                        <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                    </label>
+                    <input type="file" id="avatarFileInput" accept="image/jpeg,image/png,image/webp" style="display:none;">
+                </div>
                 <div class="perfil-user-header">
                     <div class="perfil-name-wrap">
                         <h1 id="perfilNombreHeader">Cargando perfil...</h1>
                         <span class="perfil-badge-verified">
-                            <svg class="badge-icon" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>
                             Ciudadano Verificado
                         </span>
                     </div>
                     <p class="perfil-user-sub" id="perfilUsuarioHeader">Usuario: cargando...</p>
                     <div class="perfil-meta-tags">
-                        <span class="meta-tag" id="perfilSuministroTag">💧 Suministro: No asignado</span>
-                        <span class="meta-tag" id="perfilDistritoTag">📍 Ica</span>
-                        <span class="meta-tag" id="perfilFechaTag">🗓️ Registrado recientemente</span>
+                        <span class="meta-tag" id="perfilSuministroTag">Suministro: No asignado</span>
+                        <span class="meta-tag" id="perfilDistritoTag">Distrito: Ica</span>
+                        <span class="meta-tag" id="perfilFechaTag">Registrado recientemente</span>
                     </div>
                 </div>
             </div>
@@ -173,9 +181,6 @@
             <!-- Columna Izquierda: Datos Personales y de Contacto -->
             <div class="perfil-card">
                 <div class="card-header">
-                    <div class="card-header-icon">
-                        <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                    </div>
                     <div>
                         <h3>Datos Personales y Contacto</h3>
                         <p>Mantén tu información al día para notificarte sobre el estado de tus reportes.</p>
@@ -219,9 +224,6 @@
             <!-- Columna Derecha: Suministro y Ubicación Principal -->
             <div class="perfil-card">
                 <div class="card-header">
-                    <div class="card-header-icon">
-                        <svg viewBox="0 0 24 24"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
-                    </div>
                     <div>
                         <h3>Suministro y Ubicación Principal</h3>
                         <p>Tu suministro de agua habitual en la provincia de Ica.</p>
@@ -258,8 +260,15 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="direccion">Dirección / Calle</label>
+                        <div class="label-with-action">
+                            <label for="direccion">Dirección / Calle</label>
+                            <button type="button" id="btnDetectarGpsPerfil" class="btn-gps-detect" title="Detectar mi ubicación satelital actual">
+                                <svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2.2;"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+                                <span id="txtGpsPerfil">Detectar mi ubicación</span>
+                            </button>
+                        </div>
                         <input type="text" id="direccion" name="direccion" placeholder="Ej. Av. San Martín 450, Urb. San José">
+                        <span class="input-hint" id="hintGpsPerfil" style="display:none;"></span>
                     </div>
 
                     <div class="form-group">
@@ -287,6 +296,7 @@
 
     </main>
 
+    <script src="js/api.js"></script>
     <script src="js/perfil.js"></script>
 </body>
 </html>

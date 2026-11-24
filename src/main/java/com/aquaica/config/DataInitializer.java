@@ -151,6 +151,17 @@ public class DataInitializer implements CommandLineRunner {
         clienteRepository.save(cliente3);
 
         // 3. Suministros con coordenadas de Ica
+        Suministro s0 = new Suministro();
+        s0.setCodigoSuministro("00000000");
+        s0.setNombreTitular("Incidencia Vecinal / Vía Pública");
+        s0.setDni("00000000");
+        s0.setDireccion("Vía Pública, Cercado de Ica");
+        s0.setLatitud(-14.0678);
+        s0.setLongitud(-75.7286);
+        s0.setCategoria("DOMESTICO");
+        s0.setCliente(cliente1);
+        suministroRepository.save(s0);
+
         Suministro s1 = new Suministro();
         s1.setCodigoSuministro("SUM-00125");
         s1.setNombreTitular("María Quispe Ramos");

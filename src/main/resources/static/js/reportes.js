@@ -46,17 +46,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const ESTADOS = {
         PENDIENTE:   { texto: "Pendiente",  color: "p-naranja" },
-        ASIGNADO:    { texto: "Asignado",   color: "p-azul" },
-        EN_PROCESO:  { texto: "En proceso", color: "p-celeste" },
-        EN_ATENCION: { texto: "En proceso", color: "p-celeste" },
+        ASIGNADO:    { texto: "Asignado",   color: "p-gris" },
+        EN_PROCESO:  { texto: "En proceso", color: "p-azul" },
+        EN_ATENCION: { texto: "En proceso", color: "p-azul" },
         RESUELTO:    { texto: "Resuelto",   color: "p-verde" },
         REABIERTO:   { texto: "Reabierto",  color: "p-morado" }
     };
 
     const PRIORIDADES = {
         ALTA:  { texto: "Alta",  color: "p-rojo" },
-        MEDIA: { texto: "Media", color: "p-amarillo" },
-        BAJA:  { texto: "Baja",  color: "p-verde" }
+        MEDIA: { texto: "Media", color: "p-gris" },
+        BAJA:  { texto: "Baja",  color: "p-gris" }
     };
 
     function tipoInfo(tipo) {
@@ -166,7 +166,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     <td class="pc-codigo">#${esc(r.reporteId)}</td>
                     <td>
                         <div class="pc-persona">
-                            <span class="pc-avatar" style="background:${gradiente(nombre)}">${esc(iniciales(nombre))}</span>
+                            <span class="pc-avatar">${esc(iniciales(nombre))}</span>
                             <span>
                                 <strong>${esc(nombre)}</strong>
                                 <span class="pc-sub">DNI: ${esc(r.dni || "—")}</span>
@@ -176,7 +176,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     <td>${esc(r.codigoSuministro || "—")}</td>
                     <td>
                         <span class="rp-tipo">
-                            <span class="rp-mini ${tipo.mini}">${svg(tipo.trazo)}</span>
+                            <span class="rp-mini">${svg(tipo.trazo)}</span>
                             ${esc(tipo.texto)}
                         </span>
                     </td>

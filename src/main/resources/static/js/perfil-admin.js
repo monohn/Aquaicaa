@@ -50,10 +50,22 @@ document.addEventListener("DOMContentLoaded", async () => {
             if (admin && admin.telefono) $("adminTelefono").value = admin.telefono;
 
             const avatarGrande = $("perfilAvatarGrande");
-            avatarGrande.textContent = (nombre.charAt(0) || "A").toUpperCase();
-            avatarGrande.style.background = gradiente(nombre);
+            const avatarTxt = $("perfilAvatarTxt");
+            const avatarImg = $("perfilAvatarImg");
+            const inicial = (nombre.charAt(0) || "A").toUpperCase();
+            if (avatarTxt) avatarTxt.textContent = inicial;
+
+            const savedAvatar = localStorage.getItem("aquaica_avatar_" + username) || localStorage.getItem("aquaica_avatar");
+            if (savedAvatar && avatarImg) {
+                avatarImg.src = savedAvatar;
+                avatarImg.style.display = "block";
+                if (avatarTxt) avatarTxt.style.display = "none";
+            } else {
+                avatarGrande.style.background = "#0a74c9";
+            }
 
             cargarMetricas();
+            configurarSubidaAvatar();
 
         } catch (error) {
             console.error("Error al cargar perfil admin:", error);
@@ -138,6 +150,59 @@ document.addEventListener("DOMContentLoaded", async () => {
             `;
         }
     });
+
+    function configurarSubidaAvatar() {
+        const input = $("avatarFileInput");
+        const img = $("perfilAvatarImg");
+        const txt = $("perfilAvatarTxt");
+        const username = localStorage.getItem("username") || "admin";
+
+        if (!input) return;
+
+        input.addEventListener("change", (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                const tempImg = new Image();
+                tempImg.onload = () => {
+                    const canvas = document.createElement("canvas");
+                    const maxDim = 320;
+                    let w = tempImg.width;
+                    let h = tempImg.height;
+                    if (w > h) {
+                        if (w > maxDim) { h = Math.round((h * maxDim) / w); w = maxDim; }
+                    } else {
+                        if (h > maxDim) { w = Math.round((w * maxDim) / h); h = maxDim; }
+                    }
+                    canvas.width = w;
+                    canvas.height = h;
+                    const ctx = canvas.getContext("2d");
+                    ctx.drawImage(tempImg, 0, 0, w, h);
+                    const dataUrl = canvas.toDataURL("image/jpeg", 0.88);
+
+                    localStorage.setItem("aquaica_avatar_" + username, dataUrl);
+                    localStorage.setItem("aquaica_avatar", dataUrl);
+
+                    if (img) {
+                        img.src = dataUrl;
+                        img.style.display = "block";
+                    }
+                    if (txt) txt.style.display = "none";
+
+                    const userAvatar = $("userAvatar");
+                    if (userAvatar) {
+                        userAvatar.innerHTML = `<img src="${dataUrl}" alt="Avatar" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+                        userAvatar.style.background = "transparent";
+                    }
+                    toast("Foto de perfil actualizada correctamente");
+                };
+                tempImg.src = ev.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+    }
 
     await cargarPerfil();
 });

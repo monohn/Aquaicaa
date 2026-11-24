@@ -41,6 +41,16 @@ document.addEventListener("DOMContentLoaded", () => {
     let suministroEncontrado = false;
 
     async function validarSuministroRapido(codigo) {
+        if (codigo === "00000000") {
+            suministroEncontrado = true;
+            titularSuministro.textContent = "Incidencia Vecinal / Vía Pública";
+            dniSuministro.textContent = "00000000";
+            direccionSuministro.textContent = "Vía Pública, Cercado de Ica";
+            datosSuministro.style.display = "block";
+            mostrarMensaje("Modo vía pública activado. Se registrará la incidencia sin requerir recibo domiciliario.", "success");
+            return;
+        }
+
         if (!/^\d{8}$/.test(codigo)) {
             suministroEncontrado = false;
             datosSuministro.style.display = "none";
@@ -80,6 +90,19 @@ document.addEventListener("DOMContentLoaded", () => {
         const codigo = codigoInput.value.trim();
         validarSuministroRapido(codigo);
     });
+
+    const btnSinSuministro = document.getElementById("btnSinSuministro");
+    if (btnSinSuministro) {
+        btnSinSuministro.addEventListener("click", () => {
+            codigoInput.value = "00000000";
+            validarSuministroRapido("00000000");
+            const btnGeo = document.getElementById("btnGeolocManual");
+            const latVal = document.getElementById("reporteLatitud")?.value;
+            if (btnGeo && !latVal) {
+                btnGeo.click();
+            }
+        });
+    }
 
     codigoInput.addEventListener("input", () => {
         // Permitir solo números y máximo 8 dígitos
@@ -200,9 +223,19 @@ document.addEventListener("DOMContentLoaded", () => {
             );
 
 
+            const lat = document.getElementById("reporteLatitud")?.value;
+            const lng = document.getElementById("reporteLongitud")?.value;
+
+            let descFinal = descripcion;
+            if (lat && lng) {
+                formData.append("latitud", lat);
+                formData.append("longitud", lng);
+                descFinal = `${descripcion}\n[GPS: ${lat}, ${lng}]`;
+            }
+
             formData.append(
                 "descripcion",
-                descripcion
+                descFinal
             );
 
 
@@ -349,6 +382,88 @@ document.addEventListener("DOMContentLoaded", () => {
 
         mensaje.className =
             "reporte-mensaje";
+    }
+
+    iniciarGeolocalizacionReporte();
+
+    /* ===== GEOLOCALIZACIÓN GPS AUTOMÁTICA CON PERMISO ===== */
+    function iniciarGeolocalizacionReporte() {
+        const card = document.getElementById("geolocCard");
+        const desc = document.getElementById("geolocDesc");
+        const statusBar = document.getElementById("geolocStatusBar");
+        const badge = document.getElementById("geolocBadge");
+        const coordsSpan = document.getElementById("geolocCoords");
+        const btnTxt = document.getElementById("btnGeolocTxt");
+        const btnManual = document.getElementById("btnGeolocManual");
+        const inputLat = document.getElementById("reporteLatitud");
+        const inputLng = document.getElementById("reporteLongitud");
+
+        if (!card) return;
+
+        if (!navigator.geolocation) {
+            if (desc) desc.textContent = "Geolocalización no soportada en este navegador.";
+            if (btnManual) btnManual.style.display = "none";
+            return;
+        }
+
+        function solicitarGPS(esAutomatico = false) {
+            if (statusBar) statusBar.style.display = "flex";
+            if (badge) {
+                badge.className = "geoloc-badge pendiente";
+                badge.textContent = esAutomatico
+                    ? "📍 Solicitando permiso de ubicación al navegador..."
+                    : "📍 Detectando señal satelital GPS...";
+            }
+            if (btnTxt) btnTxt.textContent = "Detectando...";
+            if (btnManual) btnManual.disabled = true;
+
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    const lat = pos.coords.latitude;
+                    const lng = pos.coords.longitude;
+                    const prec = Math.round(pos.coords.accuracy || 10);
+
+                    if (inputLat) inputLat.value = lat.toFixed(6);
+                    if (inputLng) inputLng.value = lng.toFixed(6);
+
+                    localStorage.setItem("aquaica_last_lat", lat);
+                    localStorage.setItem("aquaica_last_lng", lng);
+
+                    if (badge) {
+                        badge.className = "geoloc-badge exito";
+                        badge.textContent = `✅ Ubicación GPS detectada (±${prec} m)`;
+                    }
+                    if (coordsSpan) {
+                        coordsSpan.textContent = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+                    }
+                    if (btnTxt) btnTxt.textContent = "Ubicación detectada";
+                    if (btnManual) btnManual.disabled = false;
+                },
+                (err) => {
+                    console.log("GPS no concedido o error:", err);
+                    if (badge) {
+                        badge.className = "geoloc-badge aviso";
+                        if (err.code === err.PERMISSION_DENIED) {
+                            badge.textContent = "ℹ️ Permiso de ubicación no concedido. Puedes continuar ingresando tu dirección.";
+                        } else {
+                            badge.textContent = "⚠️ Señal satelital no disponible en este instante.";
+                        }
+                    }
+                    if (btnTxt) btnTxt.textContent = "Reintentar GPS";
+                    if (btnManual) btnManual.disabled = false;
+                },
+                { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+            );
+        }
+
+        // Solicitar permiso de geolocalización automáticamente tras cargar la vista
+        setTimeout(() => {
+            solicitarGPS(true);
+        }, 500);
+
+        if (btnManual) {
+            btnManual.addEventListener("click", () => solicitarGPS(false));
+        }
     }
 
 });

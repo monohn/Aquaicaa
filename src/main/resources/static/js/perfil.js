@@ -60,11 +60,16 @@ async function initPerfil() {
     const drawerUserStatus = document.getElementById('drawerUserStatus');
     const drawerFooter = document.getElementById('drawerFooter');
     const inicial = username.charAt(0).toUpperCase();
+    const savedAvatar = localStorage.getItem('aquaica_avatar_' + username) || localStorage.getItem('aquaica_avatar');
+
+    const avatarHtml = savedAvatar
+        ? `<img src="${savedAvatar}" alt="${escapeHtml(username)}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`
+        : inicial;
 
     if (headerAuthArea) {
         headerAuthArea.innerHTML = `
             <div class="user-profile-badge">
-                <div class="user-badge-avatar">${inicial}</div>
+                <div class="user-badge-avatar" style="${savedAvatar ? 'background:transparent;' : ''}">${avatarHtml}</div>
                 <div class="user-badge-info">
                     <span class="user-badge-name">${escapeHtml(username)}</span>
                     <span class="user-badge-role">${escapeHtml(rol || 'Ciudadano')}</span>
@@ -104,7 +109,18 @@ async function initPerfil() {
     // Cargar datos del perfil desde backend
     document.getElementById('username').value = username;
     document.getElementById('perfilUsuarioHeader').textContent = `Usuario: @${username} · Rol: ${rol || 'Ciudadano'}`;
-    document.getElementById('perfilAvatarBig').textContent = inicial;
+
+    const txtAvatar = document.getElementById('perfilAvatarTxt');
+    const imgAvatar = document.getElementById('perfilAvatarImg');
+    if (txtAvatar) txtAvatar.textContent = inicial;
+    if (savedAvatar && imgAvatar) {
+        imgAvatar.src = savedAvatar;
+        imgAvatar.style.display = 'block';
+        if (txtAvatar) txtAvatar.style.display = 'none';
+    }
+
+    configurarSubidaAvatarCiudadano(username);
+    configurarGpsPerfil();
 
     try {
         const resp = await fetch('/api/clientes/me', {
@@ -366,4 +382,153 @@ function escapeHtml(str) {
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#039;');
+}
+
+/* ===== FOTO DE PERFIL CIUDADANO ===== */
+function configurarSubidaAvatarCiudadano(username) {
+    const input = document.getElementById('avatarFileInput');
+    const img = document.getElementById('perfilAvatarImg');
+    const txt = document.getElementById('perfilAvatarTxt');
+
+    if (!input) return;
+
+    input.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        if (!file.type.startsWith('image/')) {
+            alert('Por favor selecciona una imagen válida (JPG, PNG o WEBP).');
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            const tempImg = new Image();
+            tempImg.onload = () => {
+                const canvas = document.createElement('canvas');
+                const maxDim = 320;
+                let w = tempImg.width;
+                let h = tempImg.height;
+                if (w > h) {
+                    if (w > maxDim) { h = Math.round((h * maxDim) / w); w = maxDim; }
+                } else {
+                    if (h > maxDim) { w = Math.round((w * maxDim) / h); h = maxDim; }
+                }
+                canvas.width = w;
+                canvas.height = h;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(tempImg, 0, 0, w, h);
+                const dataUrl = canvas.toDataURL('image/jpeg', 0.88);
+
+                localStorage.setItem('aquaica_avatar_' + username, dataUrl);
+                localStorage.setItem('aquaica_avatar', dataUrl);
+
+                if (img) {
+                    img.src = dataUrl;
+                    img.style.display = 'block';
+                }
+                if (txt) txt.style.display = 'none';
+
+                const badgeAvatar = document.querySelector('.user-badge-avatar');
+                if (badgeAvatar) {
+                    badgeAvatar.innerHTML = `<img src="${dataUrl}" alt="Avatar" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+                    badgeAvatar.style.background = 'transparent';
+                }
+            };
+            tempImg.src = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+/* ===== GEOLOCALIZACIÓN CIUDADANA AUTOMÁTICA ===== */
+function configurarGpsPerfil() {
+    const btnGps = document.getElementById('btnDetectarGpsPerfil');
+    const txtBtn = document.getElementById('txtGpsPerfil');
+    const hint = document.getElementById('hintGpsPerfil');
+    const selectDistrito = document.getElementById('distrito');
+    const inputDireccion = document.getElementById('direccion');
+
+    if (!btnGps) return;
+
+    const DISTRITOS_ICA = [
+        { nombre: 'Ica', lat: -14.0678, lng: -75.7286 },
+        { nombre: 'Parcona', lat: -14.0530, lng: -75.7060 },
+        { nombre: 'La Tinguiña', lat: -14.0450, lng: -75.7140 },
+        { nombre: 'Subtanjalla', lat: -14.0280, lng: -75.7480 },
+        { nombre: 'San Juan Bautista', lat: -14.0150, lng: -75.7350 },
+        { nombre: 'Los Aquijes', lat: -14.0950, lng: -75.6900 },
+        { nombre: 'Salas Guadalupe', lat: -13.9850, lng: -75.7650 },
+        { nombre: 'Pueblo Nuevo', lat: -14.0840, lng: -75.7580 },
+        { nombre: 'Tate', lat: -14.1200, lng: -75.7100 },
+        { nombre: 'Pachacútec', lat: -14.1450, lng: -75.7000 },
+        { nombre: 'Santiago', lat: -14.1850, lng: -75.7200 },
+        { nombre: 'Ocucaje', lat: -14.3400, lng: -75.6800 },
+        { nombre: 'Yauca del Rosario', lat: -14.1750, lng: -75.5200 }
+    ];
+
+    function obtenerDistritoMasCercano(lat, lng) {
+        let menorDist = Infinity;
+        let distritoElegido = 'Ica';
+        for (const d of DISTRITOS_ICA) {
+            const dist = Math.hypot(lat - d.lat, lng - d.lng);
+            if (dist < menorDist) {
+                menorDist = dist;
+                distritoElegido = d.nombre;
+            }
+        }
+        return distritoElegido;
+    }
+
+    async function ejecutarDeteccionGPS() {
+        if (!navigator.geolocation) {
+            alert('Tu navegador no cuenta con soporte para geolocalización satelital.');
+            return;
+        }
+
+        txtBtn.textContent = 'Solicitando permiso...';
+        btnGps.disabled = true;
+
+        navigator.geolocation.getCurrentPosition(
+            (pos) => {
+                const lat = pos.coords.latitude;
+                const lng = pos.coords.longitude;
+                const prec = Math.round(pos.coords.accuracy || 10);
+
+                localStorage.setItem('aquaica_last_lat', lat);
+                localStorage.setItem('aquaica_last_lng', lng);
+
+                const distritoDetectado = obtenerDistritoMasCercano(lat, lng);
+                if (selectDistrito) {
+                    selectDistrito.value = distritoDetectado;
+                }
+
+                if (hint) {
+                    hint.style.display = 'block';
+                    hint.style.color = '#15803d';
+                    hint.textContent = `📍 GPS detectado: ${distritoDetectado} (${lat.toFixed(5)}, ${lng.toFixed(5)} ±${prec}m)`;
+                }
+
+                txtBtn.textContent = 'GPS detectado';
+                btnGps.disabled = false;
+            },
+            (err) => {
+                console.warn('GPS permiso o error:', err);
+                if (hint) {
+                    hint.style.display = 'block';
+                    hint.style.color = '#b45309';
+                    if (err.code === err.PERMISSION_DENIED) {
+                        hint.textContent = 'Permiso denegado. Puedes seleccionar tu distrito y escribir tu dirección manualmente.';
+                    } else {
+                        hint.textContent = 'No se pudo obtener señal GPS en este momento. Ingresa tus datos manualmente.';
+                    }
+                }
+                txtBtn.textContent = 'Reintentar GPS';
+                btnGps.disabled = false;
+            },
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+        );
+    }
+
+    btnGps.addEventListener('click', ejecutarDeteccionGPS);
 }

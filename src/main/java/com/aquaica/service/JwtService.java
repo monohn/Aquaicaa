@@ -1,21 +1,22 @@
 
 package com.aquaica.service;
 
-import com.aquaica.entity.Usuario;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
-import org.springframework.stereotype.Service;
-
-import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
+import javax.crypto.SecretKey;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+import com.aquaica.entity.Usuario;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
+
 @Service
 public class JwtService {
-
-    private static final String SECRET_KEY =
-            "AquaIca-Secret-Key-Para-JWT-2026-Seguridad-123456789";
 
     // Duración de sesión de 7 días para evitar expiraciones abruptas durante el uso
     private static final long EXPIRATION_TIME =
@@ -23,9 +24,9 @@ public class JwtService {
 
     private final SecretKey secretKey;
 
-    public JwtService() {
+    public JwtService(@Value("${jwt.secret:AquaIca-Secret-Key-Para-JWT-2026-Seguridad-123456789}") String secret) {
         this.secretKey = Keys.hmacShaKeyFor(
-                SECRET_KEY.getBytes(StandardCharsets.UTF_8)
+                secret.getBytes(StandardCharsets.UTF_8)
         );
     }
 

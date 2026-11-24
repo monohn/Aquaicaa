@@ -315,3 +315,51 @@
     opacity: 0.65;
     cursor: not-allowed;
 }
+
+/* Foto de Perfil */
+.avatar-photo-wrapper {
+    position: relative;
+    display: inline-block;
+    flex-shrink: 0;
+}
+
+.avatar-img-element {
+    width: 100%;
+    height: 100%;
+    border-radius: inherit;
+    object-fit: cover;
+    display: block;
+}
+
+.btn-avatar-cam {
+    position: absolute;
+    bottom: -3px;
+    right: -3px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #0a74c9;
+    color: #ffffff;
+    border: 2px solid #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s ease, background 0.2s ease;
+    z-index: 2;
+}
+
+.btn-avatar-cam:hover {
+    background: #0284c7;
+    transform: scale(1.1);
+}
+
+.btn-avatar-cam svg {
+    width: 14px;
+    height: 14px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2.2;
+}
+

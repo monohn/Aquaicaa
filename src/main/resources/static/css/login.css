@@ -84,6 +84,83 @@
     pointer-events: none;
 }
 
+/* ===== ACCESOS RÁPIDOS DEMO ===== */
+.demo-accounts-box {
+    margin-top: 15px;
+    padding: 12px 14px;
+    background: rgba(255, 255, 255, 0.75);
+    border: 1px solid rgba(0, 119, 182, 0.16);
+    border-radius: 14px;
+    text-align: left;
+}
+
+.demo-title {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    color: #486581;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.demo-chips {
+    display: flex;
+    gap: 7px;
+    flex-wrap: wrap;
+}
+
+.demo-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    background: #ffffff;
+    border: 1px solid #d9e2ec;
+    border-radius: 999px;
+    font-size: 11.5px;
+    color: #334e68;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.demo-chip:hover {
+    transform: translateY(-1px);
+    border-color: #0077b6;
+    box-shadow: 0 4px 10px rgba(0, 119, 182, 0.15);
+}
+
+.chip-badge {
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 999px;
+    font-size: 9.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+.chip-badge.admin {
+    background: #e0f2fe;
+    color: #0284c7;
+}
+
+.chip-badge.tecnico {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+.chip-badge.ciudadano {
+    background: #dcfce7;
+    color: #16a34a;
+}
+
+.chip-user {
+    font-weight: 600;
+    font-size: 11px;
+}
+
 .login-page::before {
 
     content: "";

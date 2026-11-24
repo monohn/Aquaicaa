@@ -41,6 +41,25 @@
                     Ingresa tus credenciales para continuar
                 </p>
 
+                <!-- Accesos rápidos de prueba -->
+                <div class="demo-accounts-box">
+                    <span class="demo-title">Acceso rápido para prueba:</span>
+                    <div class="demo-chips">
+                        <button type="button" class="demo-chip" onclick="fillDemoCredentials('admin', 'admin123')">
+                            <span class="chip-badge admin">Admin</span>
+                            <span class="chip-user">admin</span>
+                        </button>
+                        <button type="button" class="demo-chip" onclick="fillDemoCredentials('tecnico1', 'tecnico123')">
+                            <span class="chip-badge tecnico">Técnico</span>
+                            <span class="chip-user">tecnico1</span>
+                        </button>
+                        <button type="button" class="demo-chip" onclick="fillDemoCredentials('mariaquispe', 'cliente123')">
+                            <span class="chip-badge ciudadano">Ciudadano</span>
+                            <span class="chip-user">mariaquispe</span>
+                        </button>
+                    </div>
+                </div>
+
             </div>
 
 
@@ -122,6 +141,7 @@
 
         </section>
     </main>
+<script src="js/api.js"></script>
 <script src="js/auth.js"></script>
 
 </body>

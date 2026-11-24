@@ -1,4 +1,14 @@
 
+window.fillDemoCredentials = function(username, password) {
+    const userInput = document.getElementById("username");
+    const passInput = document.getElementById("password");
+    if (userInput && passInput) {
+        userInput.value = username;
+        passInput.value = password;
+        userInput.focus();
+    }
+};
+
 document.addEventListener("DOMContentLoaded", () => {
     const loginForm = document.getElementById("loginForm");
     const loginMessage = document.getElementById("loginMessage");

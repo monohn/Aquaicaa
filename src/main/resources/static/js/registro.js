@@ -24,8 +24,8 @@ registroForm.addEventListener("submit", async function (event) {
         return;
     }
 
-    if (password.length < 10 || password.length > 72) {
-        mostrarMensaje("La contraseña debe tener entre 10 y 72 caracteres.");
+    if (password.length < 6 || password.length > 72) {
+        mostrarMensaje("La contraseña debe tener al menos 6 caracteres.");
         return;
     }
 
