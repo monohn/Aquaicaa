@@ -37,6 +37,14 @@ public class SeguimientoService {
             Long reporteId,
             String estado,
             String comentario) {
+        return crearSeguimiento(reporteId, estado, comentario, null);
+    }
+
+    public SeguimientoResponseDTO crearSeguimiento(
+            Long reporteId,
+            String estado,
+            String comentario,
+            Integer diasProximaRevision) {
 
 
         Reporte reporte = reporteRepository.findById(reporteId)
@@ -83,13 +91,22 @@ public class SeguimientoService {
                                 new RuntimeException(
                                         "Personal no encontrado"));
 
+        String comentarioFinal = comentario != null ? comentario.trim() : "";
+        if (diasProximaRevision != null && diasProximaRevision > 0) {
+            java.time.LocalDate fechaRev = java.time.LocalDate.now().plusDays(diasProximaRevision);
+            String fechaFmt = fechaRev.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+            comentarioFinal += " — Próxima revisión programada dentro de "
+                    + diasProximaRevision + (diasProximaRevision == 1 ? " día" : " días")
+                    + " (" + fechaFmt + ").";
+        }
+
 
         Seguimiento seguimiento = new Seguimiento();
 
         seguimiento.setReporte(reporte);
         seguimiento.setPersonal(personal);
         seguimiento.setEstado(estado);
-        seguimiento.setComentario(comentario);
+        seguimiento.setComentario(comentarioFinal);
         seguimiento.setFechaCreacion(LocalDateTime.now());
 
 

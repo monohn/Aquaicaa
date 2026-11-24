@@ -599,17 +599,25 @@ function crearTarjeta(item) {
         badgeIcon = '<svg class="badge-svg" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>';
     } else {
         const est = (item.estado || '').toUpperCase();
-        if (est.includes('RESUELTO')) {
+        if (est.includes('RESUELTO') && !est.includes('NO_RESUELTO')) {
             badgeClass = 'badge-resuelto';
             badgeText = 'Resuelto ✓';
             badgeIcon = '<span class="badge-dot dot-green"></span>';
+        } else if (est.includes('MEJORA_PARCIAL')) {
+            badgeClass = 'badge-en-atencion';
+            badgeText = 'Mejora parcial';
+            badgeIcon = '<span class="badge-dot dot-blue pulse"></span>';
+        } else if (est.includes('REVISION_PROGRAMADA')) {
+            badgeClass = 'badge-pendiente';
+            badgeText = 'Revisión programada';
+            badgeIcon = '<span class="badge-dot dot-amber pulse"></span>';
         } else if (est.includes('ATENCION') || est.includes('ASIGNADO') || est.includes('PROCESO')) {
             badgeClass = 'badge-en-atencion';
             badgeText = 'En atención técnica';
             badgeIcon = '<span class="badge-dot dot-blue pulse"></span>';
-        } else if (est.includes('REABIERTO')) {
+        } else if (est.includes('REABIERTO') || est.includes('NO_RESUELTO')) {
             badgeClass = 'badge-reabierto';
-            badgeText = 'Reabierto';
+            badgeText = est.includes('NO_RESUELTO') ? 'En reevaluación' : 'Reabierto';
             badgeIcon = '<span class="badge-dot dot-purple"></span>';
         } else {
             badgeText = 'Reportado';
@@ -630,7 +638,7 @@ function crearTarjeta(item) {
         catTagHtml = `<span class="feed-cat-chip cat-oficial">📢 EMAPICA Oficial</span>`;
     }
 
-    const tiempo = item.tiempoRelativo || 'Reciente';
+    const tiempo = item.tiempoUltimaActualizacion || item.tiempoRelativo || 'Reciente';
 
     // Comprobar si el usuario ya apoyó este reporte localmente
     const apoyados = JSON.parse(localStorage.getItem('aquaica_apoyados') || '[]');
@@ -668,14 +676,64 @@ function crearTarjeta(item) {
         html += `<div class="card-body"><p class="card-desc">${escapeHtml(item.descripcion)}</p></div>`;
     }
 
-    // Imagen con soporte de Lightbox interactivo
-    if (item.imagenUrl) {
+    // Imagen con soporte de Lightbox interactivo (ciudadana y/o evidencia técnica oficial)
+    if (item.imagenTecnicoUrl && item.imagenUrl && item.imagenTecnicoUrl !== item.imagenUrl) {
         html += `
-            <div class="card-image-wrap" onclick="abrirLightbox('${escapeHtml(item.imagenUrl)}', '${escapeHtml(item.titulo || 'Evidencia fotográfica')}')" title="Toca para ampliar foto">
-                <img class="card-image" src="${escapeHtml(item.imagenUrl)}" alt="Evidencia de reporte" loading="lazy" onerror="this.parentElement.style.display='none'">
-                <span class="image-zoom-badge">
-                    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35M11 8v6M8 11h6"/></svg> Ampliar
+            <div class="card-images-dual">
+                <div class="card-image-wrap" onclick="abrirLightbox('${escapeHtml(item.imagenTecnicoUrl)}', 'Evidencia técnica oficial')" title="Toca para ampliar foto técnica">
+                    <img class="card-image" src="${escapeHtml(item.imagenTecnicoUrl)}" alt="Evidencia técnica" loading="lazy" onerror="this.parentElement.style.display='none'">
+                    <span class="image-tech-badge">Evidencia técnica oficial</span>
+                </div>
+                <div class="card-image-wrap" onclick="abrirLightbox('${escapeHtml(item.imagenUrl)}', 'Foto reportada')" title="Toca para ampliar foto">
+                    <img class="card-image" src="${escapeHtml(item.imagenUrl)}" alt="Foto reportada" loading="lazy" onerror="this.parentElement.style.display='none'">
+                    <span class="image-zoom-badge">Reporte inicial</span>
+                </div>
+            </div>
+        `;
+    } else if (item.imagenTecnicoUrl || item.imagenUrl) {
+        const fotoMostrar = item.imagenTecnicoUrl || item.imagenUrl;
+        const etiquetaFoto = item.imagenTecnicoUrl ? 'Evidencia técnica oficial' : 'Ampliar';
+        html += `
+            <div class="card-image-wrap" onclick="abrirLightbox('${escapeHtml(fotoMostrar)}', '${escapeHtml(item.titulo || 'Evidencia fotográfica')}')" title="Toca para ampliar foto">
+                <img class="card-image" src="${escapeHtml(fotoMostrar)}" alt="Evidencia de reporte" loading="lazy" onerror="this.parentElement.style.display='none'">
+                <span class="${item.imagenTecnicoUrl ? 'image-tech-badge' : 'image-zoom-badge'}">
+                    ${etiquetaFoto}
                 </span>
+            </div>
+        `;
+    }
+
+    // Actualizaciones oficiales publicadas por Administración / Equipo Técnico
+    if (!esComunicado && Array.isArray(item.actualizaciones) && item.actualizaciones.length > 0) {
+        const ultimaAct = item.actualizaciones[0];
+        const restoActs = item.actualizaciones.slice(1);
+        const toggleBtnHtml = restoActs.length > 0
+            ? `<button type="button" class="btn-toggle-updates" onclick="toggleUpdates(${item.id})">Ver historial (${item.actualizaciones.length})</button>`
+            : '';
+
+        html += `
+            <div class="card-official-updates">
+                <div class="official-updates-head">
+                    <span class="official-updates-tag">Actualización oficial · ${escapeHtml(ultimaAct.autor || 'Administración AquaIca')}</span>
+                    <div class="official-updates-right">
+                        <span class="official-updates-time">${escapeHtml(ultimaAct.tiempoRelativo || 'Reciente')}</span>
+                        ${toggleBtnHtml}
+                    </div>
+                </div>
+                <p class="official-update-latest">${escapeHtml(ultimaAct.mensaje || '')}</p>
+                ${restoActs.length > 0 ? `
+                    <div class="official-updates-history" id="updates-hist-${item.id}" style="display:none;">
+                        ${restoActs.map(act => `
+                            <div class="official-update-item">
+                                <div class="update-item-meta">
+                                    <strong>${escapeHtml(act.autor || 'Administración AquaIca')}</strong>
+                                    <span>${escapeHtml(act.tiempoRelativo || '')}</span>
+                                </div>
+                                <p>${escapeHtml(act.mensaje || '')}</p>
+                            </div>
+                        `).join('')}
+                    </div>
+                ` : ''}
             </div>
         `;
     }
@@ -774,6 +832,14 @@ function crearTarjeta(item) {
     return card;
 }
 
+
+// ====== INTERACCIÓN: DESPLEGAR HISTORIAL OFICIAL ======
+function toggleUpdates(reporteId) {
+    const hist = document.getElementById(`updates-hist-${reporteId}`);
+    if (!hist) return;
+    const oculto = hist.style.display === 'none' || !hist.style.display;
+    hist.style.display = oculto ? 'flex' : 'none';
+}
 
 // ====== INTERACCIÓN: APOYAR REPORTE ======
 async function apoyarReporte(btn, reporteId) {

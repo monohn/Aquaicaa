@@ -27,41 +27,19 @@ public class SuministroService {
         this.clienteRepository = clienteRepository;
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public Optional<Suministro> buscarPorCodigo(String codigo) {
         if (codigo == null || codigo.isBlank()) {
             return Optional.empty();
         }
         String codigoLimpio = codigo.trim();
-        Optional<Suministro> existente = suministroRepository.findByCodigoSuministro(codigoLimpio);
-        if (existente.isPresent()) {
-            return existente;
+        Optional<Suministro> porCodigo = suministroRepository.findByCodigoSuministro(codigoLimpio);
+        if (porCodigo.isPresent()) {
+            return porCodigo;
         }
-
-        // Modo flexible temporal: si tiene 8 dígitos numéricos, aceptarlo y registrarlo automáticamente
         if (codigoLimpio.matches("\\d{8}")) {
-            Cliente cliente = clienteRepository.findAll().stream().findFirst().orElse(null);
-            if (cliente == null) {
-                cliente = new Cliente();
-                cliente.setNombreCompleto("Ciudadano AquaIca");
-                cliente.setDni(codigoLimpio);
-                cliente.setEmail("ciudadano@aquaica.pe");
-                cliente.setTelefono("956000000");
-                cliente.setEstado("ACTIVO");
-                cliente = clienteRepository.save(cliente);
-            }
-            Suministro nuevo = new Suministro();
-            nuevo.setCodigoSuministro(codigoLimpio);
-            nuevo.setDireccion("Ica Cercado, Ica");
-            nuevo.setLatitud(-14.0678);
-            nuevo.setLongitud(-75.7286);
-            nuevo.setCliente(cliente);
-            nuevo.setNombreTitular(cliente.getNombreCompleto());
-            nuevo.setDni(codigoLimpio);
-            nuevo.setCategoria("DOMESTICO");
-            return Optional.of(suministroRepository.save(nuevo));
+            return suministroRepository.findFirstByDni(codigoLimpio);
         }
-
         return Optional.empty();
     }
 

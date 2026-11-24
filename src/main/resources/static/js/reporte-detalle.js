@@ -740,6 +740,12 @@ function formatearEstado(estado) {
         "TRABAJO_REALIZADO":
             "Trabajo realizado",
 
+        "MEJORA_PARCIAL":
+            "Mejora parcial",
+
+        "REVISION_PROGRAMADA":
+            "Revisión programada",
+
         "RESUELTO":
             "Reporte resuelto",
 
@@ -757,6 +763,12 @@ function formatearResultadoInforme(resultado) {
 
         SOLUCIONADO:
             "Solucionado",
+
+        MEJORA_PARCIAL:
+            "Mejora parcial",
+
+        REVISION_PROGRAMADA:
+            "Revisión programada",
 
         NO_SOLUCIONADO:
             "No solucionado",
@@ -1167,8 +1179,20 @@ function formatearFecha(fecha) {
             EN_PROCESO:
                 "En proceso",
 
+            EN_ATENCION:
+                "En atención",
+
+            MEJORA_PARCIAL:
+                "Mejora parcial",
+
+            REVISION_PROGRAMADA:
+                "Revisión programada",
+
             RESUELTO:
                 "Resuelto",
+
+            NO_RESUELTO:
+                "No resuelto",
 
             ASIGNADO:
                 "En proceso"
@@ -1220,6 +1244,93 @@ function formatearFecha(fecha) {
 
         }
     );
+
+    // Panel de publicación oficial al Feed Comunitario para ADMIN / SOPORTE
+    const adminFeedCard = document.getElementById("adminFeedPublishCard");
+    if (adminFeedCard && (rol === "ADMIN" || rol === "SOPORTE")) {
+        adminFeedCard.style.display = "block";
+        const btnPublicar = document.getElementById("btnPublicarFeedAdmin");
+        const btnCopiarNota = document.getElementById("btnCopiarNotaTecnico");
+        const selectEstado = document.getElementById("adminFeedEstado");
+        const selectDias = document.getElementById("adminFeedDiasRevision");
+        const txtMensaje = document.getElementById("adminFeedMensaje");
+        const statusMsg = document.getElementById("adminFeedStatusMsg");
+
+        if (btnCopiarNota) {
+            btnCopiarNota.addEventListener("click", async () => {
+                try {
+                    const bitacoras = await apiFetch(`/api/bitacoras/reporte/${id}`).catch(() => []);
+                    if (Array.isArray(bitacoras) && bitacoras.length > 0) {
+                        const ultima = bitacoras[bitacoras.length - 1];
+                        txtMensaje.value = ultima.descripcion || "";
+                    } else {
+                        const inf = await apiFetch(`/api/reportes/${id}/informe-tecnico`).catch(() => null);
+                        if (inf && inf.trabajoRealizado) {
+                            txtMensaje.value = inf.trabajoRealizado;
+                        } else if (statusMsg) {
+                            statusMsg.textContent = "Aún no hay notas técnicas registradas.";
+                            statusMsg.style.color = "#b45309";
+                        }
+                    }
+                } catch (err) {
+                    console.log("Sin notas previas:", err);
+                }
+            });
+        }
+
+        if (btnPublicar) {
+            btnPublicar.addEventListener("click", async () => {
+                const comentario = (txtMensaje?.value || "").trim();
+                const estadoSel = selectEstado?.value || "EN_ATENCION";
+                const diasSel = selectDias?.value || "";
+
+                if (!comentario) {
+                    if (statusMsg) {
+                        statusMsg.textContent = "Escribe el mensaje oficial para la comunidad.";
+                        statusMsg.style.color = "#dc2626";
+                    }
+                    return;
+                }
+
+                btnPublicar.disabled = true;
+                btnPublicar.textContent = "Publicando...";
+                if (statusMsg) statusMsg.textContent = "";
+
+                try {
+                    const params = new URLSearchParams();
+                    params.append("estado", estadoSel);
+                    params.append("comentario", comentario);
+                    if (diasSel) {
+                        params.append("diasProximaRevision", diasSel);
+                    }
+
+                    await apiFetch(`/api/reportes/${id}/seguimientos?${params.toString()}`, {
+                        method: "POST"
+                    });
+
+                    if (txtMensaje) txtMensaje.value = "";
+                    if (selectDias) selectDias.value = "";
+                    if (statusMsg) {
+                        statusMsg.textContent = "Actualización publicada en el historial y en el Feed Comunitario.";
+                        statusMsg.style.color = "#059669";
+                    }
+
+                    await cargarReporte();
+                    if (typeof cargarSeguimientos === "function") {
+                        await cargarSeguimientos();
+                    }
+                } catch (err) {
+                    if (statusMsg) {
+                        statusMsg.textContent = err.message || "No se pudo publicar la actualización.";
+                        statusMsg.style.color = "#dc2626";
+                    }
+                } finally {
+                    btnPublicar.disabled = false;
+                    btnPublicar.textContent = "Publicar en Feed Comunitario";
+                }
+            });
+        }
+    }
 
     function abrirModal() {
         if (rol === "TECNICO") return;

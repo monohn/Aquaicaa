@@ -512,9 +512,54 @@
                 Asignar técnico
             </button>
 
+        </section>
 
-        
+        <!-- PUBLICAR ACTUALIZACIÓN AL FEED COMUNITARIO (ADMIN / SOPORTE) -->
+        <section id="adminFeedPublishCard" class="detail-card" style="display:none;margin-top:18px;border:1px solid rgba(10,116,201,0.22);background:linear-gradient(180deg,#ffffff 0%,#f8fbff 100%);">
+            <div class="detail-section-title">
+                <h2>
+                    <svg class="icon-svg" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                    Publicar actualización al Feed Comunitario
+                </h2>
+                <p>Comunica a los vecinos el avance técnico, mejoras parciales o fechas de nueva revisión.</p>
+            </div>
 
+            <div class="detail-grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:14px;">
+                <div class="detail-field">
+                    <label for="adminFeedEstado" style="font-size:12px;font-weight:600;color:#334e68;display:block;margin-bottom:6px;">Estado de la incidencia</label>
+                    <select id="adminFeedEstado" style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid #cbd5e1;font-size:13px;background:#fff;">
+                        <option value="EN_ATENCION">En atención técnica</option>
+                        <option value="MEJORA_PARCIAL">Mejora parcial (en monitoreo)</option>
+                        <option value="REVISION_PROGRAMADA">Revisión programada</option>
+                        <option value="RESUELTO">Resuelto completamente</option>
+                        <option value="NO_RESUELTO">Requiere intervención mayor</option>
+                    </select>
+                </div>
+
+                <div class="detail-field">
+                    <label for="adminFeedDiasRevision" style="font-size:12px;font-weight:600;color:#334e68;display:block;margin-bottom:6px;">Reprogramar nueva revisión</label>
+                    <select id="adminFeedDiasRevision" style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid #cbd5e1;font-size:13px;background:#fff;">
+                        <option value="">Sin fecha adicional</option>
+                        <option value="1">Revisar nuevamente mañana (24 horas)</option>
+                        <option value="3">Revisar nuevamente en 3 días</option>
+                        <option value="5">Revisar nuevamente en 5 días</option>
+                        <option value="7">Revisar nuevamente en 7 días</option>
+                    </select>
+                </div>
+            </div>
+
+            <div style="margin-bottom:12px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;gap:8px;flex-wrap:wrap;">
+                    <label for="adminFeedMensaje" style="font-size:12px;font-weight:600;color:#334e68;">Mensaje oficial para la comunidad</label>
+                    <button type="button" id="btnCopiarNotaTecnico" class="secondary-button" style="padding:5px 10px;font-size:11.5px;">Copiar última nota del técnico</button>
+                </div>
+                <textarea id="adminFeedMensaje" rows="3" placeholder="Ej. Nuestro equipo técnico realizó una reparación parcial de la válvula. Se volverá a supervisar la presión en 3 días..." style="width:100%;box-sizing:border-box;padding:10px 12px;border-radius:10px;border:1px solid #cbd5e1;font-size:13px;font-family:inherit;"></textarea>
+            </div>
+
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+                <span id="adminFeedStatusMsg" style="font-size:12.5px;font-weight:500;"></span>
+                <button type="button" id="btnPublicarFeedAdmin" class="primary-button">Publicar en Feed Comunitario</button>
+            </div>
         </section>
 
 

@@ -161,7 +161,20 @@ async function initPerfil() {
         cargarSuministroDeCliente(clienteActualId, token);
     }
 
-    // Configurar botón verificar suministro
+    // Configurar botón validar DNI real
+    const btnValidarDni = document.getElementById('btnValidarDniPerfil');
+    if (btnValidarDni) {
+        btnValidarDni.addEventListener('click', validarDniPerfil);
+    }
+
+    const dniInput = document.getElementById('dni');
+    if (dniInput) {
+        dniInput.addEventListener('input', () => {
+            dniInput.value = dniInput.value.replace(/\D/g, '').slice(0, 8);
+        });
+    }
+
+    // Configurar botón verificar suministro / DNI
     const btnVerificar = document.getElementById('btnVerificarSuministro');
     if (btnVerificar) {
         btnVerificar.addEventListener('click', verificarSuministro);
@@ -207,38 +220,35 @@ function cargarDatosEnFormulario(data, username) {
 
 function cargarDesdeLocalStorage(username) {
     document.getElementById('perfilNombreHeader').textContent = username;
-    document.getElementById('nombreCompleto').value = localStorage.getItem('perfil_nombre') || username;
-    document.getElementById('dni').value = localStorage.getItem('perfil_dni') || '72345678';
-    document.getElementById('telefono').value = localStorage.getItem('perfil_telefono') || '956123456';
-    document.getElementById('email').value = localStorage.getItem('perfil_email') || `${username}@aquaica.gob.pe`;
+    document.getElementById('nombreCompleto').value = localStorage.getItem('perfil_nombre') || '';
+    document.getElementById('dni').value = localStorage.getItem('perfil_dni') || '';
+    document.getElementById('telefono').value = localStorage.getItem('perfil_telefono') || '';
+    document.getElementById('email').value = localStorage.getItem('perfil_email') || '';
 
     cargarPreferenciasUbicacion();
 }
 
 function cargarPreferenciasUbicacion() {
-    const sum = localStorage.getItem('perfil_suministro') || '12345678';
-    const dir = localStorage.getItem('perfil_direccion') || 'Av. San Martín 450';
+    const sum = localStorage.getItem('perfil_suministro') || '';
+    const dir = localStorage.getItem('perfil_direccion') || '';
     const dis = localStorage.getItem('perfil_distrito') || 'Ica';
-    const ref = localStorage.getItem('perfil_referencia') || 'Frente a la plaza principal';
+    const ref = localStorage.getItem('perfil_referencia') || '';
 
     const inputSum = document.getElementById('codigoSuministro');
     if (inputSum) {
         inputSum.value = sum;
-        inputSum.addEventListener('input', () => {
-            inputSum.value = inputSum.value.replace(/\D/g, '').slice(0, 8);
-        });
     }
     document.getElementById('direccion').value = dir;
     document.getElementById('distrito').value = dis;
     document.getElementById('referencia').value = ref;
 
-    document.getElementById('perfilSuministroTag').textContent = `💧 Suministro: ${sum}`;
-    document.getElementById('perfilDistritoTag').textContent = `📍 ${dis}`;
+    document.getElementById('perfilSuministroTag').textContent = sum ? `Suministro: ${sum}` : 'Suministro: No asignado';
+    document.getElementById('perfilDistritoTag').textContent = `Distrito: ${dis}`;
 }
 
 async function cargarSuministroDeCliente(clienteId, token) {
     try {
-        const resp = await fetch(`/api/suministros/cliente/${clienteId}`, {
+        const resp = await fetch('/api/ciudadano/suministros', {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         if (resp.ok) {
@@ -248,13 +258,13 @@ async function cargarSuministroDeCliente(clienteId, token) {
                 if (s.codigoSuministro || s.codigo) {
                     const c = s.codigoSuministro || s.codigo;
                     document.getElementById('codigoSuministro').value = c;
-                    document.getElementById('perfilSuministroTag').textContent = `💧 Suministro: ${c}`;
+                    document.getElementById('perfilSuministroTag').textContent = `Suministro: ${c}`;
                 }
                 if (s.direccion) document.getElementById('direccion').value = s.direccion;
                 if (s.distrito) document.getElementById('distrito').value = s.distrito;
                 if (s.referencia) document.getElementById('referencia').value = s.referencia;
 
-                if (s.distrito) document.getElementById('perfilDistritoTag').textContent = `📍 ${s.distrito}`;
+                if (s.distrito) document.getElementById('perfilDistritoTag').textContent = `Distrito: ${s.distrito}`;
             }
         }
     } catch (e) {
@@ -262,56 +272,158 @@ async function cargarSuministroDeCliente(clienteId, token) {
     }
 }
 
+async function validarDniPerfil() {
+    const dniInput = document.getElementById('dni');
+    const hint = document.getElementById('dniStatusHint');
+    const btn = document.getElementById('btnValidarDniPerfil');
+    const dni = (dniInput?.value || '').trim();
+
+    if (!/^\d{8}$/.test(dni)) {
+        if (hint) {
+            hint.textContent = 'Ingresa exactamente 8 dígitos numéricos de tu DNI.';
+            hint.style.color = '#dc2626';
+        }
+        return;
+    }
+
+    if (btn) {
+        btn.disabled = true;
+        btn.textContent = 'Buscando...';
+    }
+    if (hint) {
+        hint.textContent = 'Consultando padrón y RENIEC...';
+        hint.style.color = '#0369a1';
+    }
+
+    try {
+        const resp = await fetch(`/api/public/validar-identidad/${encodeURIComponent(dni)}`);
+        const data = await resp.json();
+
+        if (!data || !data.encontrado) {
+            if (hint) {
+                hint.textContent = data?.mensaje || 'No se encontró información para ese DNI.';
+                hint.style.color = '#dc2626';
+            }
+            return;
+        }
+
+        if (data.nombreCompleto) {
+            document.getElementById('nombreCompleto').value = data.nombreCompleto;
+            document.getElementById('perfilNombreHeader').textContent = data.nombreCompleto;
+        }
+        if (data.codigoSuministro) {
+            document.getElementById('codigoSuministro').value = data.codigoSuministro;
+            document.getElementById('perfilSuministroTag').textContent = `Suministro: ${data.codigoSuministro}`;
+        }
+        if (data.direccion) {
+            document.getElementById('direccion').value = data.direccion;
+        }
+
+        if (hint) {
+            hint.textContent = data.fuente === 'RENIEC'
+                ? 'Identidad validada en RENIEC.'
+                : 'Datos encontrados en el padrón AquaIca.';
+            hint.style.color = '#059669';
+        }
+    } catch (err) {
+        if (hint) {
+            hint.textContent = 'No se pudo consultar en este momento.';
+            hint.style.color = '#dc2626';
+        }
+    } finally {
+        if (btn) {
+            btn.disabled = false;
+            btn.textContent = 'Validar DNI';
+        }
+    }
+}
+
 async function verificarSuministro() {
     const input = document.getElementById('codigoSuministro');
     const hint = document.getElementById('suministroStatusHint');
+    const btn = document.getElementById('btnVerificarSuministro');
     const codigo = input.value.trim();
 
     if (!codigo) {
-        hint.textContent = '⚠️ Ingresa los 8 dígitos de tu número de suministro.';
+        hint.textContent = 'Ingresa tu DNI de 8 dígitos o código de suministro.';
         hint.style.color = '#dc2626';
         return;
     }
 
-    if (!/^\d{8}$/.test(codigo)) {
-        hint.textContent = '⚠️ El número de suministro debe tener exactamente 8 dígitos.';
-        hint.style.color = '#dc2626';
-        return;
+    if (btn) {
+        btn.disabled = true;
+        btn.textContent = 'Validando...';
     }
+    hint.textContent = 'Consultando información real...';
+    hint.style.color = '#0369a1';
 
-    hint.textContent = `✅ Número de suministro válido (${codigo})`;
-    hint.style.color = '#059669';
-    document.getElementById('perfilSuministroTag').textContent = `💧 Suministro: ${codigo}`;
+    try {
+        const resp = await fetch(`/api/public/validar-identidad/${encodeURIComponent(codigo)}`);
+        const data = await resp.json();
+
+        if (!data || !data.encontrado) {
+            hint.textContent = data?.mensaje || 'No se encontró ningún registro para ese código o DNI.';
+            hint.style.color = '#dc2626';
+            return;
+        }
+
+        if (data.nombreCompleto && !document.getElementById('nombreCompleto').value.trim()) {
+            document.getElementById('nombreCompleto').value = data.nombreCompleto;
+        }
+        if (data.dni && !document.getElementById('dni').value.trim()) {
+            document.getElementById('dni').value = data.dni;
+        }
+        if (data.direccion) {
+            document.getElementById('direccion').value = data.direccion;
+        }
+        if (data.codigoSuministro) {
+            input.value = data.codigoSuministro;
+        }
+
+        const etiqueta = data.codigoSuministro ? `Suministro: ${data.codigoSuministro}` : `DNI: ${data.dni || codigo}`;
+        document.getElementById('perfilSuministroTag').textContent = etiqueta;
+        hint.textContent = `Validado (${data.nombreCompleto || 'Titular'}${data.direccion ? ' · ' + data.direccion : ''})`;
+        hint.style.color = '#059669';
+    } catch (e) {
+        hint.textContent = 'No se pudo consultar el servidor en este momento.';
+        hint.style.color = '#dc2626';
+    } finally {
+        if (btn) {
+            btn.disabled = false;
+            btn.textContent = 'Validar';
+        }
+    }
 }
 
 async function guardarPerfil(e) {
     e.preventDefault();
 
     const token = localStorage.getItem('token');
+    const btn = document.getElementById('btnGuardarPerfil');
+    const alerta = document.getElementById('perfilAlerta');
     const nombreCompleto = document.getElementById('nombreCompleto').value.trim();
     const dni = document.getElementById('dni').value.trim();
     const telefono = document.getElementById('telefono').value.trim();
     const email = document.getElementById('email').value.trim();
 
     const suministro = document.getElementById('codigoSuministro').value.trim();
-    if (suministro && !/^\d{8}$/.test(suministro)) {
-        mostrarAlertaPerfil('El número de suministro debe contener exactamente 8 dígitos numéricos.', 'error');
-        btn.disabled = false;
-        btn.textContent = 'Guardar Cambios';
-        return;
-    }
     const distrito = document.getElementById('distrito').value;
     const direccion = document.getElementById('direccion').value.trim();
     const referencia = document.getElementById('referencia').value.trim();
 
-    const alerta = document.getElementById('perfilAlerta');
-    const btn = document.getElementById('btnGuardarPerfil');
+    if (dni && !/^\d{8}$/.test(dni)) {
+        alerta.style.display = 'inline-block';
+        alerta.className = 'perfil-alert error';
+        alerta.textContent = 'El DNI debe contener exactamente 8 dígitos numéricos.';
+        return;
+    }
 
     btn.disabled = true;
     btn.textContent = 'Guardando cambios...';
 
-    // 1. Guardar en almacenamiento local para persistencia inmediata y prellenado
+    // 1. Guardar en almacenamiento local para persistencia inmediata
     localStorage.setItem('perfil_nombre', nombreCompleto);
+    localStorage.setItem('perfil_dni', dni);
     localStorage.setItem('perfil_telefono', telefono);
     localStorage.setItem('perfil_email', email);
     localStorage.setItem('perfil_suministro', suministro);
@@ -321,8 +433,8 @@ async function guardarPerfil(e) {
 
     // Actualizar badges visuales
     document.getElementById('perfilNombreHeader').textContent = nombreCompleto || localStorage.getItem('username');
-    document.getElementById('perfilSuministroTag').textContent = `💧 Suministro: ${suministro || 'No asignado'}`;
-    document.getElementById('perfilDistritoTag').textContent = `📍 ${distrito}`;
+    document.getElementById('perfilSuministroTag').textContent = suministro ? `Suministro: ${suministro}` : 'Suministro: No asignado';
+    document.getElementById('perfilDistritoTag').textContent = `Distrito: ${distrito}`;
 
     try {
         // 2. Si hay cliente logueado, sincronizar con backend
@@ -490,7 +602,7 @@ function configurarGpsPerfil() {
         btnGps.disabled = true;
 
         navigator.geolocation.getCurrentPosition(
-            (pos) => {
+            async (pos) => {
                 const lat = pos.coords.latitude;
                 const lng = pos.coords.longitude;
                 const prec = Math.round(pos.coords.accuracy || 10);
@@ -503,10 +615,38 @@ function configurarGpsPerfil() {
                     selectDistrito.value = distritoDetectado;
                 }
 
+                // Geocodificación inversa real con OpenStreetMap Nominatim para obtener calle/ubicación exacta
+                try {
+                    const geoResp = await fetch(
+                        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lng)}&zoom=18&addressdetails=1`,
+                        { headers: { 'Accept-Language': 'es' } }
+                    );
+                    if (geoResp.ok) {
+                        const geoData = await geoResp.json();
+                        const addr = geoData.address || {};
+                        const calle = [addr.road || addr.pedestrian || addr.neighbourhood, addr.house_number].filter(Boolean).join(' ');
+                        const zona = addr.suburb || addr.city_district || addr.town || addr.city || distritoDetectado;
+                        const direccionReal = [calle, zona].filter(Boolean).join(', ');
+                        if (direccionReal && inputDireccion) {
+                            inputDireccion.value = direccionReal;
+                        }
+                        if (addr.city_district && selectDistrito) {
+                            for (const opt of selectDistrito.options) {
+                                if (addr.city_district.toLowerCase().includes(opt.value.toLowerCase())) {
+                                    selectDistrito.value = opt.value;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                } catch (geoErr) {
+                    console.log('Geocodificación inversa no disponible:', geoErr);
+                }
+
                 if (hint) {
                     hint.style.display = 'block';
                     hint.style.color = '#15803d';
-                    hint.textContent = `📍 GPS detectado: ${distritoDetectado} (${lat.toFixed(5)}, ${lng.toFixed(5)} ±${prec}m)`;
+                    hint.textContent = `GPS detectado: ${selectDistrito?.value || distritoDetectado} (${lat.toFixed(5)}, ${lng.toFixed(5)} ±${prec}m)`;
                 }
 
                 txtBtn.textContent = 'GPS detectado';

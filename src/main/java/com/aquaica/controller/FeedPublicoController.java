@@ -20,9 +20,21 @@ import com.aquaica.service.FeedPublicoService;
 public class FeedPublicoController {
 
     private final FeedPublicoService feedPublicoService;
+    private final com.aquaica.service.DniLookupService dniLookupService;
 
-    public FeedPublicoController(FeedPublicoService feedPublicoService) {
+    public FeedPublicoController(
+            FeedPublicoService feedPublicoService,
+            com.aquaica.service.DniLookupService dniLookupService) {
         this.feedPublicoService = feedPublicoService;
+        this.dniLookupService = dniLookupService;
+    }
+
+    /**
+     * Valida un DNI (8 dígitos) contra el padrón AquaIca o RENIEC, o un código de suministro.
+     */
+    @GetMapping("/validar-identidad/{valor}")
+    public ResponseEntity<Map<String, Object>> validarIdentidad(@PathVariable String valor) {
+        return ResponseEntity.ok(dniLookupService.validarIdentidad(valor));
     }
 
     /**

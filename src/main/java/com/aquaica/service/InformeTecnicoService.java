@@ -286,6 +286,32 @@ if ("NO_RESUELTO".equalsIgnoreCase(resultado)
     );
 }
 
+if ("MEJORA_PARCIAL".equalsIgnoreCase(resultado)) {
+    reporte.setEstado("MEJORA_PARCIAL");
+    reporteRepository.save(reporte);
+
+    Seguimiento segParcial = new Seguimiento();
+    segParcial.setReporte(reporte);
+    segParcial.setPersonal(personal);
+    segParcial.setEstado("MEJORA_PARCIAL");
+    segParcial.setComentario("Avance parcial registrado en campo: " + trabajoRealizado.trim() + " El caso continúa bajo monitoreo técnico.");
+    segParcial.setFechaCreacion(LocalDateTime.now());
+    seguimientoRepository.save(segParcial);
+}
+
+if ("REVISION_PROGRAMADA".equalsIgnoreCase(resultado)) {
+    reporte.setEstado("REVISION_PROGRAMADA");
+    reporteRepository.save(reporte);
+
+    Seguimiento segRevision = new Seguimiento();
+    segRevision.setReporte(reporte);
+    segRevision.setPersonal(personal);
+    segRevision.setEstado("REVISION_PROGRAMADA");
+    segRevision.setComentario("Se programó una nueva verificación en campo para confirmar la estabilidad del servicio: " + trabajoRealizado.trim());
+    segRevision.setFechaCreacion(LocalDateTime.now());
+    seguimientoRepository.save(segRevision);
+}
+
 
 
         return new InformeTecnicoResponseDTO(

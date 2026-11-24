@@ -11,12 +11,16 @@ import org.springframework.transaction.annotation.Transactional;
 import com.aquaica.dto.EvidenciaResponseDTO;
 import com.aquaica.dto.FeedItemDTO;
 import com.aquaica.dto.PuntoMapaDTO;
+import com.aquaica.dto.SeguimientoResponseDTO;
+import com.aquaica.entity.Bitacora;
 import com.aquaica.entity.ComunicadoOficial;
 import com.aquaica.entity.Reporte;
 import com.aquaica.entity.Suministro;
+import com.aquaica.repository.BitacoraRepository;
 import com.aquaica.repository.ComunicadoOficialRepository;
 import com.aquaica.repository.EvidenciaRepository;
 import com.aquaica.repository.ReporteRepository;
+import com.aquaica.repository.SeguimientoRepository;
 
 @Service
 public class FeedPublicoService {
@@ -24,6 +28,8 @@ public class FeedPublicoService {
     private final ReporteRepository reporteRepository;
     private final ComunicadoOficialRepository comunicadoRepository;
     private final EvidenciaRepository evidenciaRepository;
+    private final SeguimientoRepository seguimientoRepository;
+    private final BitacoraRepository bitacoraRepository;
 
     private static final List<String> DISTRITOS_ICA = List.of(
             "Todos",
@@ -45,10 +51,14 @@ public class FeedPublicoService {
     public FeedPublicoService(
             ReporteRepository reporteRepository,
             ComunicadoOficialRepository comunicadoRepository,
-            EvidenciaRepository evidenciaRepository) {
+            EvidenciaRepository evidenciaRepository,
+            SeguimientoRepository seguimientoRepository,
+            BitacoraRepository bitacoraRepository) {
         this.reporteRepository = reporteRepository;
         this.comunicadoRepository = comunicadoRepository;
         this.evidenciaRepository = evidenciaRepository;
+        this.seguimientoRepository = seguimientoRepository;
+        this.bitacoraRepository = bitacoraRepository;
     }
 
     public List<String> obtenerDistritosIca() {
@@ -85,8 +95,11 @@ public class FeedPublicoService {
             }
         }
 
-        // 3. Ordenar: los comunicados urgentes o más recientes primero
-        feedItems.sort(Comparator.comparing(FeedItemDTO::getFecha, Comparator.nullsLast(Comparator.reverseOrder())));
+        // 3. Ordenar: publicaciones y reportes con actualizaciones más recientes primero
+        feedItems.sort(Comparator.comparing(
+                item -> item.getFechaUltimaActualizacion() != null ? item.getFechaUltimaActualizacion() : item.getFecha(),
+                Comparator.nullsLast(Comparator.reverseOrder())
+        ));
 
         // 4. Paginación segura en memoria
         if (size <= 0) size = 10;
@@ -144,7 +157,7 @@ public class FeedPublicoService {
 
             String semaforo = switch (rep.getEstado().toUpperCase(Locale.ROOT)) {
                 case "RESUELTO" -> "VERDE";
-                case "EN_ATENCION", "ASIGNADO", "EN_PROCESO" -> "AMARILLO";
+                case "EN_ATENCION", "ASIGNADO", "EN_PROCESO", "MEJORA_PARCIAL", "REVISION_PROGRAMADA" -> "AMARILLO";
                 default -> "ROJO";
             };
 
@@ -230,16 +243,79 @@ public class FeedPublicoService {
         dto.setAfectadosCount(rep.getAfectadosCount());
         dto.setEntidadEmisora(null);
 
-        // Buscar imagen de evidencia si existe
+        java.time.LocalDateTime ultimaFecha = rep.getFechaCreacion();
+
+        // Buscar imágenes de evidencia (ciudadana y técnica oficial)
         try {
             List<EvidenciaResponseDTO> evidencias = evidenciaRepository.obtenerEvidenciasPorReporte(rep.getId());
             if (evidencias != null && !evidencias.isEmpty()) {
-                EvidenciaResponseDTO primera = evidencias.get(0);
-                dto.setImagenUrl("/api/evidencias/archivo/" + rep.getId() + "/" + primera.getNombreArchivo());
+                for (EvidenciaResponseDTO ev : evidencias) {
+                    String url = "/api/evidencias/archivo/" + rep.getId() + "/" + ev.getNombreArchivo();
+                    if ("TECNICO".equalsIgnoreCase(ev.getOrigen())) {
+                        if (dto.getImagenTecnicoUrl() == null) {
+                            dto.setImagenTecnicoUrl(url);
+                        }
+                    } else if (dto.getImagenUrl() == null) {
+                        dto.setImagenUrl(url);
+                    }
+                    if (ev.getFechaCreacion() != null && (ultimaFecha == null || ev.getFechaCreacion().isAfter(ultimaFecha))) {
+                        ultimaFecha = ev.getFechaCreacion();
+                    }
+                }
+                if (dto.getImagenUrl() == null && dto.getImagenTecnicoUrl() != null) {
+                    dto.setImagenUrl(dto.getImagenTecnicoUrl());
+                }
             }
         } catch (Exception e) {
             dto.setImagenUrl(null);
         }
+
+        // Cargar historial oficial publicado (seguimientos administrativos + bitácoras técnicas)
+        List<FeedItemDTO.ActualizacionFeedDTO> actualizaciones = new ArrayList<>();
+        try {
+            List<SeguimientoResponseDTO> seguimientos = seguimientoRepository.obtenerSeguimientosPorReporte(rep.getId());
+            if (seguimientos != null) {
+                for (SeguimientoResponseDTO seg : seguimientos) {
+                    actualizaciones.add(new FeedItemDTO.ActualizacionFeedDTO(
+                            "OFICIAL",
+                            seg.getEstado(),
+                            seg.getComentario(),
+                            "Administración AquaIca",
+                            seg.getFechaCreacion()
+                    ));
+                    if (seg.getFechaCreacion() != null && (ultimaFecha == null || seg.getFechaCreacion().isAfter(ultimaFecha))) {
+                        ultimaFecha = seg.getFechaCreacion();
+                    }
+                }
+            }
+        } catch (Exception ignored) {
+        }
+
+        try {
+            List<Bitacora> bitacoras = bitacoraRepository.findAllByReporteIdOrderByFechaCreacionAsc(rep.getId());
+            if (bitacoras != null) {
+                for (Bitacora b : bitacoras) {
+                    actualizaciones.add(new FeedItemDTO.ActualizacionFeedDTO(
+                            "AVANCE_TECNICO",
+                            rep.getEstado(),
+                            b.getDescripcion(),
+                            "Administración AquaIca · Equipo Técnico",
+                            b.getFechaCreacion()
+                    ));
+                    if (b.getFechaCreacion() != null && (ultimaFecha == null || b.getFechaCreacion().isAfter(ultimaFecha))) {
+                        ultimaFecha = b.getFechaCreacion();
+                    }
+                }
+            }
+        } catch (Exception ignored) {
+        }
+
+        actualizaciones.sort(Comparator.comparing(
+                FeedItemDTO.ActualizacionFeedDTO::getFecha,
+                Comparator.nullsLast(Comparator.reverseOrder())
+        ));
+        dto.setActualizaciones(actualizaciones);
+        dto.setFechaUltimaActualizacion(ultimaFecha);
 
         return dto;
     }

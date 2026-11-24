@@ -105,12 +105,15 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const ESTADOS_REPORTE = {
-        PENDIENTE:   { texto: "Pendiente",  color: "p-naranja" },
-        ASIGNADO:    { texto: "Asignado",   color: "p-gris" },
-        EN_PROCESO:  { texto: "En proceso", color: "p-azul" },
-        EN_ATENCION: { texto: "En proceso", color: "p-azul" },
-        RESUELTO:    { texto: "Resuelto",   color: "p-verde" },
-        REABIERTO:   { texto: "Reabierto",  color: "p-morado" }
+        PENDIENTE:           { texto: "Pendiente",           color: "p-naranja" },
+        ASIGNADO:            { texto: "Asignado",            color: "p-gris" },
+        EN_PROCESO:          { texto: "En proceso",          color: "p-azul" },
+        EN_ATENCION:         { texto: "En proceso",          color: "p-azul" },
+        MEJORA_PARCIAL:      { texto: "Mejora parcial",      color: "p-azul" },
+        REVISION_PROGRAMADA: { texto: "Revisión programada", color: "p-naranja" },
+        RESUELTO:            { texto: "Resuelto",            color: "p-verde" },
+        NO_RESUELTO:         { texto: "No resuelto",         color: "p-rojo" },
+        REABIERTO:           { texto: "Reabierto",           color: "p-morado" }
     };
 
     const ESTADOS_SOLICITUD = {
@@ -584,6 +587,57 @@ document.addEventListener("DOMContentLoaded", () => {
         renderizarDona();
         renderizarReportesRecientes();
         renderizarAsignacionesActivas();
+    }
+
+    // Modal Publicar Comunicado en Feed Comunitario
+    const btnAbrirModalFeed = $("btnAbrirModalFeed");
+    const modalFeed = $("modalComunicadoFeed");
+    const btnCerrarModalFeed = $("btnCerrarModalFeed");
+    const btnCancelarModalFeed = $("btnCancelarModalFeed");
+    const formFeed = $("formComunicadoFeed");
+
+    if (btnAbrirModalFeed && modalFeed) {
+        const cerrarModalFeed = () => { modalFeed.style.display = "none"; };
+        btnAbrirModalFeed.addEventListener("click", () => { modalFeed.style.display = "flex"; });
+        btnCerrarModalFeed?.addEventListener("click", cerrarModalFeed);
+        btnCancelarModalFeed?.addEventListener("click", cerrarModalFeed);
+        modalFeed.addEventListener("click", e => { if (e.target === modalFeed) cerrarModalFeed(); });
+
+        formFeed?.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const btnEnv = $("btnEnviarComunicadoFeed");
+            const msg = $("comFeedEstadoMsg");
+            const payload = {
+                titulo: $("comTitulo").value.trim(),
+                distrito: $("comDistrito").value,
+                tipoCorte: $("comTipo").value,
+                zonaAfectada: $("comZona").value.trim(),
+                descripcion: $("comDescripcion").value.trim(),
+                entidadEmisora: "Administración AquaIca"
+            };
+            if (!payload.titulo || !payload.descripcion) return;
+
+            btnEnv.disabled = true;
+            btnEnv.textContent = "Publicando...";
+            msg.textContent = "";
+            try {
+                await apiFetch("/api/comunicados", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+                msg.style.color = "#059669";
+                msg.textContent = "Aviso publicado en el Feed Comunitario correctamente.";
+                formFeed.reset();
+                setTimeout(cerrarModalFeed, 1200);
+            } catch (err) {
+                msg.style.color = "#dc2626";
+                msg.textContent = err.message || "Error al publicar el aviso.";
+            } finally {
+                btnEnv.disabled = false;
+                btnEnv.textContent = "Publicar ahora";
+            }
+        });
     }
 
     iniciar();

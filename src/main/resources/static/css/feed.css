@@ -1817,8 +1817,116 @@ button {
         font-size: 11px;
     }
 
-    .btn-icon {
+.btn-icon {
         width: 13px;
         height: 13px;
+    }
+}
+
+/* ===== ACTUALIZACIONES OFICIALES Y EVIDENCIA TÉCNICA EN FEED ===== */
+.card-images-dual {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.image-tech-badge {
+    position: absolute;
+    bottom: 8px;
+    left: 8px;
+    background: rgba(10, 116, 201, 0.92);
+    color: #ffffff;
+    font-size: 10.5px;
+    font-weight: 600;
+    padding: 4px 9px;
+    border-radius: 999px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.card-official-updates {
+    margin: 10px 0 12px;
+    padding: 10px 12px;
+    background: #f0f8ff;
+    border: 1px solid #cce6fb;
+    border-left: 3px solid #0a74c9;
+    border-radius: 10px;
+}
+
+.official-updates-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 5px;
+    flex-wrap: wrap;
+}
+
+.official-updates-tag {
+    font-size: 11px;
+    font-weight: 700;
+    color: #0369a1;
+}
+
+.official-updates-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.official-updates-time {
+    font-size: 10.5px;
+    color: #64748b;
+}
+
+.btn-toggle-updates {
+    border: none;
+    background: rgba(10, 116, 201, 0.12);
+    color: #0369a1;
+    font-size: 10.5px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 999px;
+    cursor: pointer;
+}
+
+.official-update-latest {
+    margin: 0;
+    font-size: 12.5px;
+    color: #1e293b;
+    line-height: 1.45;
+}
+
+.official-updates-history {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px dashed #bae0fc;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.official-update-item {
+    font-size: 11.5px;
+    color: #334155;
+    padding-left: 8px;
+    border-left: 2px solid #93c5fd;
+}
+
+.official-update-item .update-item-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10.5px;
+    color: #64748b;
+    margin-bottom: 2px;
+}
+
+.official-update-item p {
+    margin: 0;
+}
+
+@media (max-width: 520px) {
+    .card-images-dual {
+        grid-template-columns: 1fr;
     }
 }

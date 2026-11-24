@@ -29,13 +29,15 @@ public class SeguimientoController {
     public ResponseEntity<SeguimientoResponseDTO> crearSeguimiento(
             @PathVariable Long reporteId,
             @RequestParam String estado,
-            @RequestParam String comentario) {
+            @RequestParam String comentario,
+            @RequestParam(required = false) Integer diasProximaRevision) {
 
         SeguimientoResponseDTO seguimiento =
                 seguimientoService.crearSeguimiento(
                         reporteId,
                         estado,
-                        comentario
+                        comentario,
+                        diasProximaRevision
                 );
 
         return ResponseEntity.ok(seguimiento);

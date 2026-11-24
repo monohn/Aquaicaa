@@ -20,9 +20,49 @@ public class FeedItemDTO {
     private String tiempoRelativo;
     private Integer afectadosCount;
     private String imagenUrl;
+    private String imagenTecnicoUrl;
     private String entidadEmisora;
     private LocalDateTime fechaInicioCorte;
     private LocalDateTime fechaFinCorte;
+    private LocalDateTime fechaUltimaActualizacion;
+    private String tiempoUltimaActualizacion;
+    private java.util.List<ActualizacionFeedDTO> actualizaciones = new java.util.ArrayList<>();
+
+    public static class ActualizacionFeedDTO {
+        private String tipo;
+        private String estado;
+        private String mensaje;
+        private String autor;
+        private LocalDateTime fecha;
+        private String tiempoRelativo;
+
+        public ActualizacionFeedDTO() {}
+
+        public ActualizacionFeedDTO(String tipo, String estado, String mensaje, String autor, LocalDateTime fecha) {
+            this.tipo = tipo;
+            this.estado = estado;
+            this.mensaje = mensaje;
+            this.autor = autor;
+            this.fecha = fecha;
+            this.tiempoRelativo = calcularTiempoRelativo(fecha);
+        }
+
+        public String getTipo() { return tipo; }
+        public void setTipo(String tipo) { this.tipo = tipo; }
+        public String getEstado() { return estado; }
+        public void setEstado(String estado) { this.estado = estado; }
+        public String getMensaje() { return mensaje; }
+        public void setMensaje(String mensaje) { this.mensaje = mensaje; }
+        public String getAutor() { return autor; }
+        public void setAutor(String autor) { this.autor = autor; }
+        public LocalDateTime getFecha() { return fecha; }
+        public void setFecha(LocalDateTime fecha) {
+            this.fecha = fecha;
+            this.tiempoRelativo = calcularTiempoRelativo(fecha);
+        }
+        public String getTiempoRelativo() { return tiempoRelativo; }
+        public void setTiempoRelativo(String tiempoRelativo) { this.tiempoRelativo = tiempoRelativo; }
+    }
 
     public FeedItemDTO() {
     }
@@ -197,5 +237,38 @@ public class FeedItemDTO {
 
     public void setFechaFinCorte(LocalDateTime fechaFinCorte) {
         this.fechaFinCorte = fechaFinCorte;
+    }
+
+    public String getImagenTecnicoUrl() {
+        return imagenTecnicoUrl;
+    }
+
+    public void setImagenTecnicoUrl(String imagenTecnicoUrl) {
+        this.imagenTecnicoUrl = imagenTecnicoUrl;
+    }
+
+    public LocalDateTime getFechaUltimaActualizacion() {
+        return fechaUltimaActualizacion;
+    }
+
+    public void setFechaUltimaActualizacion(LocalDateTime fechaUltimaActualizacion) {
+        this.fechaUltimaActualizacion = fechaUltimaActualizacion;
+        this.tiempoUltimaActualizacion = calcularTiempoRelativo(fechaUltimaActualizacion);
+    }
+
+    public String getTiempoUltimaActualizacion() {
+        return tiempoUltimaActualizacion;
+    }
+
+    public void setTiempoUltimaActualizacion(String tiempoUltimaActualizacion) {
+        this.tiempoUltimaActualizacion = tiempoUltimaActualizacion;
+    }
+
+    public java.util.List<ActualizacionFeedDTO> getActualizaciones() {
+        return actualizaciones;
+    }
+
+    public void setActualizaciones(java.util.List<ActualizacionFeedDTO> actualizaciones) {
+        this.actualizaciones = actualizaciones;
     }
 }

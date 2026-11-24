@@ -35,14 +35,18 @@ public class ReporteController {
             @RequestParam String tipoProblema,
             @RequestParam String descripcion,
             @RequestParam(required = false) Double latitud,
-            @RequestParam(required = false) Double longitud) {
+            @RequestParam(required = false) Double longitud,
+            @RequestParam(required = false) String nombreTitular,
+            @RequestParam(required = false) String direccion) {
 
         Reporte reporte = reporteService.crearReporte(
                 codigoSuministro,
                 tipoProblema,
                 descripcion,
                 latitud,
-                longitud
+                longitud,
+                nombreTitular,
+                direccion
         );
 
         return ResponseEntity.ok(reporte);

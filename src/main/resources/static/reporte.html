@@ -82,7 +82,7 @@
 
                     <label for="codigoSuministro">
                         <svg class="icon-svg field-icon" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 9h18M7 15h4"/></svg>
-                        Número de suministro (8 dígitos)
+                        DNI (8 dígitos) o Número de suministro
                     </label>
 
                     <div class="suministro-busqueda">
@@ -91,9 +91,8 @@
                             type="text"
                             id="codigoSuministro"
                             name="codigoSuministro"
-                            placeholder="Ej. 12345678"
-                            maxlength="8"
-                            inputmode="numeric"
+                            placeholder="Ingresa tu DNI (8 dígitos) o código de suministro"
+                            maxlength="20"
                             required
                         >
 
@@ -107,7 +106,7 @@
 
                     </div>
 
-                    <small>Válido ingresando los 8 dígitos numéricos de tu suministro.</small>
+                    <small>Ingresa tu DNI para obtener tus datos reales, o tu código de suministro.</small>
 
                     <div class="sin-suministro-box">
                         <span>¿No tienes recibo a la mano o es una fuga en la calle?</span>
@@ -170,6 +169,13 @@
                         <span class="geoloc-badge" id="geolocBadge">📍 Solicitando permiso...</span>
                         <span class="geoloc-coords" id="geolocCoords"></span>
                     </div>
+                    <input
+                        type="text"
+                        id="direccionIncidencia"
+                        name="direccionIncidencia"
+                        placeholder="Dirección exacta o ubicación detectada por GPS..."
+                        style="margin-top:10px;width:100%;box-sizing:border-box;padding:10px 12px;border-radius:10px;border:1px solid #d9e2ec;font-size:13px;background:#fff;"
+                    >
                     <input type="hidden" id="reporteLatitud" name="latitud">
                     <input type="hidden" id="reporteLongitud" name="longitud">
                 </div>

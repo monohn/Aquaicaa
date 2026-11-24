@@ -606,7 +606,15 @@ ${
                     </option>
 
                     <option value="SOLUCIONADO">
-                        Solucionado
+                        Solucionado completamente
+                    </option>
+
+                    <option value="MEJORA_PARCIAL">
+                        Mejora parcial (en monitoreo)
+                    </option>
+
+                    <option value="REVISION_PROGRAMADA">
+                        Requiere nueva revisión (ej. en 3 días)
                     </option>
 
                     <option value="NO_SOLUCIONADO">

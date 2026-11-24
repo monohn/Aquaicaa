@@ -39,50 +39,86 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     let suministroEncontrado = false;
+    let titularValidadoActual = "";
+    let direccionValidadaActual = "";
+
+    const direccionInput = document.getElementById("direccionIncidencia");
 
     async function validarSuministroRapido(codigo) {
-        if (codigo === "00000000") {
-            suministroEncontrado = true;
-            titularSuministro.textContent = "Incidencia Vecinal / Vía Pública";
-            dniSuministro.textContent = "00000000";
-            direccionSuministro.textContent = "Vía Pública, Cercado de Ica";
-            datosSuministro.style.display = "block";
-            mostrarMensaje("Modo vía pública activado. Se registrará la incidencia sin requerir recibo domiciliario.", "success");
-            return;
-        }
-
-        if (!/^\d{8}$/.test(codigo)) {
+        const valor = (codigo || "").trim();
+        if (!valor) {
             suministroEncontrado = false;
             datosSuministro.style.display = "none";
-            mostrarMensaje("El número de suministro debe contener exactamente 8 dígitos.", "error");
+            mostrarMensaje("Ingresa tu DNI de 8 dígitos o código de suministro.", "error");
             return;
         }
 
-        // Válido de inmediato con los 8 dígitos
-        suministroEncontrado = true;
-        titularSuministro.textContent = localStorage.getItem("username") || "Titular de Suministro";
-        dniSuministro.textContent = codigo;
-        direccionSuministro.textContent = "Ica, Perú";
-        datosSuministro.style.display = "block";
-        mostrarMensaje("Número de suministro aceptado (8 dígitos).", "success");
+        if (valor === "00000000") {
+            suministroEncontrado = true;
+            titularValidadoActual = "Incidencia Vecinal / Vía Pública";
+            titularSuministro.textContent = titularValidadoActual;
+            dniSuministro.textContent = "00000000";
+            const dirGps = (direccionInput?.value || "").trim();
+            direccionValidadaActual = dirGps || "Pendiente de detectar por GPS o ingresar dirección";
+            direccionSuministro.textContent = direccionValidadaActual;
+            datosSuministro.style.display = "block";
+            mostrarMensaje("Modo vía pública activado. Se registrará sin requerir recibo domiciliario.", "success");
+            return;
+        }
 
-        // Consulta en segundo plano para enriquecer datos si ya existe registrado
+        buscarButton.disabled = true;
+        buscarButton.textContent = "Validando...";
+        mostrarMensaje("Consultando datos reales...", "info");
+
         try {
-            const respuesta = await fetch(`/api/suministros/${encodeURIComponent(codigo)}`);
-            if (respuesta.ok) {
-                const s = await respuesta.json();
-                if (s.nombreTitular || s.nombreCliente) {
-                    titularSuministro.textContent = s.nombreTitular || s.nombreCliente;
-                }
-                if (s.dni || s.dniCliente) {
-                    dniSuministro.textContent = s.dni || s.dniCliente;
-                }
-                if (s.direccion) {
-                    direccionSuministro.textContent = s.direccion;
-                }
+            const respuesta = await fetch(`/api/public/validar-identidad/${encodeURIComponent(valor)}`);
+            if (!respuesta.ok) {
+                throw new Error("No se pudo validar en este momento.");
             }
+            const data = await respuesta.json();
+
+            if (!data || !data.encontrado) {
+                suministroEncontrado = false;
+                titularValidadoActual = "";
+                direccionValidadaActual = "";
+                datosSuministro.style.display = "none";
+                mostrarMensaje(
+                    data?.mensaje || "No se encontró información registrada para ese DNI o código.",
+                    "error"
+                );
+                return;
+            }
+
+            suministroEncontrado = true;
+            titularValidadoActual = data.nombreCompleto || "";
+            const dirGps = (direccionInput?.value || "").trim();
+            direccionValidadaActual = data.direccion || dirGps || "";
+
+            titularSuministro.textContent = titularValidadoActual || "Sin nombre registrado";
+            dniSuministro.textContent = data.dni || valor;
+            direccionSuministro.textContent = direccionValidadaActual || "Usa 'Detectar GPS' o ingresa tu ubicación exacta abajo";
+
+            if (data.direccion && direccionInput) {
+                direccionInput.value = data.direccion;
+            }
+            if (data.latitud && data.longitud) {
+                const inLat = document.getElementById("reporteLatitud");
+                const inLng = document.getElementById("reporteLongitud");
+                if (inLat && !inLat.value) inLat.value = data.latitud;
+                if (inLng && !inLng.value) inLng.value = data.longitud;
+            }
+
+            datosSuministro.style.display = "block";
+            const origenTxt = data.fuente === "RENIEC" ? "RENIEC" : "Padrón AquaIca";
+            mostrarMensaje(`Identidad validada (${origenTxt}): ${titularValidadoActual}.`, "success");
         } catch (e) {
-            console.log("Consulta complementaria en segundo plano:", e);
+            console.error("Error validando DNI/suministro:", e);
+            suministroEncontrado = false;
+            datosSuministro.style.display = "none";
+            mostrarMensaje("No se pudo conectar con el servicio de validación.", "error");
+        } finally {
+            buscarButton.disabled = false;
+            buscarButton.innerHTML = `<svg class="icon-svg" viewBox="0 0 24 24" style="width:14px;height:14px"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.3-4.3"/></svg> Validar`;
         }
     }
 
@@ -105,14 +141,14 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     codigoInput.addEventListener("input", () => {
-        // Permitir solo números y máximo 8 dígitos
-        codigoInput.value = codigoInput.value.replace(/\D/g, '').slice(0, 8);
-        const val = codigoInput.value;
+        const val = codigoInput.value.trim();
 
-        if (val.length === 8) {
+        if (/^\d{8}$/.test(val)) {
             validarSuministroRapido(val);
         } else {
             suministroEncontrado = false;
+            titularValidadoActual = "";
+            direccionValidadaActual = "";
             datosSuministro.style.display = "none";
             limpiarMensaje();
         }
@@ -148,15 +184,17 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        // Validación de 8 dígitos
-        if (!/^\d{8}$/.test(codigoSuministro)) {
+        // Validar si aún no se validó
+        if (!suministroEncontrado && /^\d{8}$/.test(codigoSuministro)) {
+            await validarSuministroRapido(codigoSuministro);
+        }
+        if (!suministroEncontrado) {
             mostrarMensaje(
-                "El número de suministro debe tener exactamente 8 dígitos.",
+                "Por favor valida primero tu DNI o número de suministro (o usa el modo vía pública).",
                 "error"
             );
             return;
         }
-        suministroEncontrado = true;
 
         if (archivo) {
             const tiposPermitidos = [
@@ -225,6 +263,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const lat = document.getElementById("reporteLatitud")?.value;
             const lng = document.getElementById("reporteLongitud")?.value;
+            const dirManual = (direccionInput?.value || direccionValidadaActual || "").trim();
+
+            if (titularValidadoActual) {
+                formData.append("nombreTitular", titularValidadoActual);
+            }
+            if (dirManual) {
+                formData.append("direccion", dirManual);
+            }
 
             let descFinal = descripcion;
             if (lat && lng) {
@@ -418,7 +464,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (btnManual) btnManual.disabled = true;
 
             navigator.geolocation.getCurrentPosition(
-                (pos) => {
+                async (pos) => {
                     const lat = pos.coords.latitude;
                     const lng = pos.coords.longitude;
                     const prec = Math.round(pos.coords.accuracy || 10);
@@ -438,6 +484,33 @@ document.addEventListener("DOMContentLoaded", () => {
                     }
                     if (btnTxt) btnTxt.textContent = "Ubicación detectada";
                     if (btnManual) btnManual.disabled = false;
+
+                    // Reverse geocoding real con Nominatim para obtener dirección de calle exacta
+                    try {
+                        const geoResp = await fetch(
+                            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lng)}&zoom=18&addressdetails=1`,
+                            { headers: { "Accept-Language": "es" } }
+                        );
+                        if (geoResp.ok) {
+                            const geoData = await geoResp.json();
+                            const addr = geoData.address || {};
+                            const calle = [addr.road || addr.pedestrian || addr.neighbourhood, addr.house_number].filter(Boolean).join(" ");
+                            const zona = addr.suburb || addr.city_district || addr.town || addr.city || "";
+                            const dirReal = [calle, zona].filter(Boolean).join(", ");
+                            if (dirReal) {
+                                const inDir = document.getElementById("direccionIncidencia");
+                                if (inDir && !inDir.value.trim()) {
+                                    inDir.value = dirReal;
+                                }
+                                const spanDir = document.getElementById("direccionSuministro");
+                                if (spanDir && (!direccionValidadaActual || spanDir.textContent.includes("Detectar GPS") || spanDir.textContent.includes("Pendiente"))) {
+                                    spanDir.textContent = dirReal;
+                                }
+                            }
+                        }
+                    } catch (geoErr) {
+                        console.log("Geocodificación inversa:", geoErr);
+                    }
                 },
                 (err) => {
                     console.log("GPS no concedido o error:", err);

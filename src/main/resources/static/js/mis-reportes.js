@@ -14,24 +14,36 @@ document.addEventListener("DOMContentLoaded", () => {
     const inputCodigo = document.getElementById("codigoSuministro");
     const botonBuscar = document.getElementById("buscarReportesButton");
 
-    if (inputCodigo) {
-        inputCodigo.addEventListener("input", () => {
-            inputCodigo.value = inputCodigo.value.replace(/\D/g, '').slice(0, 8);
-        });
-    }
-
     botonBuscar.addEventListener("click", buscarReportes);
 
-
     inputCodigo.addEventListener("keydown", (event) => {
-
         if (event.key === "Enter") {
             buscarReportes();
         }
-
     });
 
+    // Si hay sesión ciudadana activa, cargar sus reportes directamente sin pedir código
+    const token = localStorage.getItem("token");
+    if (token && sesionRol === "CIUDADANO") {
+        cargarMisReportesCiudadano();
+    }
+
 });
+
+async function cargarMisReportesCiudadano() {
+    try {
+        const reportes = await apiFetch("/api/reportes/mis-reportes-ciudadano");
+        if (Array.isArray(reportes) && reportes.length > 0) {
+            codigoConsultadoActual = reportes[0].codigoSuministro || "";
+            mostrarInformacionSuministro(reportes[0]);
+            actualizarEstadisticas(reportes);
+            mostrarReportes(reportes);
+            mostrarMensaje(`Tienes ${reportes.length} reporte(s) registrado(s) en tu cuenta.`, "success");
+        }
+    } catch (e) {
+        console.log("Auto-carga de reportes ciudadanos:", e);
+    }
+}
 
 
 async function buscarReportes() {
@@ -45,16 +57,7 @@ async function buscarReportes() {
 
     if (!codigo) {
         mostrarMensaje(
-            "Ingresa los 8 dígitos de tu número de suministro.",
-            "error"
-        );
-        inputCodigo.focus();
-        return;
-    }
-
-    if (!/^\d{8}$/.test(codigo)) {
-        mostrarMensaje(
-            "El número de suministro debe tener exactamente 8 dígitos numéricos.",
+            "Ingresa tu DNI de 8 dígitos o código de suministro.",
             "error"
         );
         inputCodigo.focus();

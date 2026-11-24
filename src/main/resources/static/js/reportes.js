@@ -45,12 +45,15 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     const ESTADOS = {
-        PENDIENTE:   { texto: "Pendiente",  color: "p-naranja" },
-        ASIGNADO:    { texto: "Asignado",   color: "p-gris" },
-        EN_PROCESO:  { texto: "En proceso", color: "p-azul" },
-        EN_ATENCION: { texto: "En proceso", color: "p-azul" },
-        RESUELTO:    { texto: "Resuelto",   color: "p-verde" },
-        REABIERTO:   { texto: "Reabierto",  color: "p-morado" }
+        PENDIENTE:           { texto: "Pendiente",           color: "p-naranja" },
+        ASIGNADO:            { texto: "Asignado",            color: "p-gris" },
+        EN_PROCESO:          { texto: "En proceso",          color: "p-azul" },
+        EN_ATENCION:         { texto: "En proceso",          color: "p-azul" },
+        MEJORA_PARCIAL:      { texto: "Mejora parcial",      color: "p-azul" },
+        REVISION_PROGRAMADA: { texto: "Revisión programada", color: "p-naranja" },
+        RESUELTO:            { texto: "Resuelto",            color: "p-verde" },
+        NO_RESUELTO:         { texto: "No resuelto",         color: "p-rojo" },
+        REABIERTO:           { texto: "Reabierto",           color: "p-morado" }
     };
 
     const PRIORIDADES = {

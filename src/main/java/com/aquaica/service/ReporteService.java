@@ -10,10 +10,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.aquaica.dto.ReporteResponseDTO;
+import com.aquaica.entity.Cliente;
 import com.aquaica.entity.Personal;
 import com.aquaica.entity.Reporte;
 import com.aquaica.entity.Seguimiento;
 import com.aquaica.entity.Suministro;
+import com.aquaica.repository.ClienteRepository;
 import com.aquaica.repository.PersonalRepository;
 import com.aquaica.repository.ReporteRepository;
 import com.aquaica.repository.SeguimientoRepository;
@@ -29,6 +31,8 @@ public class ReporteService {
     private final PrioridadService prioridadService;
     private final SeguimientoRepository seguimientoRepository;
     private final PersonalRepository personalRepository;
+    private final ClienteRepository clienteRepository;
+    private final DniLookupService dniLookupService;
 
     public ReporteService(
             ReporteRepository reporteRepository,
@@ -36,7 +40,9 @@ public class ReporteService {
             SuministroService suministroService,
             PrioridadService prioridadService,
             SeguimientoRepository seguimientoRepository,
-            PersonalRepository personalRepository) {
+            PersonalRepository personalRepository,
+            ClienteRepository clienteRepository,
+            DniLookupService dniLookupService) {
 
         this.reporteRepository = reporteRepository;
         this.suministroRepository = suministroRepository;
@@ -44,6 +50,8 @@ public class ReporteService {
         this.prioridadService = prioridadService;
         this.seguimientoRepository = seguimientoRepository;
         this.personalRepository = personalRepository;
+        this.clienteRepository = clienteRepository;
+        this.dniLookupService = dniLookupService;
     }
 
     public Reporte crearReporte(
@@ -51,7 +59,7 @@ public class ReporteService {
             String tipoProblema,
             String descripcion) {
 
-        return crearReporte(codigoSuministro, tipoProblema, descripcion, null, null);
+        return crearReporte(codigoSuministro, tipoProblema, descripcion, null, null, null, null);
     }
 
     public Reporte crearReporte(
@@ -61,16 +69,77 @@ public class ReporteService {
             Double latitud,
             Double longitud) {
 
-        Suministro suministro = suministroService.buscarPorCodigo(codigoSuministro)
-                .or(() -> suministroRepository.findByCodigoSuministro(codigoSuministro))
-                .orElseGet(() -> suministroRepository.findByCodigoSuministro("00000000")
-                        .or(() -> suministroRepository.findAll().stream().findFirst())
-                        .orElseThrow(() -> new RuntimeException("No hay suministros registrados")));
+        return crearReporte(codigoSuministro, tipoProblema, descripcion, latitud, longitud, null, null);
+    }
 
-        // Si se reciben coordenadas satelitales GPS exactas, enriquecer el suministro
+    @Transactional
+    public Reporte crearReporte(
+            String codigoSuministro,
+            String tipoProblema,
+            String descripcion,
+            Double latitud,
+            Double longitud,
+            String nombreTitularParam,
+            String direccionParam) {
+
+        String valor = codigoSuministro != null ? codigoSuministro.trim() : "00000000";
+
+        Suministro suministro = suministroService.buscarPorCodigo(valor)
+                .or(() -> suministroRepository.findByCodigoSuministro(valor))
+                .orElseGet(() -> {
+                    if ("00000000".equals(valor)) {
+                        return suministroRepository.findByCodigoSuministro("00000000")
+                                .orElseGet(() -> crearSuministroParaCiudadano(
+                                        "00000000", "00000000", "Incidencia Vecinal / Vía Pública",
+                                        direccionParam, latitud, longitud));
+                    }
+
+                    if (valor.matches("\\d{8}")) {
+                        String nombreResuelto = (nombreTitularParam != null && !nombreTitularParam.isBlank())
+                                ? nombreTitularParam.trim()
+                                : null;
+                        String dirResuelta = (direccionParam != null && !direccionParam.isBlank())
+                                ? direccionParam.trim()
+                                : null;
+
+                        if (nombreResuelto == null) {
+                            java.util.Map<String, Object> lookup = dniLookupService.validarIdentidad(valor);
+                            Object nomObj = lookup.get("nombreCompleto");
+                            Object dirObj = lookup.get("direccion");
+                            if (nomObj != null && !String.valueOf(nomObj).isBlank()) {
+                                nombreResuelto = String.valueOf(nomObj);
+                            }
+                            if (dirResuelta == null && dirObj != null && !String.valueOf(dirObj).isBlank()) {
+                                dirResuelta = String.valueOf(dirObj);
+                            }
+                        }
+
+                        if (nombreResuelto == null || nombreResuelto.isBlank()) {
+                            nombreResuelto = "Ciudadano DNI " + valor;
+                        }
+                        return crearSuministroParaCiudadano(
+                                valor, valor, nombreResuelto, dirResuelta, latitud, longitud);
+                    }
+
+                    throw new RuntimeException("No se encontró el suministro o DNI especificado.");
+                });
+
+        // Si se reciben coordenadas satelitales GPS exactas o dirección nueva, actualizar ubicación real
+        boolean actualizarSum = false;
         if (latitud != null && longitud != null) {
             suministro.setLatitud(latitud);
             suministro.setLongitud(longitud);
+            actualizarSum = true;
+        }
+        if (direccionParam != null && !direccionParam.isBlank()
+                && ("00000000".equals(suministro.getCodigoSuministro())
+                    || suministro.getDireccion() == null
+                    || suministro.getDireccion().isBlank()
+                    || suministro.getDireccion().startsWith("Ubicación GPS"))) {
+            suministro.setDireccion(direccionParam.trim());
+            actualizarSum = true;
+        }
+        if (actualizarSum) {
             suministroRepository.save(suministro);
         }
 
@@ -85,6 +154,42 @@ public class ReporteService {
         reporte.setFechaCreacion(LocalDateTime.now());
 
         return reporteRepository.save(reporte);
+    }
+
+    private Suministro crearSuministroParaCiudadano(
+            String codigo,
+            String dni,
+            String nombreTitular,
+            String direccion,
+            Double latitud,
+            Double longitud) {
+
+        Cliente cliente = clienteRepository.findByDni(dni)
+                .orElseGet(() -> {
+                    Cliente nuevoCli = new Cliente();
+                    nuevoCli.setDni(dni);
+                    nuevoCli.setNombreCompleto(nombreTitular);
+                    nuevoCli.setEstado("ACTIVO");
+                    nuevoCli.setFechaRegistro(LocalDateTime.now());
+                    return clienteRepository.save(nuevoCli);
+                });
+
+        String dirFinal = (direccion != null && !direccion.isBlank())
+                ? direccion.trim()
+                : (latitud != null && longitud != null
+                        ? String.format(java.util.Locale.ROOT, "Ubicación GPS (%.5f, %.5f)", latitud, longitud)
+                        : "Ica, Perú");
+
+        Suministro nuevo = new Suministro();
+        nuevo.setCodigoSuministro(codigo);
+        nuevo.setDni(dni);
+        nuevo.setNombreTitular(nombreTitular);
+        nuevo.setDireccion(dirFinal);
+        nuevo.setLatitud(latitud != null ? latitud : -14.0678);
+        nuevo.setLongitud(longitud != null ? longitud : -75.7286);
+        nuevo.setCategoria("DOMESTICO");
+        nuevo.setCliente(cliente);
+        return suministroRepository.save(nuevo);
     }
 
     public List<ReporteResponseDTO> obtenerTodosLosReportes() {

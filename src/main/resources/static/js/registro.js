@@ -2,6 +2,48 @@
 const registroForm = document.getElementById("registroForm");
 const registroMessage = document.getElementById("registroMessage");
 const registroButton = document.getElementById("registroButton");
+const dniInputReg = document.getElementById("dni");
+const nombreInputReg = document.getElementById("nombreCompleto");
+const dniHintReg = document.getElementById("dniLookupHint");
+
+if (dniInputReg) {
+    dniInputReg.addEventListener("input", async () => {
+        dniInputReg.value = dniInputReg.value.replace(/\D/g, "").slice(0, 8);
+        const val = dniInputReg.value;
+        if (val.length === 8) {
+            if (dniHintReg) {
+                dniHintReg.textContent = "Validando DNI en padrón / RENIEC...";
+                dniHintReg.style.color = "#0369a1";
+            }
+            try {
+                const resp = await fetch(`/api/public/validar-identidad/${encodeURIComponent(val)}`);
+                if (resp.ok) {
+                    const data = await resp.json();
+                    if (data && data.encontrado && data.nombreCompleto) {
+                        if (nombreInputReg) nombreInputReg.value = data.nombreCompleto;
+                        if (dniHintReg) {
+                            dniHintReg.textContent = `Identidad verificada (${data.fuente === "RENIEC" ? "RENIEC" : "Padrón"}): ${data.nombreCompleto}`;
+                            dniHintReg.style.color = "#059669";
+                        }
+                        return;
+                    }
+                }
+                if (dniHintReg) {
+                    dniHintReg.textContent = "No encontrado automáticamente; ingresa tu nombre completo.";
+                    dniHintReg.style.color = "#b45309";
+                }
+            } catch (e) {
+                if (dniHintReg) {
+                    dniHintReg.textContent = "Ingresa tu nombre completo tal como figura en tu DNI.";
+                    dniHintReg.style.color = "#486581";
+                }
+            }
+        } else if (dniHintReg) {
+            dniHintReg.textContent = "Al ingresar tus 8 dígitos validaremos tu nombre automáticamente.";
+            dniHintReg.style.color = "#486581";
+        }
+    });
+}
 
 registroForm.addEventListener("submit", async function (event) {
     event.preventDefault();

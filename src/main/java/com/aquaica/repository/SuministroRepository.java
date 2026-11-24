@@ -13,6 +13,10 @@ public interface SuministroRepository
 
     Optional<Suministro> findByCodigoSuministro(String codigoSuministro);
 
+    Optional<Suministro> findFirstByDni(String dni);
+
+    List<Suministro> findByDni(String dni);
+
     boolean existsByCodigoSuministro(String codigoSuministro);
 
     List<Suministro> findByClienteId(Long clienteId);

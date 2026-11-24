@@ -12,10 +12,14 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.aquaica.dto.EvidenciaResponseDTO;
 import com.aquaica.entity.Evidencia;
+import com.aquaica.entity.Personal;
 import com.aquaica.entity.Reporte;
+import com.aquaica.entity.Seguimiento;
 import com.aquaica.repository.AsignacionRepository;
 import com.aquaica.repository.EvidenciaRepository;
+import com.aquaica.repository.PersonalRepository;
 import com.aquaica.repository.ReporteRepository;
+import com.aquaica.repository.SeguimientoRepository;
 
 @Service
 public class EvidenciaService {
@@ -23,17 +27,23 @@ public class EvidenciaService {
     private final EvidenciaRepository evidenciaRepository;
     private final ReporteRepository reporteRepository;
     private final AsignacionRepository asignacionRepository;
+    private final SeguimientoRepository seguimientoRepository;
+    private final PersonalRepository personalRepository;
 
     private final String carpetaBase = "uploads/reportes/";
 
     public EvidenciaService(
             EvidenciaRepository evidenciaRepository,
             ReporteRepository reporteRepository,
-            AsignacionRepository asignacionRepository) {
+            AsignacionRepository asignacionRepository,
+            SeguimientoRepository seguimientoRepository,
+            PersonalRepository personalRepository) {
 
         this.evidenciaRepository = evidenciaRepository;
         this.reporteRepository = reporteRepository;
         this.asignacionRepository = asignacionRepository;
+        this.seguimientoRepository = seguimientoRepository;
+        this.personalRepository = personalRepository;
     }
 
     public Evidencia guardarEvidencia(
@@ -166,9 +176,20 @@ public class EvidenciaService {
             LocalDateTime.now()
     );
 
-    return evidenciaRepository.save(
-            evidencia
-    );
+    Evidencia guardada = evidenciaRepository.save(evidencia);
+
+    // Publicar automáticamente en el historial y feed comunitario bajo Administración
+    personalRepository.findById(personalId).ifPresent(personal -> {
+        Seguimiento seg = new Seguimiento();
+        seg.setReporte(reporte);
+        seg.setPersonal(personal);
+        seg.setEstado(reporte.getEstado() != null ? reporte.getEstado() : "EN_ATENCION");
+        seg.setComentario("El equipo técnico en campo adjuntó nueva evidencia fotográfica de los trabajos realizados.");
+        seg.setFechaCreacion(LocalDateTime.now());
+        seguimientoRepository.save(seg);
+    });
+
+    return guardada;
 }
 
 

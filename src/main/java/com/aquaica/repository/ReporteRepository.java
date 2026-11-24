@@ -81,7 +81,7 @@ public interface ReporteRepository extends JpaRepository<Reporte, Long> {
     )
     FROM Reporte r
     JOIN r.suministro s
-    WHERE s.codigoSuministro = :codigo
+    WHERE s.codigoSuministro = :codigo OR s.dni = :codigo
     ORDER BY r.fechaCreacion DESC
     """)
 List<ReporteResponseDTO> obtenerReportesPorCodigoSuministro(String codigo);
