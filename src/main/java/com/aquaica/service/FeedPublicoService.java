@@ -14,12 +14,14 @@ import com.aquaica.dto.PuntoMapaDTO;
 import com.aquaica.dto.SeguimientoResponseDTO;
 import com.aquaica.entity.Bitacora;
 import com.aquaica.entity.ComunicadoOficial;
+import com.aquaica.entity.InformeTecnico;
 import com.aquaica.entity.Reporte;
 import com.aquaica.entity.Suministro;
 import com.aquaica.entity.Usuario;
 import com.aquaica.repository.BitacoraRepository;
 import com.aquaica.repository.ComunicadoOficialRepository;
 import com.aquaica.repository.EvidenciaRepository;
+import com.aquaica.repository.InformeTecnicoRepository;
 import com.aquaica.repository.ReporteRepository;
 import com.aquaica.repository.SeguimientoRepository;
 import com.aquaica.repository.UsuarioRepository;
@@ -33,6 +35,7 @@ public class FeedPublicoService {
     private final SeguimientoRepository seguimientoRepository;
     private final BitacoraRepository bitacoraRepository;
     private final UsuarioRepository usuarioRepository;
+    private final InformeTecnicoRepository informeTecnicoRepository;
 
     private static final List<String> DISTRITOS_ICA = List.of(
             "Todos",
@@ -57,13 +60,15 @@ public class FeedPublicoService {
             EvidenciaRepository evidenciaRepository,
             SeguimientoRepository seguimientoRepository,
             BitacoraRepository bitacoraRepository,
-            UsuarioRepository usuarioRepository) {
+            UsuarioRepository usuarioRepository,
+            InformeTecnicoRepository informeTecnicoRepository) {
         this.reporteRepository = reporteRepository;
         this.comunicadoRepository = comunicadoRepository;
         this.evidenciaRepository = evidenciaRepository;
         this.seguimientoRepository = seguimientoRepository;
         this.bitacoraRepository = bitacoraRepository;
         this.usuarioRepository = usuarioRepository;
+        this.informeTecnicoRepository = informeTecnicoRepository;
     }
 
     public List<String> obtenerDistritosIca() {
@@ -241,10 +246,10 @@ public class FeedPublicoService {
         dto.setId(rep.getId());
         dto.setTipoItem("REPORTE_VECINAL");
         dto.setTitulo(formatearTituloReporte(rep.getTipoProblema()));
-        dto.setDescripcion(rep.getDescripcion());
+        dto.setDescripcion(limpiarCoordenadasDeTexto(rep.getDescripcion()));
         dto.setCategoria(rep.getTipoProblema());
         dto.setDistrito(distrito);
-        dto.setUbicacionReferencia(direccion);
+        dto.setUbicacionReferencia(limpiarUbicacionPublica(direccion, distrito));
         dto.setLatitud(sum != null ? sum.getLatitud() : null);
         dto.setLongitud(sum != null ? sum.getLongitud() : null);
         dto.setEstado(rep.getEstado());
@@ -294,16 +299,21 @@ public class FeedPublicoService {
                         ultimaFecha = ev.getFechaCreacion();
                     }
                 }
-                if (dto.getImagenUrl() == null && dto.getImagenTecnicoUrl() != null) {
-                    dto.setImagenUrl(dto.getImagenTecnicoUrl());
-                }
             }
         } catch (Exception e) {
             dto.setImagenUrl(null);
         }
 
-        // Cargar historial oficial publicado (seguimientos administrativos + bitácoras técnicas)
+        // Cargar historial oficial publicado (informes técnicos + seguimientos + bitácoras)
         List<FeedItemDTO.ActualizacionFeedDTO> actualizaciones = new ArrayList<>();
+        InformeTecnico ultimoInforme = null;
+        try {
+            ultimoInforme = informeTecnicoRepository
+                    .findFirstByReporteIdOrderByFechaCreacionDesc(rep.getId())
+                    .orElse(null);
+        } catch (Exception ignored) {
+        }
+
         try {
             List<SeguimientoResponseDTO> seguimientos = seguimientoRepository.obtenerSeguimientosPorReporte(rep.getId());
             if (seguimientos != null) {
@@ -314,10 +324,19 @@ public class FeedPublicoService {
                                 .map(Usuario::getAvatarBase64)
                                 .orElse(null);
                     }
+                    String comentarioSeg = seg.getComentario();
+                    if ("TRABAJO_REALIZADO".equalsIgnoreCase(seg.getEstado())
+                            && ultimoInforme != null
+                            && ultimoInforme.getTrabajoRealizado() != null
+                            && !ultimoInforme.getTrabajoRealizado().isBlank()
+                            && comentarioSeg != null
+                            && comentarioSeg.contains("registró el informe de atención")) {
+                        comentarioSeg = ultimoInforme.getTrabajoRealizado().trim();
+                    }
                     actualizaciones.add(new FeedItemDTO.ActualizacionFeedDTO(
                             "OFICIAL",
                             seg.getEstado(),
-                            seg.getComentario(),
+                            comentarioSeg,
                             "Administración AquaIca",
                             avatarPersonal,
                             seg.getFechaCreacion()
@@ -422,6 +441,28 @@ public class FeedPublicoService {
         if (lower.contains("tate")) return "Tate";
         if (lower.contains("pachacutec") || lower.contains("pachacútec")) return "Pachacútec";
         return "Ica Cercado";
+    }
+
+    private String limpiarCoordenadasDeTexto(String texto) {
+        if (texto == null) return null;
+        return texto
+                .replaceAll("(?i)\\s*\\[GPS:[^\\]]*\\]", "")
+                .replaceAll("(?i)Ubicación GPS\\s*\\([^)]*\\)", "")
+                .trim();
+    }
+
+    private String limpiarUbicacionPublica(String direccion, String distrito) {
+        if (direccion == null || direccion.isBlank()) {
+            return (distrito != null && !distrito.isBlank()) ? distrito : "Ica";
+        }
+        String limpia = direccion
+                .replaceAll("(?i)Ubicación GPS\\s*\\([^)]*\\)", "")
+                .replaceAll("\\(?-?\\d{1,3}\\.\\d{3,},\\s*-?\\d{1,3}\\.\\d{3,}\\)?", "")
+                .trim();
+        if (limpia.isBlank()) {
+            return (distrito != null && !distrito.isBlank()) ? distrito : "Ica";
+        }
+        return limpia;
     }
 
     private double[] coordenadasAproximadasDistrito(String distrito) {

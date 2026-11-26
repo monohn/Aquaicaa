@@ -611,7 +611,16 @@ function crearTarjeta(item) {
     const source = esComunicado
         ? (item.entidadEmisora || 'EMAPICA S.A.')
         : ('Vecino en ' + (item.distrito || 'Ica'));
-    const subtitle = esComunicado ? 'Comunicado Oficial de Corte y Mantenimiento' : (item.ubicacionReferencia || 'Ica');
+    const limpiarTextoSinCoordenadas = (txt) => {
+        if (!txt) return '';
+        return String(txt)
+            .replace(/\s*\[GPS:[^\]]*\]/gi, '')
+            .replace(/Ubicaci[oó]n GPS\s*\([^)]*\)/gi, '')
+            .trim();
+    };
+
+    const subtitleRaw = esComunicado ? 'Comunicado Oficial de Corte y Mantenimiento' : (limpiarTextoSinCoordenadas(item.ubicacionReferencia) || item.distrito || 'Ica');
+    const subtitle = subtitleRaw || (item.distrito || 'Ica');
 
     // Badge de estado moderno
     let badgeClass = 'badge-pendiente';
@@ -708,11 +717,12 @@ function crearTarjeta(item) {
     if (item.titulo) {
         html += `<div class="card-body card-title-wrap"><h4 class="card-title">${escapeHtml(item.titulo)}</h4></div>`;
     }
-    if (item.descripcion) {
-        html += `<div class="card-body"><p class="card-desc">${escapeHtml(item.descripcion)}</p></div>`;
+    const descLimpia = limpiarTextoSinCoordenadas(item.descripcion);
+    if (descLimpia) {
+        html += `<div class="card-body"><p class="card-desc">${escapeHtml(descLimpia)}</p></div>`;
     }
 
-    // Imagen con soporte de Lightbox interactivo (ciudadana y/o evidencia técnica oficial)
+    // Imagen reportada por el vecino (siempre visible cuando existe)
     const imgReporteUrl = item.imagenUrl
         ? (typeof resolveApiUrl === 'function' ? resolveApiUrl(item.imagenUrl) : item.imagenUrl)
         : null;
@@ -720,87 +730,98 @@ function crearTarjeta(item) {
         ? (typeof resolveApiUrl === 'function' ? resolveApiUrl(item.imagenTecnicoUrl) : item.imagenTecnicoUrl)
         : null;
 
-    if (imgTecnicoUrl && imgReporteUrl && imgTecnicoUrl !== imgReporteUrl) {
+    if (imgReporteUrl) {
         html += `
-            <div class="card-images-dual">
-                <div class="card-image-wrap" onclick="abrirLightbox('${escapeHtml(imgTecnicoUrl)}', 'Evidencia técnica oficial')" title="Toca para ampliar foto técnica">
-                    <img class="card-image" src="${escapeHtml(imgTecnicoUrl)}" alt="Evidencia técnica" loading="lazy" onerror="this.parentElement.style.display='none'">
-                    <span class="image-tech-badge">Evidencia técnica oficial</span>
-                </div>
-                <div class="card-image-wrap" onclick="abrirLightbox('${escapeHtml(imgReporteUrl)}', 'Foto reportada')" title="Toca para ampliar foto">
-                    <img class="card-image" src="${escapeHtml(imgReporteUrl)}" alt="Foto reportada" loading="lazy" onerror="this.parentElement.style.display='none'">
-                    <span class="image-zoom-badge">Reporte inicial</span>
-                </div>
-            </div>
-        `;
-    } else if (imgTecnicoUrl || imgReporteUrl) {
-        const fotoMostrar = imgTecnicoUrl || imgReporteUrl;
-        const etiquetaFoto = imgTecnicoUrl ? 'Evidencia técnica oficial' : 'Ampliar';
-        html += `
-            <div class="card-image-wrap" onclick="abrirLightbox('${escapeHtml(fotoMostrar)}', '${escapeHtml(item.titulo || 'Evidencia fotográfica')}')" title="Toca para ampliar foto">
-                <img class="card-image" src="${escapeHtml(fotoMostrar)}" alt="Evidencia de reporte" loading="lazy" onerror="this.parentElement.style.display='none'">
-                <span class="${imgTecnicoUrl ? 'image-tech-badge' : 'image-zoom-badge'}">
-                    ${etiquetaFoto}
-                </span>
+            <div class="card-image-wrap" onclick="abrirLightbox('${escapeHtml(imgReporteUrl)}', '${escapeHtml(item.titulo || 'Evidencia del vecino')}')" title="Toca para ampliar foto">
+                <img class="card-image" src="${escapeHtml(imgReporteUrl)}" alt="Evidencia reportada por vecino" loading="lazy" onerror="this.parentElement.style.display='none'">
+                <span class="image-zoom-badge">Reporte inicial</span>
             </div>
         `;
     }
 
-    // Actualizaciones oficiales publicadas por Administración / Equipo Técnico
-    if (!esComunicado && Array.isArray(item.actualizaciones) && item.actualizaciones.length > 0) {
-        const ultimaAct = item.actualizaciones[0];
-        const restoActs = item.actualizaciones.slice(1);
-        const toggleBtnHtml = restoActs.length > 0
-            ? `<button type="button" class="btn-toggle-updates" onclick="toggleUpdates(${item.id})">Ver historial (${item.actualizaciones.length})</button>`
-            : '';
-        const ultimaActAvatarHtml = esAvatarValido(ultimaAct.autorAvatar)
-            ? `<img src="${ultimaAct.autorAvatar}" alt="${escapeHtml(ultimaAct.autor || 'Autor')}" class="official-mini-avatar">`
-            : '';
-
-        html += `
-            <div class="card-official-updates">
-                <div class="official-updates-head">
-                    <span class="official-updates-author">
-                        ${ultimaActAvatarHtml}
-                        <span class="official-updates-tag">${escapeHtml(ultimaAct.autor || 'Administración AquaIca')}</span>
-                    </span>
-                    <div class="official-updates-right">
-                        <span class="official-updates-time">${escapeHtml(ultimaAct.tiempoRelativo || 'Reciente')}</span>
-                        ${toggleBtnHtml}
-                    </div>
+    // Actualizaciones / informe técnico: primero comentario, abajo botón desplegable "Ver evidencia"
+    const tieneActualizaciones = !esComunicado && Array.isArray(item.actualizaciones) && item.actualizaciones.length > 0;
+    if (tieneActualizaciones || (!esComunicado && imgTecnicoUrl)) {
+        const evidenciaTecnicaHtml = imgTecnicoUrl ? `
+            <div class="official-evidencia-actions">
+                <button type="button" class="btn-ver-evidencia" onclick="toggleEvidenciaTecnica(${item.id}, this)">Ver evidencia</button>
+            </div>
+            <div class="official-evidencia-collapse" id="evidencia-tec-${item.id}" style="display:none;">
+                <div class="card-image-wrap official-evidencia-wrap" onclick="abrirLightbox('${escapeHtml(imgTecnicoUrl)}', 'Evidencia técnica oficial')" title="Toca para ampliar">
+                    <img class="card-image" src="${escapeHtml(imgTecnicoUrl)}" alt="Evidencia técnica" loading="lazy" onerror="this.parentElement.innerHTML='<small style=\\'color:#64748b\\'>No se pudo cargar la evidencia.</small>'">
                 </div>
-                <p class="official-update-latest">${escapeHtml(ultimaAct.mensaje || '')}</p>
-                ${restoActs.length > 0 ? `
-                    <div class="official-updates-history" id="updates-hist-${item.id}" style="display:none;">
-                        ${restoActs.map(act => {
-                            const subAvatarHtml = esAvatarValido(act.autorAvatar)
-                                ? `<img src="${act.autorAvatar}" alt="${escapeHtml(act.autor || 'Autor')}" class="official-mini-avatar">`
-                                : '';
-                            return `
-                            <div class="official-update-item">
-                                <div class="update-item-meta">
-                                    <span class="official-updates-author">
-                                        ${subAvatarHtml}
-                                        <strong>${escapeHtml(act.autor || 'Administración AquaIca')}</strong>
-                                    </span>
-                                    <span>${escapeHtml(act.tiempoRelativo || '')}</span>
+            </div>
+        ` : '';
+
+        if (tieneActualizaciones) {
+            const ultimaAct = item.actualizaciones[0];
+            const restoActs = item.actualizaciones.slice(1);
+            const toggleBtnHtml = restoActs.length > 0
+                ? `<button type="button" class="btn-toggle-updates" onclick="toggleUpdates(${item.id})">Ver historial (${item.actualizaciones.length})</button>`
+                : '';
+            const ultimaActAvatarHtml = esAvatarValido(ultimaAct.autorAvatar)
+                ? `<img src="${ultimaAct.autorAvatar}" alt="${escapeHtml(ultimaAct.autor || 'Autor')}" class="official-mini-avatar">`
+                : '';
+
+            html += `
+                <div class="card-official-updates">
+                    <div class="official-updates-head">
+                        <span class="official-updates-author">
+                            ${ultimaActAvatarHtml}
+                            <span class="official-updates-tag">${escapeHtml(ultimaAct.autor || 'Administración AquaIca')}</span>
+                        </span>
+                        <div class="official-updates-right">
+                            <span class="official-updates-time">${escapeHtml(ultimaAct.tiempoRelativo || 'Reciente')}</span>
+                            ${toggleBtnHtml}
+                        </div>
+                    </div>
+                    <p class="official-update-latest">${escapeHtml(ultimaAct.mensaje || '')}</p>
+                    ${evidenciaTecnicaHtml}
+                    ${restoActs.length > 0 ? `
+                        <div class="official-updates-history" id="updates-hist-${item.id}" style="display:none;">
+                            ${restoActs.map(act => {
+                                const subAvatarHtml = esAvatarValido(act.autorAvatar)
+                                    ? `<img src="${act.autorAvatar}" alt="${escapeHtml(act.autor || 'Autor')}" class="official-mini-avatar">`
+                                    : '';
+                                return `
+                                <div class="official-update-item">
+                                    <div class="update-item-meta">
+                                        <span class="official-updates-author">
+                                            ${subAvatarHtml}
+                                            <strong>${escapeHtml(act.autor || 'Administración AquaIca')}</strong>
+                                        </span>
+                                        <span>${escapeHtml(act.tiempoRelativo || '')}</span>
+                                    </div>
+                                    <p>${escapeHtml(act.mensaje || '')}</p>
                                 </div>
-                                <p>${escapeHtml(act.mensaje || '')}</p>
-                            </div>
-                        `;
-                        }).join('')}
+                            `;
+                            }).join('')}
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        } else if (evidenciaTecnicaHtml) {
+            html += `
+                <div class="card-official-updates">
+                    <div class="official-updates-head">
+                        <span class="official-updates-tag">Atención técnica en campo</span>
                     </div>
-                ` : ''}
-            </div>
-        `;
+                    ${evidenciaTecnicaHtml}
+                </div>
+            `;
+        }
     }
 
-    // Ubicación de referencia
-    if (item.ubicacionReferencia || item.distrito) {
+    // Ubicación de referencia (sin coordenadas numéricas)
+    const ubicacionLimpia = limpiarTextoSinCoordenadas(item.ubicacionReferencia);
+    if (ubicacionLimpia || item.distrito) {
+        const textoUbicacion = ubicacionLimpia && item.distrito && !ubicacionLimpia.toLowerCase().includes(item.distrito.toLowerCase())
+            ? `${ubicacionLimpia} · ${item.distrito}`
+            : (ubicacionLimpia || item.distrito);
         html += `
             <div class="card-location">
                 <svg viewBox="0 0 24 24"><path d="M12 21s-7-6.5-7-12a7 7 0 0114 0c0 5.5-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/></svg>
-                <span>${escapeHtml((item.ubicacionReferencia || '') + (item.distrito ? ' · ' + item.distrito : ''))}</span>
+                <span>${escapeHtml(textoUbicacion)}</span>
             </div>
         `;
     }
@@ -890,12 +911,22 @@ function crearTarjeta(item) {
 }
 
 
-// ====== INTERACCIÓN: DESPLEGAR HISTORIAL OFICIAL ======
+// ====== INTERACCIÓN: DESPLEGAR HISTORIAL OFICIAL Y EVIDENCIA TÉCNICA ======
 function toggleUpdates(reporteId) {
     const hist = document.getElementById(`updates-hist-${reporteId}`);
     if (!hist) return;
     const oculto = hist.style.display === 'none' || !hist.style.display;
     hist.style.display = oculto ? 'flex' : 'none';
+}
+
+function toggleEvidenciaTecnica(reporteId, btn) {
+    const box = document.getElementById(`evidencia-tec-${reporteId}`);
+    if (!box) return;
+    const oculto = box.style.display === 'none' || !box.style.display;
+    box.style.display = oculto ? 'block' : 'none';
+    if (btn) {
+        btn.textContent = oculto ? 'Ocultar evidencia' : 'Ver evidencia';
+    }
 }
 
 // ====== INTERACCIÓN: APOYAR REPORTE ======

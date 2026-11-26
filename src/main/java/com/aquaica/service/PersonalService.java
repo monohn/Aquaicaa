@@ -204,8 +204,10 @@ public class PersonalService {
 
 
     public List<PersonalResponseDTO> obtenerTodoElPersonal() {
-
-        return personalRepository.obtenerTodoElPersonal();
+        List<PersonalResponseDTO> lista = new ArrayList<>(personalRepository.obtenerTodoElPersonal());
+        lista.sort((a, b) -> compararPorUsuarioNatural(
+                a.getUsername(), b.getUsername(), a.getNombre(), b.getNombre()));
+        return lista;
     }
 
 
@@ -263,16 +265,49 @@ public class PersonalService {
             } catch (Exception ignored) {
             }
 
+            String username = usuarioRepository.findByPersonalId(tecnico.getId())
+                    .map(Usuario::getUsername)
+                    .orElse("");
+
             resultado.add(new TecnicoDisponibleDTO(
                     tecnico.getId(),
                     tecnico.getNombre(),
+                    username,
                     tecnico.getEspecialidad(),
                     etiqueta,
                     !ocupado
             ));
         }
 
+        resultado.sort((a, b) -> compararPorUsuarioNatural(
+                a.getUsername(), b.getUsername(), a.getNombre(), b.getNombre()));
+
         return resultado;
+    }
+
+    private int compararPorUsuarioNatural(String u1, String u2, String n1, String n2) {
+        String s1 = (u1 != null && !u1.isBlank()) ? u1.trim() : (n1 != null ? n1.trim() : "");
+        String s2 = (u2 != null && !u2.isBlank()) ? u2.trim() : (n2 != null ? n2.trim() : "");
+        int i = 0, j = 0;
+        while (i < s1.length() && j < s2.length()) {
+            char c1 = s1.charAt(i);
+            char c2 = s2.charAt(j);
+            if (Character.isDigit(c1) && Character.isDigit(c2)) {
+                int start1 = i;
+                while (i < s1.length() && Character.isDigit(s1.charAt(i))) i++;
+                int start2 = j;
+                while (j < s2.length() && Character.isDigit(s2.charAt(j))) j++;
+                long num1 = Long.parseLong(s1.substring(start1, i));
+                long num2 = Long.parseLong(s2.substring(start2, j));
+                if (num1 != num2) return Long.compare(num1, num2);
+            } else {
+                int cmp = Character.compare(Character.toLowerCase(c1), Character.toLowerCase(c2));
+                if (cmp != 0) return cmp;
+                i++;
+                j++;
+            }
+        }
+        return Integer.compare(s1.length(), s2.length());
     }
 
 

@@ -4,6 +4,7 @@ public class TecnicoDisponibleDTO {
 
     private Long id;
     private String nombre;
+    private String username;
     private String especialidad;
     private String especialidadEtiqueta;
     private boolean disponible;
@@ -11,12 +12,14 @@ public class TecnicoDisponibleDTO {
     public TecnicoDisponibleDTO(
             Long id,
             String nombre,
+            String username,
             String especialidad,
             String especialidadEtiqueta,
             boolean disponible) {
 
         this.id = id;
         this.nombre = nombre;
+        this.username = username;
         this.especialidad = especialidad;
         this.especialidadEtiqueta = especialidadEtiqueta;
         this.disponible = disponible;
@@ -28,6 +31,10 @@ public class TecnicoDisponibleDTO {
 
     public String getNombre() {
         return nombre;
+    }
+
+    public String getUsername() {
+        return username;
     }
 
     public String getEspecialidad() {

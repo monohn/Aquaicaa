@@ -211,9 +211,7 @@ seguimiento.setPersonal(personal);
 
 seguimiento.setEstado("TRABAJO_REALIZADO");
 
-seguimiento.setComentario(
-        "El técnico registró el informe de atención del reporte."
-);
+seguimiento.setComentario(trabajoRealizado.trim());
 
 seguimiento.setFechaCreacion(
         LocalDateTime.now()

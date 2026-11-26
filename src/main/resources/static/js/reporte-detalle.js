@@ -9,6 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const tipoProblemaDetalle =
         document.getElementById("tipoProblemaDetalle");
     let reporteTipoProblema = null;
+    let mapaReporteInstance = null;
 
     const nombreTitular =
         document.getElementById("nombreTitular");
@@ -236,6 +237,11 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
     }
 
+    if (mapaReporteInstance) {
+        mapaReporteInstance.remove();
+        mapaReporteInstance = null;
+    }
+
     const latitud =
         parseFloat(reporte.latitud);
 
@@ -262,11 +268,14 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
     }
 
-    const mapa =
+    mapaElemento.innerHTML = "";
+    mapaReporteInstance =
         L.map("mapaReporte").setView(
             [latitud, longitud],
             16
         );
+
+    const mapa = mapaReporteInstance;
 
     L.tileLayer(
         "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
@@ -1404,7 +1413,9 @@ function formatearFecha(fecha) {
 
         const nombre = document.createElement("span");
         nombre.className = "tecnico-trigger-nombre";
-        nombre.textContent = tecnico.nombre;
+        nombre.textContent = tecnico.username
+            ? `${tecnico.username} · ${tecnico.nombre}`
+            : tecnico.nombre;
 
         const estado = document.createElement("span");
         estado.className = `tecnico-estado ${tecnico.disponible ? "libre" : "ocupado"}`;
@@ -1448,21 +1459,26 @@ function formatearFecha(fecha) {
                 return;
             }
 
-            // Disponibles primero, luego por nombre
-            tecnicos.sort((a, b) =>
-                Number(b.disponible) - Number(a.disponible) ||
-                a.nombre.localeCompare(b.nombre)
-            );
+            // Orden natural por usuario: 1. tecnico1, 2. tecnico2, ...
+            tecnicos.sort((a, b) => {
+                const ua = (a.username || a.nombre || "").trim();
+                const ub = (b.username || b.nombre || "").trim();
+                return ua.localeCompare(ub, undefined, { numeric: true, sensitivity: "base" }) ||
+                    (a.nombre || "").localeCompare(b.nombre || "");
+            });
 
             tecnicoAyuda.textContent =
-                "Técnicos especialistas y de atención general disponibles.";
+                "Técnicos ordenados por usuario (tecnico1, tecnico2...).";
             tecnicoTriggerTexto.textContent = "Selecciona un técnico";
 
-            tecnicos.forEach(tecnico => {
+            tecnicos.forEach((tecnico, idx) => {
+                const etiquetaNombre = tecnico.username
+                    ? `${idx + 1}. ${tecnico.username} · ${tecnico.nombre}`
+                    : `${idx + 1}. ${tecnico.nombre}`;
 
                 const option = document.createElement("option");
                 option.value = tecnico.id;
-                option.textContent = `${tecnico.nombre} (${tecnico.especialidadEtiqueta})`;
+                option.textContent = `${etiquetaNombre} (${tecnico.especialidadEtiqueta})`;
                 tecnicoSelect.appendChild(option);
 
                 const item = document.createElement("button");
@@ -1471,13 +1487,13 @@ function formatearFecha(fecha) {
 
                 const avatar = document.createElement("span");
                 avatar.className = "tecnico-avatar";
-                avatar.textContent = tecnico.nombre.charAt(0).toUpperCase();
+                avatar.textContent = String(idx + 1);
 
                 const info = document.createElement("span");
                 info.className = "tecnico-info";
 
                 const nombre = document.createElement("strong");
-                nombre.textContent = tecnico.nombre;
+                nombre.textContent = etiquetaNombre;
 
                 const especialidad = document.createElement("small");
                 especialidad.textContent = tecnico.especialidadEtiqueta;
@@ -1586,14 +1602,15 @@ function formatearFecha(fecha) {
 
 
                 setTimeout(
-                    () => {
+                    async () => {
 
                         cerrarAsignacionModal();
 
-                        cargarReporte();
+                        await cargarReporte();
+                        await cargarSeguimientos();
 
                     },
-                    1000
+                    800
                 );
 
 
