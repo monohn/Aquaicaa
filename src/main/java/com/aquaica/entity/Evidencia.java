@@ -39,6 +39,9 @@ public class Evidencia {
     @Column(name = "origen", nullable = false, length = 20)
     private String origen;
 
+    @Column(name = "contenido_base64", columnDefinition = "TEXT")
+    private String contenidoBase64;
+
 
     public Evidencia() {
     }
@@ -93,5 +96,13 @@ public class Evidencia {
 
     public void setOrigen(String origen) {
         this.origen = origen;
+    }
+
+    public String getContenidoBase64() {
+        return contenidoBase64;
+    }
+
+    public void setContenidoBase64(String contenidoBase64) {
+        this.contenidoBase64 = contenidoBase64;
     }
 }

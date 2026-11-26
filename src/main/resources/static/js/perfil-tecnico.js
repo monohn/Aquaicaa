@@ -85,6 +85,22 @@ document.addEventListener("DOMContentLoaded", async () => {
                 avatarGrande.style.background = "#0a74c9";
             }
 
+            if (typeof sincronizarMiAvatar === "function") {
+                sincronizarMiAvatar((serverAvatar) => {
+                    if (avatarImg) {
+                        avatarImg.src = serverAvatar;
+                        avatarImg.style.display = "block";
+                    }
+                    if (avatarTxt) avatarTxt.style.display = "none";
+                    if (avatarGrande) avatarGrande.style.background = "transparent";
+                    const userAvatar = $("userAvatar");
+                    if (userAvatar) {
+                        userAvatar.innerHTML = `<img src="${serverAvatar}" alt="Avatar" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+                        userAvatar.style.background = "transparent";
+                    }
+                });
+            }
+
             configurarSubidaAvatar();
 
             const espClave = String(personal.especialidad || "").toUpperCase();
@@ -227,6 +243,9 @@ document.addEventListener("DOMContentLoaded", async () => {
                     const rolActual = localStorage.getItem("rol") || "TECNICO";
                     localStorage.setItem(`aquaica_avatar_${rolActual}_${username}`, dataUrl);
                     localStorage.removeItem("aquaica_avatar");
+                    if (typeof guardarMiAvatar === "function") {
+                        guardarMiAvatar(dataUrl);
+                    }
 
                     if (img) {
                         img.src = dataUrl;

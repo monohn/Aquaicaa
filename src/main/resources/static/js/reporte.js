@@ -285,16 +285,21 @@ document.addEventListener("DOMContentLoaded", () => {
             );
 
 
+            const headersReporte = {
+                "Content-Type": "application/x-www-form-urlencoded"
+            };
+            const tokenSesion = localStorage.getItem("token");
+            if (tokenSesion) {
+                headersReporte["Authorization"] = `Bearer ${tokenSesion}`;
+            }
+
             const respuesta =
                 await fetch(
                     "/api/reportes",
                     {
                         method: "POST",
 
-                        headers: {
-                            "Content-Type":
-                                "application/x-www-form-urlencoded"
-                        },
+                        headers: headersReporte,
 
                         body: formData
                     }

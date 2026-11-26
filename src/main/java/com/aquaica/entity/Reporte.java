@@ -42,6 +42,10 @@ public class Reporte {
     @Column(name = "afectados_count", nullable = false)
     private Integer afectadosCount = 1;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "usuario_id")
+    private Usuario usuario;
+
     public Reporte() {
     }
 
@@ -55,6 +59,14 @@ public class Reporte {
 
     public void setAfectadosCount(Integer afectadosCount) {
         this.afectadosCount = (afectadosCount != null && afectadosCount >= 1) ? afectadosCount : 1;
+    }
+
+    public Usuario getUsuario() {
+        return usuario;
+    }
+
+    public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
     }
 
     public Suministro getSuministroId() {

@@ -40,6 +40,7 @@ public class DataInitializer implements CommandLineRunner {
     private final InformeTecnicoRepository informeTecnicoRepository;
     private final ComunicadoOficialRepository comunicadoRepository;
     private final PasswordEncoder passwordEncoder;
+    private final com.aquaica.service.DniLookupService dniLookupService;
 
     public DataInitializer(
             UsuarioRepository usuarioRepository,
@@ -50,7 +51,8 @@ public class DataInitializer implements CommandLineRunner {
             AsignacionRepository asignacionRepository,
             InformeTecnicoRepository informeTecnicoRepository,
             ComunicadoOficialRepository comunicadoRepository,
-            PasswordEncoder passwordEncoder) {
+            PasswordEncoder passwordEncoder,
+            com.aquaica.service.DniLookupService dniLookupService) {
         this.usuarioRepository = usuarioRepository;
         this.personalRepository = personalRepository;
         this.clienteRepository = clienteRepository;
@@ -60,6 +62,7 @@ public class DataInitializer implements CommandLineRunner {
         this.informeTecnicoRepository = informeTecnicoRepository;
         this.comunicadoRepository = comunicadoRepository;
         this.passwordEncoder = passwordEncoder;
+        this.dniLookupService = dniLookupService;
     }
 
     @Override
@@ -79,13 +82,55 @@ public class DataInitializer implements CommandLineRunner {
     private void limpiarPerfilPruebaMaria() {
         try {
             usuarioRepository.findByUsername("mariaquispe").ifPresent(usuarioRepository::delete);
-            suministroRepository.findByCodigoSuministro("SUM-00125").ifPresent(s1 -> {
-                if (reporteRepository.obtenerReportesPorCodigoSuministro("SUM-00125").isEmpty()) {
-                    suministroRepository.delete(s1);
+
+            Cliente clienteReemplazo = clienteRepository.findAll().stream()
+                    .filter(c -> c.getNombreCompleto() == null
+                            || !c.getNombreCompleto().toLowerCase().contains("maría quispe")
+                            && !c.getNombreCompleto().toLowerCase().contains("maria quispe"))
+                    .findFirst()
+                    .orElse(null);
+
+            for (Suministro s : suministroRepository.findAll()) {
+                boolean esMaria = (s.getNombreTitular() != null
+                        && (s.getNombreTitular().toLowerCase().contains("maría quispe")
+                            || s.getNombreTitular().toLowerCase().contains("maria quispe")))
+                        || (s.getCliente() != null && s.getCliente().getNombreCompleto() != null
+                            && (s.getCliente().getNombreCompleto().toLowerCase().contains("maría quispe")
+                                || s.getCliente().getNombreCompleto().toLowerCase().contains("maria quispe")));
+
+                if (!esMaria) continue;
+
+                boolean tieneReportes = !reporteRepository.obtenerReportesPorCodigoSuministro(s.getCodigoSuministro()).isEmpty();
+                if ("SUM-00125".equalsIgnoreCase(s.getCodigoSuministro()) && !tieneReportes) {
+                    suministroRepository.delete(s);
+                } else if ("00000000".equals(s.getCodigoSuministro())) {
+                    s.setNombreTitular("Incidencia Vecinal / Vía Pública");
+                    if (clienteReemplazo != null) s.setCliente(clienteReemplazo);
+                    suministroRepository.save(s);
+                } else if (s.getDni() != null && s.getDni().matches("\\d{8}") && !"71234567".equals(s.getDni())) {
+                    // Suministro contaminado con DNI real de otro usuario por versión previa
+                    if (!tieneReportes) {
+                        suministroRepository.delete(s);
+                    } else {
+                        java.util.Map<String, Object> real = dniLookupService.consultarReniecReal(s.getDni());
+                        String nombreReal = real.get("nombreCompleto") != null
+                                ? String.valueOf(real.get("nombreCompleto"))
+                                : "Ciudadano DNI " + s.getDni();
+                        s.setNombreTitular(nombreReal);
+                        if (clienteReemplazo != null) s.setCliente(clienteReemplazo);
+                        suministroRepository.save(s);
+                    }
+                } else {
+                    s.setNombreTitular("Usuario AquaIca");
+                    if (clienteReemplazo != null) s.setCliente(clienteReemplazo);
+                    suministroRepository.save(s);
                 }
-            });
+            }
+
             clienteRepository.findByDni("71234567").ifPresent(c -> {
-                if ("María Quispe Ramos".equalsIgnoreCase(c.getNombreCompleto())) {
+                if (c.getNombreCompleto() != null
+                        && (c.getNombreCompleto().toLowerCase().contains("maría quispe")
+                            || c.getNombreCompleto().toLowerCase().contains("maria quispe"))) {
                     if (suministroRepository.findByClienteId(c.getId()).isEmpty()
                             && usuarioRepository.findByClienteId(c.getId()).isEmpty()) {
                         clienteRepository.delete(c);
@@ -93,7 +138,7 @@ public class DataInitializer implements CommandLineRunner {
                 }
             });
         } catch (Exception e) {
-            log.debug("No se pudo limpiar registro previo de prueba: {}", e.getMessage());
+            log.debug("Aviso al limpiar registros previos de prueba: {}", e.getMessage());
         }
     }
 

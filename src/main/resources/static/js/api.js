@@ -29,6 +29,18 @@
         console.log("🔌 [AquaIca API] Conectado a backend Render:", backendUrl);
     }
 
+    // Helper para resolver URLs absolutas de imágenes / recursos en despliegues separados
+    window.resolveApiUrl = function(path) {
+        if (!path) return "";
+        if (path.startsWith("data:") || path.startsWith("http://") || path.startsWith("https://")) {
+            return path;
+        }
+        if (backendUrl && (path.startsWith("/api/") || path.startsWith("/uploads/"))) {
+            return backendUrl + path;
+        }
+        return path;
+    };
+
     // Helper global para conectar o cambiar el backend fácilmente desde la consola:
     // setBackendUrl('https://mi-aquaica.onrender.com')
     window.setBackendUrl = function(url) {
@@ -89,3 +101,60 @@ async function apiFetch(url, options = {}) {
 
     return await response.json();
 }
+
+window.getAvatarKey = function(rol, username) {
+    const r = (rol || localStorage.getItem("rol") || "CIUDADANO").trim();
+    const u = (username || localStorage.getItem("username") || "").trim();
+    return u ? `aquaica_avatar_${r}_${u}` : null;
+};
+
+window.sincronizarMiAvatar = async function(onAvatar) {
+    const token = localStorage.getItem("token");
+    const key = window.getAvatarKey();
+    if (!token || !key) return null;
+    localStorage.removeItem("aquaica_avatar");
+    const cached = localStorage.getItem(key);
+    try {
+        const resp = await fetch("/api/auth/mi-avatar", {
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+        if (!resp.ok) return cached;
+        const data = await resp.json();
+        const serverAvatar = data && typeof data.avatar === "string" && data.avatar.startsWith("data:image/")
+            ? data.avatar
+            : "";
+        if (serverAvatar) {
+            localStorage.setItem(key, serverAvatar);
+            if (typeof onAvatar === "function") onAvatar(serverAvatar);
+            return serverAvatar;
+        }
+        if (cached && cached.startsWith("data:image/")) {
+            window.guardarMiAvatar(cached).catch(() => {});
+        }
+        return cached;
+    } catch (_) {
+        return cached;
+    }
+};
+
+window.guardarMiAvatar = async function(dataUrl) {
+    const token = localStorage.getItem("token");
+    const key = window.getAvatarKey();
+    if (key && dataUrl) {
+        localStorage.setItem(key, dataUrl);
+        localStorage.removeItem("aquaica_avatar");
+    }
+    if (!token || !dataUrl) return;
+    try {
+        await fetch("/api/auth/mi-avatar", {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify({ avatar: dataUrl })
+        });
+    } catch (_) {
+        // Mantiene caché local de la cuenta si hay fallo de red
+    }
+};

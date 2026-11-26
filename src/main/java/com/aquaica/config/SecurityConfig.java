@@ -83,6 +83,7 @@ public class SecurityConfig {
                 ).permitAll()
 
                 // AUTENTICACIÓN Y APIS PÚBLICAS (FEED COMUNITARIO Y MAPA)
+                .requestMatchers("/api/auth/mi-avatar").authenticated()
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/public/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/comunicados/activos").permitAll()

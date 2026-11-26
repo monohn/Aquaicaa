@@ -22,6 +22,7 @@ public class FeedItemDTO {
     private String imagenUrl;
     private String imagenTecnicoUrl;
     private String entidadEmisora;
+    private String autorAvatar;
     private LocalDateTime fechaInicioCorte;
     private LocalDateTime fechaFinCorte;
     private LocalDateTime fechaUltimaActualizacion;
@@ -33,16 +34,22 @@ public class FeedItemDTO {
         private String estado;
         private String mensaje;
         private String autor;
+        private String autorAvatar;
         private LocalDateTime fecha;
         private String tiempoRelativo;
 
         public ActualizacionFeedDTO() {}
 
         public ActualizacionFeedDTO(String tipo, String estado, String mensaje, String autor, LocalDateTime fecha) {
+            this(tipo, estado, mensaje, autor, null, fecha);
+        }
+
+        public ActualizacionFeedDTO(String tipo, String estado, String mensaje, String autor, String autorAvatar, LocalDateTime fecha) {
             this.tipo = tipo;
             this.estado = estado;
             this.mensaje = mensaje;
             this.autor = autor;
+            this.autorAvatar = autorAvatar;
             this.fecha = fecha;
             this.tiempoRelativo = calcularTiempoRelativo(fecha);
         }
@@ -55,6 +62,8 @@ public class FeedItemDTO {
         public void setMensaje(String mensaje) { this.mensaje = mensaje; }
         public String getAutor() { return autor; }
         public void setAutor(String autor) { this.autor = autor; }
+        public String getAutorAvatar() { return autorAvatar; }
+        public void setAutorAvatar(String autorAvatar) { this.autorAvatar = autorAvatar; }
         public LocalDateTime getFecha() { return fecha; }
         public void setFecha(LocalDateTime fecha) {
             this.fecha = fecha;
@@ -270,5 +279,13 @@ public class FeedItemDTO {
 
     public void setActualizaciones(java.util.List<ActualizacionFeedDTO> actualizaciones) {
         this.actualizaciones = actualizaciones;
+    }
+
+    public String getAutorAvatar() {
+        return autorAvatar;
+    }
+
+    public void setAutorAvatar(String autorAvatar) {
+        this.autorAvatar = autorAvatar;
     }
 }

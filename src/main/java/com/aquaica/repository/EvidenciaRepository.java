@@ -45,4 +45,6 @@ public interface EvidenciaRepository extends JpaRepository<Evidencia, Long> {
         """)
     List<EvidenciaResponseDTO> obtenerTodasLasEvidencias();
 
+    java.util.Optional<Evidencia> findFirstByReporteIdAndNombreArchivo(Long reporteId, String nombreArchivo);
+
 }

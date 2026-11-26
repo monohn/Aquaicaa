@@ -121,6 +121,21 @@ async function initPerfil() {
         if (txtAvatar) txtAvatar.style.display = 'none';
     }
 
+    if (typeof sincronizarMiAvatar === 'function') {
+        sincronizarMiAvatar((serverAvatar) => {
+            if (imgAvatar) {
+                imgAvatar.src = serverAvatar;
+                imgAvatar.style.display = 'block';
+            }
+            if (txtAvatar) txtAvatar.style.display = 'none';
+            const badgeAvatar = document.querySelector('.user-badge-avatar');
+            if (badgeAvatar) {
+                badgeAvatar.innerHTML = `<img src="${serverAvatar}" alt="${escapeHtml(username)}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+                badgeAvatar.style.background = 'transparent';
+            }
+        });
+    }
+
     configurarSubidaAvatarCiudadano(username);
     configurarGpsPerfil();
 
@@ -539,6 +554,9 @@ function configurarSubidaAvatarCiudadano(username) {
                 const rolUsuario = localStorage.getItem('rol') || 'CIUDADANO';
                 localStorage.setItem(`aquaica_avatar_${rolUsuario}_${username}`, dataUrl);
                 localStorage.removeItem('aquaica_avatar');
+                if (typeof guardarMiAvatar === 'function') {
+                    guardarMiAvatar(dataUrl);
+                }
 
                 if (img) {
                     img.src = dataUrl;

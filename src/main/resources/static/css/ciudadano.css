@@ -550,10 +550,10 @@ strong, b { font-weight: 600; }
 .kpi strong { display: block; margin: 2px 0; font-size: 34px; font-weight: 700; line-height: 1.1; }
 .kpi small { font-size: 12.5px; color: var(--gris); }
 
-.kpi-azul    { --color: #0a74c9; --fondo-ico: #e3f1fd; --suave: #e1f0fc; }
-.kpi-rojo    { --color: #e0453f; --fondo-ico: #fde7e7; --suave: #fde9e9; }
-.kpi-naranja { --color: #e08a00; --fondo-ico: #fff0db; --suave: #fff1dd; }
-.kpi-verde   { --color: #14a463; --fondo-ico: #dcf7ea; --suave: #dff6ea; }
+.kpi-azul    { --color: #0a74c9; --fondo-ico: #eef6fd; --suave: #f0f7ff; }
+.kpi-rojo    { --color: #475569; --fondo-ico: #f1f5f9; --suave: #f8fafc; }
+.kpi-naranja { --color: #0284c7; --fondo-ico: #f0f9ff; --suave: #f8fafc; }
+.kpi-verde   { --color: #0f766e; --fondo-ico: #f0fdfa; --suave: #f8fafc; }
 
 
 /* =========================================================

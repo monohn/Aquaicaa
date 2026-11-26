@@ -267,11 +267,11 @@ a.dp-notif:hover { background: #eef7fd; }
 .dp-delta.mal { color: #e08a00; }
 .dp-delta.neutro { color: #5d7389; }
 
-.k-azul    { --c: #0a74c9; --f: #e3f1fd; }
-.k-naranja { --c: #f08a00; --f: #fff0db; }
-.k-celeste { --c: #12a8e6; --f: #dff4fd; }
-.k-verde   { --c: #14a463; --f: #dcf7ea; }
-.k-morado  { --c: #7c4ddb; --f: #eee5ff; }
+.k-azul    { --c: #0a74c9; --f: #eef6fd; }
+.k-naranja { --c: #475569; --f: #f1f5f9; }
+.k-celeste { --c: #0284c7; --f: #f0f9ff; }
+.k-verde   { --c: #0f766e; --f: #f0fdfa; }
+.k-morado  { --c: #334155; --f: #f8fafc; }
 
 
 /* ===== Tarjetas ===== */

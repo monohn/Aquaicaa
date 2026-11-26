@@ -58,7 +58,7 @@ public class EvidenciaService {
                 carpetaBase + reporteId
         );
 
-        Files.createDirectories(carpetaReporte);
+        byte[] bytes = archivo.getBytes();
 
         String original = archivo.getOriginalFilename();
         if (original == null || original.isBlank()) {
@@ -69,13 +69,13 @@ public class EvidenciaService {
             nombreArchivo = "evidencia_" + System.currentTimeMillis() + ".jpg";
         }
 
-        Path rutaArchivo =
-                carpetaReporte.resolve(nombreArchivo);
-
-        Files.write(
-                rutaArchivo,
-                archivo.getBytes()
-        );
+        Path rutaArchivo = carpetaReporte.resolve(nombreArchivo);
+        try {
+            Files.createDirectories(carpetaReporte);
+            Files.write(rutaArchivo, bytes);
+        } catch (IOException ignored) {
+            // En despliegues cloud efímeros se mantiene respaldo persistente en base de datos
+        }
 
         Evidencia evidencia = new Evidencia();
 
@@ -84,6 +84,7 @@ public class EvidenciaService {
         evidencia.setRutaArchivo(rutaArchivo.toString());
         evidencia.setTipoArchivo(archivo.getContentType() != null ? archivo.getContentType() : "image/jpeg");
         evidencia.setOrigen("CIUDADANO");
+        evidencia.setContenidoBase64(java.util.Base64.getEncoder().encodeToString(bytes));
         evidencia.setFechaCreacion(LocalDateTime.now());
 
         return evidenciaRepository.save(evidencia);
@@ -114,67 +115,36 @@ public class EvidenciaService {
         );
     }
 
-
-    String nombreArchivo =
-            archivo.getOriginalFilename();
-
-    if (nombreArchivo == null ||
-            nombreArchivo.isBlank()) {
-
-        throw new RuntimeException(
-                "El archivo no tiene nombre"
-        );
+    byte[] bytes = archivo.getBytes();
+    String original = archivo.getOriginalFilename();
+    if (original == null || original.isBlank()) {
+        original = "evidencia_tecnico.jpg";
+    }
+    String limpio = Paths.get(original).getFileName().toString().replaceAll("[^a-zA-Z0-9._-]", "_");
+    if (limpio.isBlank()) {
+        limpio = "evidencia_tecnico.jpg";
     }
 
+    Path carpetaReporte = Paths.get(carpetaBase + reporteId);
+    String nombreFinal = "tecnico_" + System.currentTimeMillis() + "_" + limpio;
+    Path rutaArchivo = carpetaReporte.resolve(nombreFinal);
 
-    Path carpetaReporte =
-            Paths.get(carpetaBase + reporteId);
+    try {
+        Files.createDirectories(carpetaReporte);
+        Files.write(rutaArchivo, bytes);
+    } catch (IOException ignored) {
+        // Respaldo persistente en base de datos garantiza disponibilidad tras reinicios
+    }
 
-    Files.createDirectories(
-            carpetaReporte
-    );
-
-    String nombreFinal =
-            "tecnico_" +
-            System.currentTimeMillis() +
-            "_" +
-            nombreArchivo;
-
-
-    Path rutaArchivo =
-            carpetaReporte.resolve(nombreFinal);
-
-
-    Files.write(
-            rutaArchivo,
-            archivo.getBytes()
-    );
-
-
-    Evidencia evidencia =
-            new Evidencia();
+    Evidencia evidencia = new Evidencia();
 
     evidencia.setReporte(reporte);
-
-    evidencia.setNombreArchivo(
-            nombreFinal
-    );
-
-    evidencia.setRutaArchivo(
-            rutaArchivo.toString()
-    );
-
-    evidencia.setTipoArchivo(
-            archivo.getContentType()
-    );
-
-    evidencia.setOrigen(
-            "TECNICO"
-    );
-
-    evidencia.setFechaCreacion(
-            LocalDateTime.now()
-    );
+    evidencia.setNombreArchivo(nombreFinal);
+    evidencia.setRutaArchivo(rutaArchivo.toString());
+    evidencia.setTipoArchivo(archivo.getContentType() != null ? archivo.getContentType() : "image/jpeg");
+    evidencia.setOrigen("TECNICO");
+    evidencia.setContenidoBase64(java.util.Base64.getEncoder().encodeToString(bytes));
+    evidencia.setFechaCreacion(LocalDateTime.now());
 
     Evidencia guardada = evidenciaRepository.save(evidencia);
 

@@ -328,6 +328,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
                     <div class="asig-form-campo">
                         <label for="infTrabajo">¿Qué atendiste y qué realizaste?</label>
+                        <div class="asig-quick-chips" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
+                            <button type="button" class="asig-chip-btn" data-txt="Se reparó la fuga de agua y se verificó la presión.">Fuga reparada</button>
+                            <button type="button" class="asig-chip-btn" data-txt="Se reguló la válvula y se restableció el flujo.">Válvula regulada</button>
+                            <button type="button" class="asig-chip-btn" data-txt="Se restableció el servicio tras revisión técnica.">Servicio restablecido</button>
+                        </div>
                         <textarea id="infTrabajo" rows="3" placeholder="Ej. Se reparó la fuga en la tubería principal y se verificó la presión..." required></textarea>
                     </div>
 
@@ -369,6 +374,16 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("btnCerrarModalInf").addEventListener("click", cerrar);
         document.getElementById("btnCancelarModalInf").addEventListener("click", cerrar);
         modal.addEventListener("click", e => { if (e.target === modal) cerrar(); });
+
+        modal.querySelectorAll(".asig-chip-btn").forEach(chip => {
+            chip.addEventListener("click", () => {
+                const txt = document.getElementById("infTrabajo");
+                if (txt) {
+                    txt.value = chip.dataset.txt || "";
+                    txt.focus();
+                }
+            });
+        });
 
         const fotoInput = document.getElementById("infFotoInput");
         fotoInput.addEventListener("change", () => {

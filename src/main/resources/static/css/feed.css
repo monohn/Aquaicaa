@@ -772,21 +772,35 @@ button {
     padding-top: 2px;
 }
 
-/* Badges semáforo */
+/* Badges semáforo minimalistas */
 .card-badge {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
     padding: 3px 10px;
-    border-radius: 12px;
-    font-size: 10.5px;
-    font-weight: 600;
-    margin-bottom: 8px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 500;
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+    color: #334155;
+    margin-bottom: 4px;
 }
 
-.badge-comunicado { background: #dbeafe; color: #0656a6; }
-.badge-pendiente { background: #fee2e2; color: #b91c1c; }
-.badge-en-atencion { background: #fef3c7; color: #b45309; }
-.badge-resuelto { background: #d1fae5; color: #047857; }
-.badge-reabierto { background: #fce7f3; color: #be185d; }
+.badge-svg {
+    width: 13px;
+    height: 13px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    flex-shrink: 0;
+}
+
+.badge-comunicado { background: #f0f7ff; color: #0a74c9; border-color: #dbeafe; }
+.badge-pendiente { background: #f8fafc; color: #475569; border-color: #e2e8f0; }
+.badge-en-atencion { background: #f8fafc; color: #0a74c9; border-color: #dbeafe; }
+.badge-resuelto { background: #f8fafc; color: #0f766e; border-color: #ccfbf1; }
+.badge-reabierto { background: #f8fafc; color: #475569; border-color: #e2e8f0; }
 
 .card-body p {
     font-size: 14px;
@@ -1296,23 +1310,16 @@ button {
     stroke-width: 2.2;
 }
 
-.chip-blue {
-    background: #eef6fd;
-    color: #0a74c9;
-    border-color: #d0e6f9;
-}
-
-.chip-green {
-    background: #ecfdf5;
-    color: #059669;
-    border-color: #a7f3d0;
-}
-
+.chip-blue,
+.chip-green,
 .chip-amber {
-    background: #fffbeb;
-    color: #b45309;
-    border-color: #fde68a;
+    background: #f8fafc;
+    color: #334155;
+    border-color: #e2e8f0;
 }
+.chip-blue .chip-svg { stroke: #0a74c9; }
+.chip-green .chip-svg { stroke: #10b981; }
+.chip-amber .chip-svg { stroke: #64748b; }
 
 /* Cabecera Admin en Portal Ciudadano */
 .btn-header-admin-portal {
@@ -1347,30 +1354,27 @@ button {
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    padding: 2.5px 9px;
-    border-radius: 10px;
+    padding: 3px 10px;
+    border-radius: 999px;
     font-size: 11px;
-    font-weight: 600;
+    font-weight: 500;
+    margin-bottom: 4px;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    color: #475569;
 }
 
-.cat-fuga {
-    background: #e0f2fe;
-    color: #0369a1;
-}
-
-.cat-corte {
-    background: #fee2e2;
-    color: #b91c1c;
-}
-
+.cat-fuga,
+.cat-corte,
 .cat-presion {
-    background: #fef3c7;
-    color: #b45309;
+    background: #ffffff;
+    color: #475569;
 }
 
 .cat-oficial {
-    background: #e0e7ff;
-    color: #4338ca;
+    background: #f0f7ff;
+    color: #0a74c9;
+    border-color: #dbeafe;
 }
 
 .badge-dot {
@@ -1854,8 +1858,8 @@ button {
 .card-official-updates {
     margin: 10px 0 12px;
     padding: 10px 12px;
-    background: #f0f8ff;
-    border: 1px solid #cce6fb;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
     border-left: 3px solid #0a74c9;
     border-radius: 10px;
 }
@@ -1867,6 +1871,21 @@ button {
     gap: 8px;
     margin-bottom: 5px;
     flex-wrap: wrap;
+}
+
+.official-updates-author {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.official-mini-avatar {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid #cbd5e1;
+    flex-shrink: 0;
 }
 
 .official-updates-tag {

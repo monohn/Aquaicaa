@@ -94,6 +94,20 @@ function initAuthUI() {
             ? `<img src="${savedAvatar}" alt="${escapeHtml(username)}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`
             : inicial;
 
+        if (typeof sincronizarMiAvatar === 'function') {
+            sincronizarMiAvatar((serverAvatar) => {
+                const badgeAvatar = document.querySelector('#headerAuthArea .user-badge-avatar');
+                if (badgeAvatar) {
+                    badgeAvatar.innerHTML = `<img src="${serverAvatar}" alt="${escapeHtml(username)}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+                    badgeAvatar.style.background = 'transparent';
+                }
+                if (composerAvatar) {
+                    composerAvatar.innerHTML = `<img src="${serverAvatar}" alt="${escapeHtml(username)}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+                    composerAvatar.style.background = 'transparent';
+                }
+            });
+        }
+
         if (esAdmin) {
             // Cabecera Administrador / Soporte
             headerAuthArea.innerHTML = `
@@ -142,9 +156,14 @@ function initAuthUI() {
 
             // Barra de composición adaptada para admin
             if (composerAvatar) {
-                composerAvatar.textContent = inicial;
-                composerAvatar.style.background = 'linear-gradient(135deg, var(--azul), var(--celeste))';
-                composerAvatar.style.color = '#ffffff';
+                if (savedAvatar) {
+                    composerAvatar.innerHTML = `<img src="${savedAvatar}" alt="${escapeHtml(username)}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+                    composerAvatar.style.background = 'transparent';
+                } else {
+                    composerAvatar.textContent = inicial;
+                    composerAvatar.style.background = '#0a74c9';
+                    composerAvatar.style.color = '#ffffff';
+                }
             }
             if (composerTitle) composerTitle.textContent = `Panel Administrador · ${username}`;
             if (composerSubtitle) composerSubtitle.textContent = 'Monitoreo en tiempo real de reportes vecinales y avisos EMAPICA.';
@@ -178,9 +197,14 @@ function initAuthUI() {
             if (drawerPerfilLink) drawerPerfilLink.onclick = null;
 
             if (composerAvatar) {
-                composerAvatar.textContent = inicial;
-                composerAvatar.style.background = 'linear-gradient(135deg, var(--azul), var(--celeste))';
-                composerAvatar.style.color = '#ffffff';
+                if (savedAvatar) {
+                    composerAvatar.innerHTML = `<img src="${savedAvatar}" alt="${escapeHtml(username)}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+                    composerAvatar.style.background = 'transparent';
+                } else {
+                    composerAvatar.textContent = inicial;
+                    composerAvatar.style.background = '#0a74c9';
+                    composerAvatar.style.color = '#ffffff';
+                }
             }
             if (composerTitle) composerTitle.textContent = `¡Hola, ${username}!`;
             if (composerSubtitle) composerSubtitle.textContent = '¿Tienes alguna fuga, rotura o corte de agua? Reporta en 1 minuto.';
@@ -626,17 +650,17 @@ function crearTarjeta(item) {
         }
     }
 
-    // Categoría visual amigable
+    // Categoría visual sobria
     let catTagHtml = '';
     const cat = (item.categoria || '').toUpperCase();
     if (cat.includes('FUGA') || cat.includes('ROTURA')) {
-        catTagHtml = `<span class="feed-cat-chip cat-fuga">💧 Fuga de agua</span>`;
+        catTagHtml = `<span class="feed-cat-chip cat-fuga">Fuga de agua</span>`;
     } else if (cat.includes('CORTE') || cat.includes('SIN_AGUA') || cat.includes('INTERRUPCION')) {
-        catTagHtml = `<span class="feed-cat-chip cat-corte">🚫 Sin servicio / Corte</span>`;
+        catTagHtml = `<span class="feed-cat-chip cat-corte">Sin servicio / Corte</span>`;
     } else if (cat.includes('PRESION')) {
-        catTagHtml = `<span class="feed-cat-chip cat-presion">📉 Baja presión</span>`;
+        catTagHtml = `<span class="feed-cat-chip cat-presion">Baja presión</span>`;
     } else if (esComunicado) {
-        catTagHtml = `<span class="feed-cat-chip cat-oficial">📢 EMAPICA Oficial</span>`;
+        catTagHtml = `<span class="feed-cat-chip cat-oficial">EMAPICA Oficial</span>`;
     }
 
     const tiempo = item.tiempoUltimaActualizacion || item.tiempoRelativo || 'Reciente';
@@ -650,10 +674,17 @@ function crearTarjeta(item) {
     const notasGuardadas = JSON.parse(localStorage.getItem(notasClave) || '[]');
     const numNotas = notasGuardadas.length;
 
+    const autorAvatarUrl = (item.autorAvatar && String(item.autorAvatar).startsWith('data:image/'))
+        ? item.autorAvatar
+        : null;
+    const cardAvatarHtml = autorAvatarUrl
+        ? `<img src="${autorAvatarUrl}" alt="${escapeHtml(source)}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;">`
+        : avatarLetter;
+
     let html = `
         <div class="card-header">
             <div class="card-source">
-                <div class="card-avatar ${avatarClass}">${avatarLetter}</div>
+                <div class="card-avatar ${avatarClass}" style="${autorAvatarUrl ? 'background:transparent;padding:0;overflow:hidden;' : ''}">${cardAvatarHtml}</div>
                 <div class="card-meta">
                     <strong>${escapeHtml(source)}</strong>
                     <span>${escapeHtml(subtitle)}</span>
@@ -678,26 +709,33 @@ function crearTarjeta(item) {
     }
 
     // Imagen con soporte de Lightbox interactivo (ciudadana y/o evidencia técnica oficial)
-    if (item.imagenTecnicoUrl && item.imagenUrl && item.imagenTecnicoUrl !== item.imagenUrl) {
+    const imgReporteUrl = item.imagenUrl
+        ? (typeof resolveApiUrl === 'function' ? resolveApiUrl(item.imagenUrl) : item.imagenUrl)
+        : null;
+    const imgTecnicoUrl = item.imagenTecnicoUrl
+        ? (typeof resolveApiUrl === 'function' ? resolveApiUrl(item.imagenTecnicoUrl) : item.imagenTecnicoUrl)
+        : null;
+
+    if (imgTecnicoUrl && imgReporteUrl && imgTecnicoUrl !== imgReporteUrl) {
         html += `
             <div class="card-images-dual">
-                <div class="card-image-wrap" onclick="abrirLightbox('${escapeHtml(item.imagenTecnicoUrl)}', 'Evidencia técnica oficial')" title="Toca para ampliar foto técnica">
-                    <img class="card-image" src="${escapeHtml(item.imagenTecnicoUrl)}" alt="Evidencia técnica" loading="lazy" onerror="this.parentElement.style.display='none'">
+                <div class="card-image-wrap" onclick="abrirLightbox('${escapeHtml(imgTecnicoUrl)}', 'Evidencia técnica oficial')" title="Toca para ampliar foto técnica">
+                    <img class="card-image" src="${escapeHtml(imgTecnicoUrl)}" alt="Evidencia técnica" loading="lazy" onerror="this.parentElement.style.display='none'">
                     <span class="image-tech-badge">Evidencia técnica oficial</span>
                 </div>
-                <div class="card-image-wrap" onclick="abrirLightbox('${escapeHtml(item.imagenUrl)}', 'Foto reportada')" title="Toca para ampliar foto">
-                    <img class="card-image" src="${escapeHtml(item.imagenUrl)}" alt="Foto reportada" loading="lazy" onerror="this.parentElement.style.display='none'">
+                <div class="card-image-wrap" onclick="abrirLightbox('${escapeHtml(imgReporteUrl)}', 'Foto reportada')" title="Toca para ampliar foto">
+                    <img class="card-image" src="${escapeHtml(imgReporteUrl)}" alt="Foto reportada" loading="lazy" onerror="this.parentElement.style.display='none'">
                     <span class="image-zoom-badge">Reporte inicial</span>
                 </div>
             </div>
         `;
-    } else if (item.imagenTecnicoUrl || item.imagenUrl) {
-        const fotoMostrar = item.imagenTecnicoUrl || item.imagenUrl;
-        const etiquetaFoto = item.imagenTecnicoUrl ? 'Evidencia técnica oficial' : 'Ampliar';
+    } else if (imgTecnicoUrl || imgReporteUrl) {
+        const fotoMostrar = imgTecnicoUrl || imgReporteUrl;
+        const etiquetaFoto = imgTecnicoUrl ? 'Evidencia técnica oficial' : 'Ampliar';
         html += `
             <div class="card-image-wrap" onclick="abrirLightbox('${escapeHtml(fotoMostrar)}', '${escapeHtml(item.titulo || 'Evidencia fotográfica')}')" title="Toca para ampliar foto">
                 <img class="card-image" src="${escapeHtml(fotoMostrar)}" alt="Evidencia de reporte" loading="lazy" onerror="this.parentElement.style.display='none'">
-                <span class="${item.imagenTecnicoUrl ? 'image-tech-badge' : 'image-zoom-badge'}">
+                <span class="${imgTecnicoUrl ? 'image-tech-badge' : 'image-zoom-badge'}">
                     ${etiquetaFoto}
                 </span>
             </div>
@@ -711,11 +749,17 @@ function crearTarjeta(item) {
         const toggleBtnHtml = restoActs.length > 0
             ? `<button type="button" class="btn-toggle-updates" onclick="toggleUpdates(${item.id})">Ver historial (${item.actualizaciones.length})</button>`
             : '';
+        const ultimaActAvatarHtml = (ultimaAct.autorAvatar && String(ultimaAct.autorAvatar).startsWith('data:image/'))
+            ? `<img src="${ultimaAct.autorAvatar}" alt="${escapeHtml(ultimaAct.autor || 'Autor')}" class="official-mini-avatar">`
+            : '';
 
         html += `
             <div class="card-official-updates">
                 <div class="official-updates-head">
-                    <span class="official-updates-tag">Actualización oficial · ${escapeHtml(ultimaAct.autor || 'Administración AquaIca')}</span>
+                    <span class="official-updates-author">
+                        ${ultimaActAvatarHtml}
+                        <span class="official-updates-tag">${escapeHtml(ultimaAct.autor || 'Administración AquaIca')}</span>
+                    </span>
                     <div class="official-updates-right">
                         <span class="official-updates-time">${escapeHtml(ultimaAct.tiempoRelativo || 'Reciente')}</span>
                         ${toggleBtnHtml}
@@ -724,15 +768,23 @@ function crearTarjeta(item) {
                 <p class="official-update-latest">${escapeHtml(ultimaAct.mensaje || '')}</p>
                 ${restoActs.length > 0 ? `
                     <div class="official-updates-history" id="updates-hist-${item.id}" style="display:none;">
-                        ${restoActs.map(act => `
+                        ${restoActs.map(act => {
+                            const subAvatarHtml = (act.autorAvatar && String(act.autorAvatar).startsWith('data:image/'))
+                                ? `<img src="${act.autorAvatar}" alt="${escapeHtml(act.autor || 'Autor')}" class="official-mini-avatar">`
+                                : '';
+                            return `
                             <div class="official-update-item">
                                 <div class="update-item-meta">
-                                    <strong>${escapeHtml(act.autor || 'Administración AquaIca')}</strong>
+                                    <span class="official-updates-author">
+                                        ${subAvatarHtml}
+                                        <strong>${escapeHtml(act.autor || 'Administración AquaIca')}</strong>
+                                    </span>
                                     <span>${escapeHtml(act.tiempoRelativo || '')}</span>
                                 </div>
                                 <p>${escapeHtml(act.mensaje || '')}</p>
                             </div>
-                        `).join('')}
+                        `;
+                        }).join('')}
                     </div>
                 ` : ''}
             </div>

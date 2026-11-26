@@ -16,11 +16,13 @@ import com.aquaica.entity.Bitacora;
 import com.aquaica.entity.ComunicadoOficial;
 import com.aquaica.entity.Reporte;
 import com.aquaica.entity.Suministro;
+import com.aquaica.entity.Usuario;
 import com.aquaica.repository.BitacoraRepository;
 import com.aquaica.repository.ComunicadoOficialRepository;
 import com.aquaica.repository.EvidenciaRepository;
 import com.aquaica.repository.ReporteRepository;
 import com.aquaica.repository.SeguimientoRepository;
+import com.aquaica.repository.UsuarioRepository;
 
 @Service
 public class FeedPublicoService {
@@ -30,6 +32,7 @@ public class FeedPublicoService {
     private final EvidenciaRepository evidenciaRepository;
     private final SeguimientoRepository seguimientoRepository;
     private final BitacoraRepository bitacoraRepository;
+    private final UsuarioRepository usuarioRepository;
 
     private static final List<String> DISTRITOS_ICA = List.of(
             "Todos",
@@ -53,12 +56,14 @@ public class FeedPublicoService {
             ComunicadoOficialRepository comunicadoRepository,
             EvidenciaRepository evidenciaRepository,
             SeguimientoRepository seguimientoRepository,
-            BitacoraRepository bitacoraRepository) {
+            BitacoraRepository bitacoraRepository,
+            UsuarioRepository usuarioRepository) {
         this.reporteRepository = reporteRepository;
         this.comunicadoRepository = comunicadoRepository;
         this.evidenciaRepository = evidenciaRepository;
         this.seguimientoRepository = seguimientoRepository;
         this.bitacoraRepository = bitacoraRepository;
+        this.usuarioRepository = usuarioRepository;
     }
 
     public List<String> obtenerDistritosIca() {
@@ -223,6 +228,11 @@ public class FeedPublicoService {
         dto.setFechaInicioCorte(com.getFechaInicioCorte());
         dto.setFechaFinCorte(com.getFechaFinCorte());
         dto.setImagenUrl(null);
+        if (com.getCreadoPor() != null && !com.getCreadoPor().isBlank()) {
+            usuarioRepository.findByUsername(com.getCreadoPor())
+                    .map(Usuario::getAvatarBase64)
+                    .ifPresent(dto::setAutorAvatar);
+        }
         return dto;
     }
 
@@ -242,6 +252,18 @@ public class FeedPublicoService {
         dto.setFecha(rep.getFechaCreacion());
         dto.setAfectadosCount(rep.getAfectadosCount());
         dto.setEntidadEmisora(null);
+
+        // Avatar del ciudadano autor si tiene cuenta y foto de perfil
+        try {
+            Usuario autorUsuario = rep.getUsuario();
+            if (autorUsuario == null && sum != null && sum.getCliente() != null) {
+                autorUsuario = usuarioRepository.findByClienteId(sum.getCliente().getId()).orElse(null);
+            }
+            if (autorUsuario != null && autorUsuario.getAvatarBase64() != null && !autorUsuario.getAvatarBase64().isBlank()) {
+                dto.setAutorAvatar(autorUsuario.getAvatarBase64());
+            }
+        } catch (Exception ignored) {
+        }
 
         java.time.LocalDateTime ultimaFecha = rep.getFechaCreacion();
 
@@ -276,11 +298,18 @@ public class FeedPublicoService {
             List<SeguimientoResponseDTO> seguimientos = seguimientoRepository.obtenerSeguimientosPorReporte(rep.getId());
             if (seguimientos != null) {
                 for (SeguimientoResponseDTO seg : seguimientos) {
+                    String avatarPersonal = null;
+                    if (seg.getPersonalId() != null) {
+                        avatarPersonal = usuarioRepository.findByPersonalId(seg.getPersonalId())
+                                .map(Usuario::getAvatarBase64)
+                                .orElse(null);
+                    }
                     actualizaciones.add(new FeedItemDTO.ActualizacionFeedDTO(
                             "OFICIAL",
                             seg.getEstado(),
                             seg.getComentario(),
                             "Administración AquaIca",
+                            avatarPersonal,
                             seg.getFechaCreacion()
                     ));
                     if (seg.getFechaCreacion() != null && (ultimaFecha == null || seg.getFechaCreacion().isAfter(ultimaFecha))) {
@@ -295,11 +324,18 @@ public class FeedPublicoService {
             List<Bitacora> bitacoras = bitacoraRepository.findAllByReporteIdOrderByFechaCreacionAsc(rep.getId());
             if (bitacoras != null) {
                 for (Bitacora b : bitacoras) {
+                    String avatarTec = null;
+                    if (b.getPersonal() != null) {
+                        avatarTec = usuarioRepository.findByPersonalId(b.getPersonal().getId())
+                                .map(Usuario::getAvatarBase64)
+                                .orElse(null);
+                    }
                     actualizaciones.add(new FeedItemDTO.ActualizacionFeedDTO(
                             "AVANCE_TECNICO",
                             rep.getEstado(),
                             b.getDescripcion(),
                             "Administración AquaIca · Equipo Técnico",
+                            avatarTec,
                             b.getFechaCreacion()
                     ));
                     if (b.getFechaCreacion() != null && (ultimaFecha == null || b.getFechaCreacion().isAfter(ultimaFecha))) {

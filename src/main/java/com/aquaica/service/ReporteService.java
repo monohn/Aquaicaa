@@ -153,6 +153,11 @@ public class ReporteService {
         reporte.setPrioridad(prioridad);
         reporte.setFechaCreacion(LocalDateTime.now());
 
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.getPrincipal() instanceof CustomUserDetails cud && cud.getUsuario() != null) {
+            reporte.setUsuario(cud.getUsuario());
+        }
+
         return reporteRepository.save(reporte);
     }
 

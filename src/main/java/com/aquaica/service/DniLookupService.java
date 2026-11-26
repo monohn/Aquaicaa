@@ -67,22 +67,22 @@ public class DniLookupService {
 
         // 1. Buscar coincidencia exacta por código de suministro en padrón AquaIca
         Optional<Suministro> porCodigo = suministroRepository.findByCodigoSuministro(valor);
-        if (porCodigo.isPresent()) {
+        if (porCodigo.isPresent() && !esRegistroPruebaMaria(porCodigo.get().getNombreTitular())) {
             return construirDesdeSuministro(porCodigo.get());
         }
 
-        // 2. Si es un DNI de 8 dígitos, buscar por DNI en suministros y clientes
+        // 2. Si es un DNI de 8 dígitos, buscar por DNI en suministros y clientes reales
         if (valor.matches("\\d{8}")) {
             Optional<Suministro> porDniSum = suministroRepository.findFirstByDni(valor);
-            if (porDniSum.isPresent()) {
+            if (porDniSum.isPresent() && !esRegistroPruebaMaria(porDniSum.get().getNombreTitular())) {
                 return construirDesdeSuministro(porDniSum.get());
             }
 
             Optional<Cliente> porDniCliente = clienteRepository.findByDni(valor);
-            if (porDniCliente.isPresent()) {
+            if (porDniCliente.isPresent() && !esRegistroPruebaMaria(porDniCliente.get().getNombreCompleto())) {
                 Cliente c = porDniCliente.get();
                 List<Suministro> sumCliente = suministroRepository.findByClienteId(c.getId());
-                if (!sumCliente.isEmpty()) {
+                if (!sumCliente.isEmpty() && !esRegistroPruebaMaria(sumCliente.get(0).getNombreTitular())) {
                     return construirDesdeSuministro(sumCliente.get(0));
                 }
                 resp.put("encontrado", true);
@@ -109,6 +109,12 @@ public class DniLookupService {
         resp.put("dni", valor.matches("\\d{8}") ? valor : null);
         resp.put("mensaje", "No se encontró información registrada para ese DNI o código de suministro.");
         return resp;
+    }
+
+    private boolean esRegistroPruebaMaria(String nombre) {
+        if (nombre == null) return false;
+        String lower = nombre.toLowerCase();
+        return lower.contains("maría quispe") || lower.contains("maria quispe");
     }
 
     private Map<String, Object> construirDesdeSuministro(Suministro s) {

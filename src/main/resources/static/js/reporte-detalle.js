@@ -312,12 +312,18 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
     }
 
+    const seccionInforme = container.closest(".informe-tecnico-section");
+
     try {
 
         const informe =
             await apiFetch(
                 `/api/reportes/${id}/informe-tecnico`
             );
+
+        if (seccionInforme) {
+            seccionInforme.style.display = "block";
+        }
 
         console.log(
             "Informe técnico recibido:",
@@ -425,38 +431,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
     } catch (error) {
 
-        console.error(
-            "Error al cargar informe técnico:",
-            error
-        );
-
-
         /*
-         * Si el endpoint responde 404 porque
-         * todavía no existe informe, mostramos
-         * un mensaje normal.
+         * Si todavía no existe informe técnico, ocultamos toda el área
+         * para no ocupar espacio innecesario al desplazarse.
          */
-
-        container.innerHTML = `
-
-            <div class="informe-tecnico-vacio">
-
-                <div class="informe-vacio-icon">
-                    <svg class="icon-svg" viewBox="0 0 24 24" style="width:28px;height:28px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h6M9 17h6"/></svg>
-                </div>
-
-                <h3>
-                    Informe técnico pendiente
-                </h3>
-
-                <p>
-                    Este reporte todavía no tiene
-                    un informe técnico registrado.
-                </p>
-
-            </div>
-
-        `;
+        if (seccionInforme) {
+            seccionInforme.style.display = "none";
+        } else {
+            container.innerHTML = "";
+        }
     }
 }
     async function cargarSeguimientos() {
@@ -982,8 +965,12 @@ function formatearFecha(fecha) {
                 "evidencia-item";
 
 
-            const urlImagen =
+            const rutaImagen =
                 `/api/evidencias/archivo/${evidencia.reporteId}/${encodeURIComponent(evidencia.nombreArchivo)}`;
+            const urlImagen =
+                typeof resolveApiUrl === "function"
+                    ? resolveApiUrl(rutaImagen)
+                    : rutaImagen;
 
 
             try {
@@ -1702,5 +1689,60 @@ function formatearFecha(fecha) {
     cargarSeguimientos();
 
     cargarInformeTecnico();
+
+    // Acciones rápidas para el técnico directamente desde el detalle del reporte
+    if (rol === "TECNICO") {
+        iniciarAccionesTecnicoDetalle();
+    }
+
+    async function iniciarAccionesTecnicoDetalle() {
+        const actionsContainer = document.querySelector(".detail-actions");
+        const personalId = localStorage.getItem("personalId");
+        if (!actionsContainer || !personalId) return;
+
+        try {
+            const lista = await apiFetch(`/api/reportes/${id}/asignaciones`);
+            const miAsig = (lista || []).find(a =>
+                String(a.personalId) === String(personalId) &&
+                ["ACTIVA", "PENDIENTE", "EN_ATENCION"].includes(a.estado)
+            );
+            if (!miAsig) return;
+
+            if (miAsig.estado === "ACTIVA" || miAsig.estado === "PENDIENTE") {
+                const btnStart = document.createElement("button");
+                btnStart.type = "button";
+                btnStart.className = "primary-button";
+                btnStart.textContent = "Empezar tarea";
+                btnStart.addEventListener("click", async () => {
+                    btnStart.disabled = true;
+                    btnStart.textContent = "Iniciando...";
+                    try {
+                        await apiFetch(`/api/asignaciones/${miAsig.id}/iniciar`, { method: "POST" });
+                        localStorage.setItem(`aquaica_avance_${miAsig.id}`, "25");
+                        window.location.reload();
+                    } catch (err) {
+                        btnStart.disabled = false;
+                        btnStart.textContent = "Empezar tarea";
+                        alert(err.message || "No se pudo iniciar la tarea.");
+                    }
+                });
+                actionsContainer.appendChild(btnStart);
+            } else if (miAsig.estado === "EN_ATENCION") {
+                const tieneInf = await apiFetch(`/api/reportes/asignacion/${miAsig.id}/informe-tecnico`)
+                    .then(() => true)
+                    .catch(() => false);
+                if (!tieneInf) {
+                    const btnIr = document.createElement("a");
+                    btnIr.href = "asignaciones.html";
+                    btnIr.className = "primary-button";
+                    btnIr.style.textDecoration = "none";
+                    btnIr.textContent = "Generar informe";
+                    actionsContainer.appendChild(btnIr);
+                }
+            }
+        } catch (e) {
+            console.log("Sin asignación activa del técnico para este reporte:", e);
+        }
+    }
 
 });

@@ -391,6 +391,23 @@
     color: #334e68;
 }
 
+.asig-chip-btn {
+    padding: 5px 10px;
+    border-radius: 999px;
+    border: 1px solid #cbd5e1;
+    background: #f8fafc;
+    color: #334e68;
+    font-size: 11.5px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+.asig-chip-btn:hover {
+    border-color: #0a74c9;
+    color: #0a74c9;
+    background: #eff6ff;
+}
+
 .asig-form-campo textarea,
 .asig-form-campo select {
     width: 100%;

@@ -141,6 +141,13 @@ window.Panel = (function () {
             avatar.style.background = "#0a74c9";
         }
 
+        if (typeof sincronizarMiAvatar === "function") {
+            sincronizarMiAvatar((serverAvatar) => {
+                avatar.innerHTML = `<img src="${serverAvatar}" alt="${username}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+                avatar.style.background = "transparent";
+            });
+        }
+
         $("logoutButton")?.addEventListener("click", cerrarSesion);
         $("logoutMenu").addEventListener("click", cerrarSesion);
 
