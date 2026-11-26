@@ -30,13 +30,16 @@ public class DniLookupService {
     private final SuministroRepository suministroRepository;
     private final ClienteRepository clienteRepository;
     private final HttpClient httpClient;
+    private final String reniecApiToken;
     private final Map<String, Map<String, Object>> cacheReniec = new ConcurrentHashMap<>();
 
     public DniLookupService(
             SuministroRepository suministroRepository,
-            ClienteRepository clienteRepository) {
+            ClienteRepository clienteRepository,
+            @org.springframework.beans.factory.annotation.Value("${reniec.api.token:}") String reniecApiToken) {
         this.suministroRepository = suministroRepository;
         this.clienteRepository = clienteRepository;
+        this.reniecApiToken = reniecApiToken != null ? reniecApiToken.trim() : "";
         this.httpClient = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(5))
                 .build();
@@ -147,15 +150,29 @@ public class DniLookupService {
 
         Map<String, Object> resultado = new LinkedHashMap<>();
         try {
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create("https://api.apis.net.pe/v1/dni?numero=" + dni))
-                    .timeout(Duration.ofSeconds(6))
-                    .header("Accept", "application/json")
-                    .header("User-Agent", "AquaIca/1.0")
-                    .GET()
-                    .build();
+            HttpResponse<String> response = null;
+            if (!reniecApiToken.isEmpty()) {
+                HttpRequest reqV2 = HttpRequest.newBuilder()
+                        .uri(URI.create("https://api.apis.net.pe/v2/reniec/dni?numero=" + dni))
+                        .timeout(Duration.ofSeconds(6))
+                        .header("Accept", "application/json")
+                        .header("Authorization", "Bearer " + reniecApiToken)
+                        .header("User-Agent", "AquaIca/1.0")
+                        .GET()
+                        .build();
+                response = httpClient.send(reqV2, HttpResponse.BodyHandlers.ofString());
+            }
 
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response == null || response.statusCode() != 200) {
+                HttpRequest request = HttpRequest.newBuilder()
+                        .uri(URI.create("https://api.apis.net.pe/v1/dni?numero=" + dni))
+                        .timeout(Duration.ofSeconds(6))
+                        .header("Accept", "application/json")
+                        .header("User-Agent", "AquaIca/1.0")
+                        .GET()
+                        .build();
+                response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            }
 
             if (response.statusCode() == 200 && response.body() != null && !response.body().isBlank()) {
                 Map<String, Object> json = JsonParserFactory.getJsonParser().parseMap(response.body());

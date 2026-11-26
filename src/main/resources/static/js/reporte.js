@@ -10,267 +10,200 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
     }
 
-    const formulario =
-        document.getElementById("reporteForm");
-
-    const mensaje =
-        document.getElementById("reporteMensaje");
-
-    const codigoInput =
-        document.getElementById("codigoSuministro");
-
-    const buscarButton =
-        document.getElementById("buscarSuministro");
-
-    const datosSuministro =
-        document.getElementById("datosSuministro");
-
-    const titularSuministro =
-        document.getElementById("titularSuministro");
-
-    const dniSuministro =
-        document.getElementById("dniSuministro");
-
-    const direccionSuministro =
-        document.getElementById("direccionSuministro");
-
-    const evidenciaInput =
-        document.getElementById("evidencia");
-
-
-    let suministroEncontrado = false;
-    let titularValidadoActual = "";
-    let direccionValidadaActual = "";
-
+    const formulario = document.getElementById("reporteForm");
+    const mensaje = document.getElementById("reporteMensaje");
+    const codigoInput = document.getElementById("codigoSuministro");
+    const btnSinSuministro = document.getElementById("btnSinSuministro");
+    const dniEstadoInline = document.getElementById("dniEstadoInline");
+    const nombreManualWrap = document.getElementById("nombreManualWrap");
+    const nombreManualInput = document.getElementById("nombreManualInput");
     const direccionInput = document.getElementById("direccionIncidencia");
+    const tipoInput = document.getElementById("tipoProblema");
+    const evidenciaInput = document.getElementById("evidencia");
+    const fileUploadWrap = document.getElementById("fileUploadWrap");
+    const previewWrap = document.getElementById("evidenciaPreviewWrap");
+    const previewImg = document.getElementById("evidenciaPreviewImg");
+    const previewInfo = document.getElementById("evidenciaPreviewInfo");
+    const btnQuitarFoto = document.getElementById("btnQuitarFoto");
 
-    async function validarSuministroRapido(codigo) {
-        const valor = (codigo || "").trim();
-        if (!valor) {
-            suministroEncontrado = false;
-            datosSuministro.style.display = "none";
-            mostrarMensaje("Ingresa tu DNI de 8 dígitos o código de suministro.", "error");
-            return;
-        }
+    let titularValidadoActual = "";
+    let modoViaPublica = false;
+    let archivoPreparado = null;
+    let timerLookup = null;
 
-        if (valor === "00000000") {
-            suministroEncontrado = true;
-            titularValidadoActual = "Incidencia Vecinal / Vía Pública";
-            titularSuministro.textContent = titularValidadoActual;
-            dniSuministro.textContent = "00000000";
-            const dirGps = (direccionInput?.value || "").trim();
-            direccionValidadaActual = dirGps || "Pendiente de detectar por GPS o ingresar dirección";
-            direccionSuministro.textContent = direccionValidadaActual;
-            datosSuministro.style.display = "block";
-            mostrarMensaje("Modo vía pública activado. Se registrará sin requerir recibo domiciliario.", "success");
-            return;
-        }
-
-        buscarButton.disabled = true;
-        buscarButton.textContent = "Validando...";
-        mostrarMensaje("Consultando datos reales...", "info");
-
-        try {
-            const respuesta = await fetch(`/api/public/validar-identidad/${encodeURIComponent(valor)}`);
-            if (!respuesta.ok) {
-                throw new Error("No se pudo validar en este momento.");
-            }
-            const data = await respuesta.json();
-
-            if (!data || !data.encontrado) {
-                suministroEncontrado = false;
-                titularValidadoActual = "";
-                direccionValidadaActual = "";
-                datosSuministro.style.display = "none";
-                mostrarMensaje(
-                    data?.mensaje || "No se encontró información registrada para ese DNI o código.",
-                    "error"
-                );
-                return;
-            }
-
-            suministroEncontrado = true;
-            titularValidadoActual = data.nombreCompleto || "";
-            const dirGps = (direccionInput?.value || "").trim();
-            direccionValidadaActual = data.direccion || dirGps || "";
-
-            titularSuministro.textContent = titularValidadoActual || "Sin nombre registrado";
-            dniSuministro.textContent = data.dni || valor;
-            direccionSuministro.textContent = direccionValidadaActual || "Usa 'Detectar GPS' o ingresa tu ubicación exacta abajo";
-
-            if (data.direccion && direccionInput) {
-                direccionInput.value = data.direccion;
-            }
-            if (data.latitud && data.longitud) {
-                const inLat = document.getElementById("reporteLatitud");
-                const inLng = document.getElementById("reporteLongitud");
-                if (inLat && !inLat.value) inLat.value = data.latitud;
-                if (inLng && !inLng.value) inLng.value = data.longitud;
-            }
-
-            datosSuministro.style.display = "block";
-            const origenTxt = data.fuente === "RENIEC" ? "RENIEC" : "Padrón AquaIca";
-            mostrarMensaje(`Identidad validada (${origenTxt}): ${titularValidadoActual}.`, "success");
-        } catch (e) {
-            console.error("Error validando DNI/suministro:", e);
-            suministroEncontrado = false;
-            datosSuministro.style.display = "none";
-            mostrarMensaje("No se pudo conectar con el servicio de validación.", "error");
-        } finally {
-            buscarButton.disabled = false;
-            buscarButton.innerHTML = `<svg class="icon-svg" viewBox="0 0 24 24" style="width:14px;height:14px"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.3-4.3"/></svg> Validar`;
-        }
-    }
-
-    buscarButton.addEventListener("click", async () => {
-        const codigo = codigoInput.value.trim();
-        validarSuministroRapido(codigo);
+    // 1. Chips de 1 toque para tipo de problema
+    document.querySelectorAll("#tipoChips .tipo-chip").forEach(chip => {
+        chip.addEventListener("click", () => {
+            document.querySelectorAll("#tipoChips .tipo-chip").forEach(c => c.classList.remove("selected"));
+            chip.classList.add("selected");
+            tipoInput.value = chip.dataset.valor || "";
+            limpiarMensaje();
+        });
     });
 
-    const btnSinSuministro = document.getElementById("btnSinSuministro");
+    // 2. Toggle simple vía pública (sin DNI)
     if (btnSinSuministro) {
         btnSinSuministro.addEventListener("click", () => {
-            codigoInput.value = "00000000";
-            validarSuministroRapido("00000000");
-            const btnGeo = document.getElementById("btnGeolocManual");
-            const latVal = document.getElementById("reporteLatitud")?.value;
-            if (btnGeo && !latVal) {
-                btnGeo.click();
+            modoViaPublica = !modoViaPublica;
+            btnSinSuministro.classList.toggle("activo", modoViaPublica);
+            if (modoViaPublica) {
+                codigoInput.value = "00000000";
+                titularValidadoActual = "Incidencia Vecinal / Vía Pública";
+                if (nombreManualWrap) nombreManualWrap.style.display = "none";
+                mostrarEstadoDni("Modo vía pública activado (no requiere DNI).", "neutral");
+                const latVal = document.getElementById("reporteLatitud")?.value;
+                if (!latVal) {
+                    document.getElementById("btnGeolocManual")?.click();
+                }
+            } else {
+                codigoInput.value = "";
+                titularValidadoActual = "";
+                ocultarEstadoDni();
             }
         });
     }
 
+    // 3. Validación silenciosa no bloqueante al escribir 8 dígitos
+    async function consultarDniSilencioso(valor) {
+        const codigo = (valor || "").trim();
+        if (!codigo || codigo === "00000000") return;
+
+        mostrarEstadoDni("Verificando DNI...", "info");
+        try {
+            const resp = await fetch(`/api/public/validar-identidad/${encodeURIComponent(codigo)}`);
+            if (!resp.ok) throw new Error("lookup_fail");
+            const data = await resp.json();
+
+            if (data && data.encontrado && data.nombreCompleto) {
+                titularValidadoActual = data.nombreCompleto;
+                if (nombreManualWrap) nombreManualWrap.style.display = "none";
+                if (data.direccion && direccionInput && !direccionInput.value.trim()) {
+                    direccionInput.value = data.direccion;
+                }
+                if (data.latitud && data.longitud) {
+                    const inLat = document.getElementById("reporteLatitud");
+                    const inLng = document.getElementById("reporteLongitud");
+                    if (inLat && !inLat.value) inLat.value = data.latitud;
+                    if (inLng && !inLng.value) inLng.value = data.longitud;
+                }
+                mostrarEstadoDni(`✓ ${titularValidadoActual}`, "ok");
+            } else {
+                // Nunca bloquear al ciudadano si RENIEC no responde o no encuentra el DNI
+                titularValidadoActual = "";
+                if (nombreManualWrap) nombreManualWrap.style.display = "block";
+                mostrarEstadoDni("DNI listo. Puedes escribir tu nombre abajo (opcional) y enviar igual.", "neutral");
+            }
+        } catch (_) {
+            titularValidadoActual = "";
+            if (nombreManualWrap) nombreManualWrap.style.display = "block";
+            mostrarEstadoDni("DNI listo. Puedes continuar con tu reporte sin esperar verificación externa.", "neutral");
+        }
+    }
+
     codigoInput.addEventListener("input", () => {
         const val = codigoInput.value.trim();
-
-        if (/^\d{8}$/.test(val)) {
-            validarSuministroRapido(val);
-        } else {
-            suministroEncontrado = false;
+        if (val !== "00000000" && modoViaPublica) {
+            modoViaPublica = false;
+            btnSinSuministro?.classList.remove("activo");
+        }
+        clearTimeout(timerLookup);
+        if (/^\d{8}$/.test(val) && val !== "00000000") {
+            timerLookup = setTimeout(() => consultarDniSilencioso(val), 250);
+        } else if (val.length === 0) {
             titularValidadoActual = "";
-            direccionValidadaActual = "";
-            datosSuministro.style.display = "none";
-            limpiarMensaje();
+            if (nombreManualWrap) nombreManualWrap.style.display = "none";
+            ocultarEstadoDni();
         }
     });
 
+    // 4. Selección y compresión automática de imagen (soporta cámara celular y HEIC -> JPEG <400KB)
+    evidenciaInput.addEventListener("change", async () => {
+        const file = evidenciaInput.files[0];
+        if (!file) {
+            resetFoto();
+            return;
+        }
+        if (file.size > 25 * 1024 * 1024) {
+            mostrarMensaje("La imagen supera los 25 MB.", "error");
+            resetFoto();
+            return;
+        }
+
+        if (previewInfo) previewInfo.textContent = "Optimizando imagen...";
+        if (previewWrap) previewWrap.style.display = "flex";
+        if (fileUploadWrap) fileUploadWrap.style.display = "none";
+
+        const comprimida = typeof comprimirImagenParaSubida === "function"
+            ? await comprimirImagenParaSubida(file, 1400, 0.82)
+            : file;
+
+        archivoPreparado = comprimida;
+
+        const kb = Math.max(1, Math.round(comprimida.size / 1024));
+        if (previewInfo) previewInfo.textContent = `Foto lista (${kb} KB)`;
+
+        const reader = new FileReader();
+        reader.onload = ev => {
+            if (previewImg) previewImg.src = ev.target.result;
+        };
+        reader.readAsDataURL(comprimida);
+    });
+
+    if (btnQuitarFoto) {
+        btnQuitarFoto.addEventListener("click", resetFoto);
+    }
+
+    function resetFoto() {
+        archivoPreparado = null;
+        evidenciaInput.value = "";
+        if (previewImg) previewImg.src = "";
+        if (previewWrap) previewWrap.style.display = "none";
+        if (fileUploadWrap) fileUploadWrap.style.display = "block";
+    }
+
+    // 5. Envío directo del formulario (sin bloqueos)
     formulario.addEventListener("submit", async (event) => {
-
         event.preventDefault();
+        limpiarMensaje();
 
-        const codigoSuministro =
-            codigoInput.value.trim();
-
-        const tipoProblema =
-            document.getElementById("tipoProblema").value;
-
-        const descripcion =
-            document.getElementById("descripcion")
-                .value
-                .trim();
-
-        const archivo =
-            evidenciaInput.files[0];
-
-        if (!codigoSuministro ||
-            !tipoProblema ||
-            !descripcion) {
-
-            mostrarMensaje(
-                "Completa todos los campos.",
-                "error"
-            );
-
+        let codigoSuministro = codigoInput.value.trim();
+        if (!codigoSuministro) {
+            codigoSuministro = "00000000";
+        }
+        if (codigoSuministro !== "00000000" && !/^\d{8}$/.test(codigoSuministro) && codigoSuministro.length < 4) {
+            mostrarMensaje("Ingresa un DNI de 8 dígitos o toca 'Sin DNI (vía pública)'.", "error");
             return;
         }
 
-        // Validar si aún no se validó
-        if (!suministroEncontrado && /^\d{8}$/.test(codigoSuministro)) {
-            await validarSuministroRapido(codigoSuministro);
-        }
-        if (!suministroEncontrado) {
-            mostrarMensaje(
-                "Por favor valida primero tu DNI o número de suministro (o usa el modo vía pública).",
-                "error"
-            );
+        const tipoProblema = tipoInput.value;
+        if (!tipoProblema) {
+            mostrarMensaje("Toca el tipo de problema que estás reportando.", "error");
             return;
         }
 
-        if (archivo) {
-            const tiposPermitidos = [
-                "image/jpeg",
-                "image/jpg",
-                "image/png",
-                "image/webp",
-                "image/heic",
-                "image/heif"
-            ];
-            const extensionesPermitidas = [".jpg", ".jpeg", ".png", ".webp", ".heic", ".heif"];
-            const nombre = (archivo.name || "").toLowerCase();
-            const esImagen = tiposPermitidos.includes((archivo.type || "").toLowerCase()) ||
-                             extensionesPermitidas.some(ext => nombre.endsWith(ext)) ||
-                             (archivo.type && archivo.type.startsWith("image/"));
-
-            if (!esImagen) {
-                mostrarMensaje(
-                    "La evidencia debe ser una imagen (JPG, PNG o WEBP).",
-                    "error"
-                );
-                return;
-            }
-
-            const tamañoMaximo = 20 * 1024 * 1024; // 20 MB
-
-            if (archivo.size > tamañoMaximo) {
-                mostrarMensaje(
-                    "La imagen no puede superar los 20 MB.",
-                    "error"
-                );
-                return;
-            }
+        const descripcion = document.getElementById("descripcion").value.trim();
+        if (!descripcion) {
+            mostrarMensaje("Escribe brevemente qué ocurrió.", "error");
+            return;
         }
 
-
-        const boton =
-            formulario.querySelector(
-                "button[type='submit']"
-            );
-
-
+        const boton = formulario.querySelector("button[type='submit']");
         boton.disabled = true;
-
-        boton.textContent =
-            "Enviando...";
-
+        boton.textContent = "Enviando reporte...";
 
         try {
-
-            const formData =
-                new URLSearchParams();
-
-
-            formData.append(
-                "codigoSuministro",
-                codigoSuministro
-            );
-
-
-            formData.append(
-                "tipoProblema",
-                tipoProblema
-            );
-
+            const formData = new URLSearchParams();
+            formData.append("codigoSuministro", codigoSuministro);
+            formData.append("tipoProblema", tipoProblema);
 
             const lat = document.getElementById("reporteLatitud")?.value;
             const lng = document.getElementById("reporteLongitud")?.value;
-            const dirManual = (direccionInput?.value || direccionValidadaActual || "").trim();
+            const dirManual = (direccionInput?.value || "").trim();
+            const nombreManual = (nombreManualInput?.value || "").trim();
+            const titularFinal = titularValidadoActual || nombreManual;
 
-            if (titularValidadoActual) {
-                formData.append("nombreTitular", titularValidadoActual);
-            }
-            if (dirManual) {
-                formData.append("direccion", dirManual);
-            }
+            if (titularFinal) formData.append("nombreTitular", titularFinal);
+            if (dirManual) formData.append("direccion", dirManual);
 
             let descFinal = descripcion;
             if (lat && lng) {
@@ -278,219 +211,129 @@ document.addEventListener("DOMContentLoaded", () => {
                 formData.append("longitud", lng);
                 descFinal = `${descripcion}\n[GPS: ${lat}, ${lng}]`;
             }
+            formData.append("descripcion", descFinal);
 
-            formData.append(
-                "descripcion",
-                descFinal
-            );
-
-
-            const headersReporte = {
-                "Content-Type": "application/x-www-form-urlencoded"
-            };
+            const headersReporte = { "Content-Type": "application/x-www-form-urlencoded" };
             const tokenSesion = localStorage.getItem("token");
             if (tokenSesion) {
                 headersReporte["Authorization"] = `Bearer ${tokenSesion}`;
             }
 
-            const respuesta =
-                await fetch(
-                    "/api/reportes",
-                    {
-                        method: "POST",
-
-                        headers: headersReporte,
-
-                        body: formData
-                    }
-                );
-
+            const respuesta = await fetch("/api/reportes", {
+                method: "POST",
+                headers: headersReporte,
+                body: formData
+            });
 
             if (!respuesta.ok) {
-
-                const textoError =
-                    await respuesta.text();
-
-
-                console.error(
-                    "Error del servidor:",
-                    textoError
-                );
-
-
-                mostrarMensaje(
-                    "No se pudo registrar el reporte.",
-                    "error"
-                );
-
-                return;
+                const txtErr = await respuesta.text().catch(() => "");
+                throw new Error(txtErr || "No se pudo registrar el reporte.");
             }
 
+            const reporte = await respuesta.json();
 
-            const reporte =
-                await respuesta.json();
-
-
-            console.log(
-                "Reporte creado:",
-                reporte
-            );
-
-            if (archivo) {
+            const fotoASubir = archivoPreparado || evidenciaInput.files[0];
+            if (fotoASubir) {
+                boton.textContent = "Subiendo foto...";
                 const evidenciaData = new FormData();
-                evidenciaData.append("archivo", archivo);
+                evidenciaData.append("archivo", fotoASubir);
 
-                const headers = {};
-                const token = localStorage.getItem("token");
-                if (token) {
-                    headers["Authorization"] = `Bearer ${token}`;
+                const headersEv = {};
+                if (tokenSesion) {
+                    headersEv["Authorization"] = `Bearer ${tokenSesion}`;
                 }
 
-                const respuestaEvidencia = await fetch(
-                    `/api/reportes/${reporte.id}/evidencias`,
-                    {
-                        method: "POST",
-                        headers: headers,
-                        body: evidenciaData
-                    }
-                );
+                const respEv = await fetch(`/api/reportes/${reporte.id}/evidencias`, {
+                    method: "POST",
+                    headers: headersEv,
+                    body: evidenciaData
+                });
 
-                if (!respuestaEvidencia.ok) {
-                    let detalleError = "";
+                if (!respEv.ok) {
+                    let detalle = "";
                     try {
-                        const errJson = await respuestaEvidencia.json();
-                        detalleError = errJson.message || "";
-                    } catch (e) {
-                        detalleError = await respuestaEvidencia.text().catch(() => "");
+                        const errJson = await respEv.json();
+                        detalle = errJson.message || "";
+                    } catch (_) {
+                        detalle = await respEv.text().catch(() => "");
                     }
-                    console.error("Error al guardar la evidencia:", respuestaEvidencia.status, detalleError);
                     mostrarMensaje(
-                        `Reporte #${reporte.id} registrado, pero la evidencia no pudo guardarse: ${detalleError || 'Error de subida'}`,
+                        `Reporte #${reporte.id} guardado, pero la foto no pudo subirse (${detalle || "error " + respEv.status}).`,
                         "error"
                     );
                     return;
                 }
-
-                console.log("Evidencia guardada correctamente.");
             }
 
-            mostrarMensaje(
-                `Reporte registrado correctamente. Código: #${reporte.id}. Redirigiendo al muro de incidencias...`,
-                "success"
-            );
-
-            formulario.reset();
-
-            datosSuministro.style.display =
-                "none";
-
-            suministroEncontrado = false;
-
+            mostrarMensaje(`¡Listo! Reporte #${reporte.id} enviado. Volviendo al feed...`, "success");
             setTimeout(() => {
                 window.location.href = "index.html";
-            }, 1800);
-
+            }, 1200);
 
         } catch (error) {
-
-            console.error(
-                "Error al crear reporte:",
-                error
-            );
-
-
-            mostrarMensaje(
-                "No se pudo conectar con AquaIca.",
-                "error"
-            );
-
-
+            console.error("Error al crear reporte:", error);
+            mostrarMensaje(error.message || "No se pudo conectar con AquaIca.", "error");
         } finally {
-
             boton.disabled = false;
-
-            boton.textContent =
-                "Enviar reporte";
+            boton.textContent = "Enviar reporte";
         }
-
     });
 
+    function mostrarEstadoDni(texto, tipo) {
+        if (!dniEstadoInline) return;
+        dniEstadoInline.textContent = texto;
+        dniEstadoInline.className = `dni-estado-inline ${tipo || "info"}`;
+        dniEstadoInline.style.display = "block";
+    }
+
+    function ocultarEstadoDni() {
+        if (!dniEstadoInline) return;
+        dniEstadoInline.style.display = "none";
+        dniEstadoInline.textContent = "";
+    }
 
     function mostrarMensaje(texto, tipo) {
-
-        mensaje.textContent =
-            texto;
-
-        mensaje.className =
-            `reporte-mensaje ${tipo}`;
+        mensaje.textContent = texto;
+        mensaje.className = `reporte-mensaje ${tipo}`;
     }
-
 
     function limpiarMensaje() {
-
-        mensaje.textContent =
-            "";
-
-        mensaje.className =
-            "reporte-mensaje";
+        mensaje.textContent = "";
+        mensaje.className = "reporte-mensaje";
     }
 
+    // 6. Geolocalización GPS automática discreta
     iniciarGeolocalizacionReporte();
 
-    /* ===== GEOLOCALIZACIÓN GPS AUTOMÁTICA CON PERMISO ===== */
     function iniciarGeolocalizacionReporte() {
-        const card = document.getElementById("geolocCard");
-        const desc = document.getElementById("geolocDesc");
-        const statusBar = document.getElementById("geolocStatusBar");
-        const badge = document.getElementById("geolocBadge");
-        const coordsSpan = document.getElementById("geolocCoords");
+        const estadoEl = document.getElementById("geolocEstado");
         const btnTxt = document.getElementById("btnGeolocTxt");
         const btnManual = document.getElementById("btnGeolocManual");
         const inputLat = document.getElementById("reporteLatitud");
         const inputLng = document.getElementById("reporteLongitud");
 
-        if (!card) return;
-
         if (!navigator.geolocation) {
-            if (desc) desc.textContent = "Geolocalización no soportada en este navegador.";
             if (btnManual) btnManual.style.display = "none";
+            if (estadoEl) estadoEl.textContent = "Escribe tu dirección o referencia exacta.";
             return;
         }
 
-        function solicitarGPS(esAutomatico = false) {
-            if (statusBar) statusBar.style.display = "flex";
-            if (badge) {
-                badge.className = "geoloc-badge pendiente";
-                badge.textContent = esAutomatico
-                    ? "Solicitando permiso de ubicación al navegador..."
-                    : "Detectando señal satelital GPS...";
-            }
-            if (btnTxt) btnTxt.textContent = "Detectando...";
+        function solicitarGPS() {
+            if (btnTxt) btnTxt.textContent = "Buscando GPS...";
             if (btnManual) btnManual.disabled = true;
 
             navigator.geolocation.getCurrentPosition(
                 async (pos) => {
                     const lat = pos.coords.latitude;
                     const lng = pos.coords.longitude;
-                    const prec = Math.round(pos.coords.accuracy || 10);
-
+                    const prec = Math.round(pos.coords.accuracy || 15);
                     if (inputLat) inputLat.value = lat.toFixed(6);
                     if (inputLng) inputLng.value = lng.toFixed(6);
 
-                    localStorage.setItem("aquaica_last_lat", lat);
-                    localStorage.setItem("aquaica_last_lng", lng);
-
-                    if (badge) {
-                        badge.className = "geoloc-badge exito";
-                        badge.textContent = `Ubicación GPS detectada (±${prec} m)`;
-                    }
-                    if (coordsSpan) {
-                        coordsSpan.textContent = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
-                    }
-                    if (btnTxt) btnTxt.textContent = "Ubicación detectada";
+                    if (btnTxt) btnTxt.textContent = "GPS listo";
                     if (btnManual) btnManual.disabled = false;
+                    if (estadoEl) estadoEl.textContent = `Ubicación GPS detectada (±${prec} m)`;
 
-                    // Reverse geocoding real con Nominatim para obtener dirección de calle exacta
                     try {
                         const geoResp = await fetch(
                             `https://nominatim.openstreetmap.org/reverse?format=json&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lng)}&zoom=18&addressdetails=1`,
@@ -502,61 +345,38 @@ document.addEventListener("DOMContentLoaded", () => {
                             const calle = [addr.road || addr.pedestrian || addr.neighbourhood, addr.house_number].filter(Boolean).join(" ");
                             const zona = addr.suburb || addr.city_district || addr.town || addr.city || "";
                             const dirReal = [calle, zona].filter(Boolean).join(", ");
-                            if (dirReal) {
-                                const inDir = document.getElementById("direccionIncidencia");
-                                if (inDir && !inDir.value.trim()) {
-                                    inDir.value = dirReal;
-                                }
-                                const spanDir = document.getElementById("direccionSuministro");
-                                if (spanDir && (!direccionValidadaActual || spanDir.textContent.includes("Detectar GPS") || spanDir.textContent.includes("Pendiente"))) {
-                                    spanDir.textContent = dirReal;
-                                }
+                            if (dirReal && direccionInput && !direccionInput.value.trim()) {
+                                direccionInput.value = dirReal;
                             }
                         }
-                    } catch (geoErr) {
-                        console.log("Geocodificación inversa:", geoErr);
+                    } catch (_) {
+                        // Sin bloqueo si falla reverse geocoding
                     }
                 },
-                (err) => {
-                    console.log("GPS no concedido o error:", err);
-                    if (badge) {
-                        badge.className = "geoloc-badge aviso";
-                        if (err.code === err.PERMISSION_DENIED) {
-                            badge.textContent = "Permiso de ubicación no concedido. Puedes ingresar tu dirección manualmente.";
-                        } else {
-                            badge.textContent = "Señal satelital no disponible en este instante.";
-                        }
-                    }
-                    if (btnTxt) btnTxt.textContent = "Reintentar GPS";
+                () => {
+                    if (btnTxt) btnTxt.textContent = "Usar mi GPS";
                     if (btnManual) btnManual.disabled = false;
+                    if (estadoEl) estadoEl.textContent = "Puedes escribir tu calle o referencia manualmente.";
                 },
-                { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+                { enableHighAccuracy: true, timeout: 9000, maximumAge: 60000 }
             );
         }
 
-        // Solicitar permiso de geolocalización automáticamente tras cargar la vista
-        setTimeout(() => {
-            solicitarGPS(true);
-        }, 500);
-
+        setTimeout(solicitarGPS, 400);
         if (btnManual) {
-            btnManual.addEventListener("click", () => solicitarGPS(false));
+            btnManual.addEventListener("click", solicitarGPS);
         }
     }
 
-});
-
-// PREFILL_CODIGO: solo si llegas desde el portal con ?codigo=... o el usuario logueado tiene suministro propio
-document.addEventListener("DOMContentLoaded", () => {
+    // Precarga si viene desde ?codigo= o sesión ciudadana
     const urlCodigo = new URLSearchParams(window.location.search).get("codigo");
     const username = localStorage.getItem("username");
     const perfilCodigo = username ? localStorage.getItem(`perfil_${username}_suministro`) : null;
-    const codigoFinal = urlCodigo || perfilCodigo;
-
-    const input = document.getElementById("codigoSuministro");
-    const boton = document.getElementById("buscarSuministro");
-    if (codigoFinal && input && boton && !input.value) {
-        input.value = codigoFinal;
-        boton.click();
+    const codigoInicial = urlCodigo || perfilCodigo;
+    if (codigoInicial && !codigoInput.value) {
+        codigoInput.value = codigoInicial;
+        if (codigoInicial !== "00000000") {
+            consultarDniSilencioso(codigoInicial);
+        }
     }
 });

@@ -108,6 +108,78 @@ window.getAvatarKey = function(rol, username) {
     return u ? `aquaica_avatar_${r}_${u}` : null;
 };
 
+window.esUrlImagenValida = function(val) {
+    if (typeof val !== "string") return false;
+    return val.startsWith("data:image/") || val.startsWith("https://") || val.startsWith("http://");
+};
+
+window.comprimirImagenParaSubida = function(file, maxDim = 1400, quality = 0.82) {
+    return new Promise((resolve) => {
+        if (!file || !(file instanceof Blob)) {
+            resolve(file);
+            return;
+        }
+        // Si ya es una imagen ligera compatible (< 900 KB) y JPG/PNG/WEBP, enviar directo
+        const tipoLower = (file.type || "").toLowerCase();
+        const esCompatibleDirecto = tipoLower === "image/jpeg" || tipoLower === "image/png" || tipoLower === "image/webp";
+        if (esCompatibleDirecto && file.size <= 900 * 1024) {
+            resolve(file);
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onerror = () => resolve(file);
+        reader.onload = (ev) => {
+            const img = new Image();
+            img.onerror = () => resolve(file);
+            img.onload = () => {
+                try {
+                    let w = img.naturalWidth || img.width;
+                    let h = img.naturalHeight || img.height;
+                    if (!w || !h) {
+                        resolve(file);
+                        return;
+                    }
+                    if (w > maxDim || h > maxDim) {
+                        if (w >= h) {
+                            h = Math.round((h * maxDim) / w);
+                            w = maxDim;
+                        } else {
+                            w = Math.round((w * maxDim) / h);
+                            h = maxDim;
+                        }
+                    }
+                    const canvas = document.createElement("canvas");
+                    canvas.width = w;
+                    canvas.height = h;
+                    const ctx = canvas.getContext("2d");
+                    if (!ctx) {
+                        resolve(file);
+                        return;
+                    }
+                    ctx.drawImage(img, 0, 0, w, h);
+                    canvas.toBlob((blob) => {
+                        if (!blob) {
+                            resolve(file);
+                            return;
+                        }
+                        const baseName = (file.name || "evidencia").replace(/\.[^.]+$/, "");
+                        const compressed = new File([blob], `${baseName}.jpg`, {
+                            type: "image/jpeg",
+                            lastModified: Date.now()
+                        });
+                        resolve(compressed);
+                    }, "image/jpeg", quality);
+                } catch (_) {
+                    resolve(file);
+                }
+            };
+            img.src = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+    });
+};
+
 window.sincronizarMiAvatar = async function(onAvatar) {
     const token = localStorage.getItem("token");
     const key = window.getAvatarKey();
@@ -120,7 +192,7 @@ window.sincronizarMiAvatar = async function(onAvatar) {
         });
         if (!resp.ok) return cached;
         const data = await resp.json();
-        const serverAvatar = data && typeof data.avatar === "string" && data.avatar.startsWith("data:image/")
+        const serverAvatar = data && window.esUrlImagenValida(data.avatar)
             ? data.avatar
             : "";
         if (serverAvatar) {
@@ -146,7 +218,7 @@ window.guardarMiAvatar = async function(dataUrl) {
     }
     if (!token || !dataUrl) return;
     try {
-        await fetch("/api/auth/mi-avatar", {
+        const resp = await fetch("/api/auth/mi-avatar", {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
@@ -154,6 +226,12 @@ window.guardarMiAvatar = async function(dataUrl) {
             },
             body: JSON.stringify({ avatar: dataUrl })
         });
+        if (resp.ok) {
+            const data = await resp.json().catch(() => null);
+            if (data && key && window.esUrlImagenValida(data.avatar)) {
+                localStorage.setItem(key, data.avatar);
+            }
+        }
     } catch (_) {
         // Mantiene caché local de la cuenta si hay fallo de red
     }

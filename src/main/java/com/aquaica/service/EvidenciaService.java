@@ -29,6 +29,7 @@ public class EvidenciaService {
     private final AsignacionRepository asignacionRepository;
     private final SeguimientoRepository seguimientoRepository;
     private final PersonalRepository personalRepository;
+    private final CloudinaryService cloudinaryService;
 
     private final String carpetaBase = "uploads/reportes/";
 
@@ -37,13 +38,15 @@ public class EvidenciaService {
             ReporteRepository reporteRepository,
             AsignacionRepository asignacionRepository,
             SeguimientoRepository seguimientoRepository,
-            PersonalRepository personalRepository) {
+            PersonalRepository personalRepository,
+            CloudinaryService cloudinaryService) {
 
         this.evidenciaRepository = evidenciaRepository;
         this.reporteRepository = reporteRepository;
         this.asignacionRepository = asignacionRepository;
         this.seguimientoRepository = seguimientoRepository;
         this.personalRepository = personalRepository;
+        this.cloudinaryService = cloudinaryService;
     }
 
     public Evidencia guardarEvidencia(
@@ -54,113 +57,103 @@ public class EvidenciaService {
                 .orElseThrow(() ->
                         new RuntimeException("Reporte no encontrado"));
 
-        Path carpetaReporte = Paths.get(
-                carpetaBase + reporteId
-        );
+        return almacenarEvidencia(reporte, archivo, "CIUDADANO", "");
+    }
+
+    public Evidencia guardarEvidenciaTecnico(
+            Long reporteId,
+            MultipartFile archivo,
+            Long personalId) throws IOException {
+
+        Reporte reporte = reporteRepository.findById(reporteId)
+                .orElseThrow(() ->
+                        new RuntimeException("Reporte no encontrado"));
+
+        boolean asignado = asignacionRepository
+                .existsByReporteIdAndPersonalId(reporteId, personalId);
+
+        if (!asignado) {
+            throw new RuntimeException("El técnico no está asignado a este reporte");
+        }
+
+        Evidencia guardada = almacenarEvidencia(reporte, archivo, "TECNICO", "tecnico_");
+
+        // Publicar automáticamente en el historial y feed comunitario bajo Administración
+        personalRepository.findById(personalId).ifPresent(personal -> {
+            Seguimiento seg = new Seguimiento();
+            seg.setReporte(reporte);
+            seg.setPersonal(personal);
+            seg.setEstado(reporte.getEstado() != null ? reporte.getEstado() : "EN_ATENCION");
+            seg.setComentario("El equipo técnico en campo adjuntó nueva evidencia fotográfica de los trabajos realizados.");
+            seg.setFechaCreacion(LocalDateTime.now());
+            seguimientoRepository.save(seg);
+        });
+
+        return guardada;
+    }
+
+    private Evidencia almacenarEvidencia(
+            Reporte reporte,
+            MultipartFile archivo,
+            String origen,
+            String prefijo) throws IOException {
 
         byte[] bytes = archivo.getBytes();
-
         String original = archivo.getOriginalFilename();
         if (original == null || original.isBlank()) {
-            original = "evidencia_" + System.currentTimeMillis() + ".jpg";
+            original = "evidencia.jpg";
         }
-        String nombreArchivo = Paths.get(original).getFileName().toString().replaceAll("[^a-zA-Z0-9._-]", "_");
-        if (nombreArchivo.isBlank()) {
-            nombreArchivo = "evidencia_" + System.currentTimeMillis() + ".jpg";
+        String limpio = Paths.get(original).getFileName().toString().replaceAll("[^a-zA-Z0-9._-]", "_");
+        if (limpio.isBlank()) {
+            limpio = "evidencia.jpg";
         }
 
+        String nombreArchivo = prefijo + System.currentTimeMillis() + "_" + limpio;
+        String tipoMime = normalizarMime(archivo.getContentType(), limpio);
+
+        // 1. Intentar subir a Cloudinary si está configurado
+        String urlCloudinary = cloudinaryService
+                .subirImagen(bytes, "aquaica/reportes/" + reporte.getId(), nombreArchivo)
+                .orElse(null);
+
+        Path carpetaReporte = Paths.get(carpetaBase + reporte.getId());
         Path rutaArchivo = carpetaReporte.resolve(nombreArchivo);
-        try {
-            Files.createDirectories(carpetaReporte);
-            Files.write(rutaArchivo, bytes);
-        } catch (IOException ignored) {
-            // En despliegues cloud efímeros se mantiene respaldo persistente en base de datos
+        if (urlCloudinary == null) {
+            try {
+                Files.createDirectories(carpetaReporte);
+                Files.write(rutaArchivo, bytes);
+            } catch (IOException ignored) {
+                // En despliegues cloud efímeros se mantiene respaldo persistente en base de datos
+            }
         }
 
         Evidencia evidencia = new Evidencia();
-
         evidencia.setReporte(reporte);
         evidencia.setNombreArchivo(nombreArchivo);
-        evidencia.setRutaArchivo(rutaArchivo.toString());
-        evidencia.setTipoArchivo(archivo.getContentType() != null ? archivo.getContentType() : "image/jpeg");
-        evidencia.setOrigen("CIUDADANO");
-        evidencia.setContenidoBase64(java.util.Base64.getEncoder().encodeToString(bytes));
+        evidencia.setRutaArchivo(urlCloudinary != null ? urlCloudinary : rutaArchivo.toString());
+        evidencia.setTipoArchivo(tipoMime);
+        evidencia.setOrigen(origen);
+        // Si ya está alojada en Cloudinary no inflamos PostgreSQL con Base64
+        evidencia.setContenidoBase64(urlCloudinary != null
+                ? null
+                : java.util.Base64.getEncoder().encodeToString(bytes));
         evidencia.setFechaCreacion(LocalDateTime.now());
 
         return evidenciaRepository.save(evidencia);
     }
 
-    public Evidencia guardarEvidenciaTecnico(
-        Long reporteId,
-        MultipartFile archivo,
-        Long personalId) throws IOException {
-
-
-    Reporte reporte = reporteRepository.findById(reporteId)
-            .orElseThrow(() ->
-                    new RuntimeException("Reporte no encontrado"));
-
-
-    boolean asignado =
-            asignacionRepository
-                    .existsByReporteIdAndPersonalId(
-                            reporteId,
-                            personalId
-                    );
-
-    if (!asignado) {
-
-        throw new RuntimeException(
-                "El técnico no está asignado a este reporte"
-        );
+    private String normalizarMime(String contentType, String filename) {
+        if (contentType != null && !contentType.isBlank() && !contentType.contains("*")) {
+            String lower = contentType.toLowerCase();
+            if (lower.startsWith("image/") && !lower.contains("heic") && !lower.contains("heif")) {
+                return contentType;
+            }
+        }
+        String fn = filename.toLowerCase();
+        if (fn.endsWith(".png")) return "image/png";
+        if (fn.endsWith(".webp")) return "image/webp";
+        return "image/jpeg";
     }
-
-    byte[] bytes = archivo.getBytes();
-    String original = archivo.getOriginalFilename();
-    if (original == null || original.isBlank()) {
-        original = "evidencia_tecnico.jpg";
-    }
-    String limpio = Paths.get(original).getFileName().toString().replaceAll("[^a-zA-Z0-9._-]", "_");
-    if (limpio.isBlank()) {
-        limpio = "evidencia_tecnico.jpg";
-    }
-
-    Path carpetaReporte = Paths.get(carpetaBase + reporteId);
-    String nombreFinal = "tecnico_" + System.currentTimeMillis() + "_" + limpio;
-    Path rutaArchivo = carpetaReporte.resolve(nombreFinal);
-
-    try {
-        Files.createDirectories(carpetaReporte);
-        Files.write(rutaArchivo, bytes);
-    } catch (IOException ignored) {
-        // Respaldo persistente en base de datos garantiza disponibilidad tras reinicios
-    }
-
-    Evidencia evidencia = new Evidencia();
-
-    evidencia.setReporte(reporte);
-    evidencia.setNombreArchivo(nombreFinal);
-    evidencia.setRutaArchivo(rutaArchivo.toString());
-    evidencia.setTipoArchivo(archivo.getContentType() != null ? archivo.getContentType() : "image/jpeg");
-    evidencia.setOrigen("TECNICO");
-    evidencia.setContenidoBase64(java.util.Base64.getEncoder().encodeToString(bytes));
-    evidencia.setFechaCreacion(LocalDateTime.now());
-
-    Evidencia guardada = evidenciaRepository.save(evidencia);
-
-    // Publicar automáticamente en el historial y feed comunitario bajo Administración
-    personalRepository.findById(personalId).ifPresent(personal -> {
-        Seguimiento seg = new Seguimiento();
-        seg.setReporte(reporte);
-        seg.setPersonal(personal);
-        seg.setEstado(reporte.getEstado() != null ? reporte.getEstado() : "EN_ATENCION");
-        seg.setComentario("El equipo técnico en campo adjuntó nueva evidencia fotográfica de los trabajos realizados.");
-        seg.setFechaCreacion(LocalDateTime.now());
-        seguimientoRepository.save(seg);
-    });
-
-    return guardada;
-}
 
 
     public List<EvidenciaResponseDTO> obtenerEvidenciasPorReporte(

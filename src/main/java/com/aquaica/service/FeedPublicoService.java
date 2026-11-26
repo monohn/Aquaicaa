@@ -272,7 +272,17 @@ public class FeedPublicoService {
             List<EvidenciaResponseDTO> evidencias = evidenciaRepository.obtenerEvidenciasPorReporte(rep.getId());
             if (evidencias != null && !evidencias.isEmpty()) {
                 for (EvidenciaResponseDTO ev : evidencias) {
-                    String url = "/api/evidencias/archivo/" + rep.getId() + "/" + ev.getNombreArchivo();
+                    String url;
+                    if (ev.getRutaArchivo() != null
+                            && (ev.getRutaArchivo().startsWith("https://") || ev.getRutaArchivo().startsWith("http://"))) {
+                        url = ev.getRutaArchivo();
+                    } else {
+                        String nombreCod = java.net.URLEncoder.encode(
+                                ev.getNombreArchivo(),
+                                java.nio.charset.StandardCharsets.UTF_8
+                        ).replace("+", "%20");
+                        url = "/api/evidencias/archivo/" + rep.getId() + "/" + nombreCod;
+                    }
                     if ("TECNICO".equalsIgnoreCase(ev.getOrigen())) {
                         if (dto.getImagenTecnicoUrl() == null) {
                             dto.setImagenTecnicoUrl(url);

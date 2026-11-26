@@ -436,9 +436,12 @@ document.addEventListener("DOMContentLoaded", () => {
             btnEnv.textContent = "Subiendo foto y guardando...";
 
             try {
-                // 1. Subir fotografía obligatoria
+                // 1. Comprimir y subir fotografía obligatoria
+                const fotoLista = typeof comprimirImagenParaSubida === "function"
+                    ? await comprimirImagenParaSubida(foto)
+                    : foto;
                 const formEv = new FormData();
-                formEv.append("archivo", foto);
+                formEv.append("archivo", fotoLista);
                 await apiFetch(`/api/reportes/${reporteId}/evidencias/tecnico`, {
                     method: "POST",
                     body: formEv

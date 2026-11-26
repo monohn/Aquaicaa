@@ -965,8 +965,10 @@ function formatearFecha(fecha) {
                 "evidencia-item";
 
 
-            const rutaImagen =
-                `/api/evidencias/archivo/${evidencia.reporteId}/${encodeURIComponent(evidencia.nombreArchivo)}`;
+            const esExterna = evidencia.rutaArchivo && /^https?:\/\//i.test(evidencia.rutaArchivo);
+            const rutaImagen = esExterna
+                ? evidencia.rutaArchivo
+                : `/api/evidencias/archivo/${evidencia.reporteId}/${encodeURIComponent(evidencia.nombreArchivo)}`;
             const urlImagen =
                 typeof resolveApiUrl === "function"
                     ? resolveApiUrl(rutaImagen)
@@ -975,37 +977,35 @@ function formatearFecha(fecha) {
 
             try {
 
-                const token =
-                    localStorage.getItem("token");
+                let urlFinalImagen = urlImagen;
 
+                if (!esExterna) {
+                    const token =
+                        localStorage.getItem("token");
 
-                const respuestaImagen =
-                    await fetch(
-                        urlImagen,
-                        {
-                            headers: {
-                                "Authorization":
-                                    `Bearer ${token}`
+                    const respuestaImagen =
+                        await fetch(
+                            urlImagen,
+                            {
+                                headers: {
+                                    "Authorization":
+                                        `Bearer ${token}`
+                                }
                             }
-                        }
-                    );
+                        );
 
+                    if (!respuestaImagen.ok) {
+                        throw new Error(
+                            `Error al cargar imagen: ${respuestaImagen.status}`
+                        );
+                    }
 
-                if (!respuestaImagen.ok) {
+                    const blob =
+                        await respuestaImagen.blob();
 
-                    throw new Error(
-                        `Error al cargar imagen: ${respuestaImagen.status}`
-                    );
-
+                    urlFinalImagen =
+                        URL.createObjectURL(blob);
                 }
-
-
-                const blob =
-                    await respuestaImagen.blob();
-
-
-                const urlBlob =
-                    URL.createObjectURL(blob);
 
 
                 tarjeta.innerHTML = `
@@ -1028,7 +1028,7 @@ function formatearFecha(fecha) {
                     <div class="evidencia-imagen">
 
                         <img
-                            src="${urlBlob}"
+                            src="${urlFinalImagen}"
                             alt="Evidencia del reporte"
                             loading="lazy"
                         >

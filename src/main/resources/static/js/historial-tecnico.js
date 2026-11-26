@@ -245,7 +245,13 @@ document.addEventListener("DOMContentLoaded", async () => {
             } else {
                 let fotosHtml = "";
                 evidencias.forEach(ev => {
-                    const url = ev.archivoUrl || (ev.id ? `/api/evidencias/archivo/${ev.id}` : "");
+                    let url = "";
+                    if (ev.rutaArchivo && /^https?:\/\//i.test(ev.rutaArchivo)) {
+                        url = ev.rutaArchivo;
+                    } else if (ev.reporteId && ev.nombreArchivo) {
+                        const raw = `/api/evidencias/archivo/${ev.reporteId}/${encodeURIComponent(ev.nombreArchivo)}`;
+                        url = typeof resolveApiUrl === "function" ? resolveApiUrl(raw) : raw;
+                    }
                     if (url) {
                         fotosHtml += `
                             <a href="${esc(url)}" target="_blank" title="Ver foto completa">

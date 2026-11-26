@@ -71,18 +71,32 @@ public class EvidenciaArchivoController {
                         .body(recurso);
             }
 
-            // Fallback persistente en base de datos (sobrevive reinicios de Render/Docker)
+            // Respaldo: redirección directa si está en Cloudinary o decodificación desde PostgreSQL
             Optional<Evidencia> evOpt = evidenciaRepository.findFirstByReporteIdAndNombreArchivo(reporteId, nombreArchivo);
-            if (evOpt.isPresent() && evOpt.get().getContenidoBase64() != null && !evOpt.get().getContenidoBase64().isBlank()) {
+            if (evOpt.isPresent()) {
                 Evidencia ev = evOpt.get();
-                byte[] bytes = Base64.getDecoder().decode(ev.getContenidoBase64());
-                String tipo = (ev.getTipoArchivo() != null && !ev.getTipoArchivo().isBlank())
-                        ? ev.getTipoArchivo()
-                        : MediaType.IMAGE_JPEG_VALUE;
-                return ResponseEntity.ok()
-                        .cacheControl(CacheControl.maxAge(24, TimeUnit.HOURS).cachePublic())
-                        .contentType(MediaType.parseMediaType(tipo))
-                        .body(new ByteArrayResource(bytes));
+                if (ev.getRutaArchivo() != null && ev.getRutaArchivo().startsWith("http")) {
+                    return ResponseEntity.status(302)
+                            .location(java.net.URI.create(ev.getRutaArchivo()))
+                            .build();
+                }
+                if (ev.getContenidoBase64() != null && !ev.getContenidoBase64().isBlank()) {
+                    byte[] bytes = Base64.getDecoder().decode(ev.getContenidoBase64());
+                    String tipoRaw = ev.getTipoArchivo();
+                    String tipo = (tipoRaw != null && !tipoRaw.isBlank() && !tipoRaw.contains("*"))
+                            ? tipoRaw
+                            : MediaType.IMAGE_JPEG_VALUE;
+                    MediaType mediaType;
+                    try {
+                        mediaType = MediaType.parseMediaType(tipo);
+                    } catch (Exception ex) {
+                        mediaType = MediaType.IMAGE_JPEG;
+                    }
+                    return ResponseEntity.ok()
+                            .cacheControl(CacheControl.maxAge(24, TimeUnit.HOURS).cachePublic())
+                            .contentType(mediaType)
+                            .body(new ByteArrayResource(bytes));
+                }
             }
 
             return ResponseEntity.notFound().build();

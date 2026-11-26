@@ -505,6 +505,11 @@ async function cargarImagen(
     img
 ) {
 
+    if (evidencia.rutaArchivo && /^https?:\/\//i.test(evidencia.rutaArchivo)) {
+        img.src = evidencia.rutaArchivo;
+        return;
+    }
+
     const token =
         obtenerToken();
 
@@ -575,6 +580,11 @@ async function cargarImagen(
 async function abrirEvidencia(
     evidencia
 ) {
+
+    if (evidencia.rutaArchivo && /^https?:\/\//i.test(evidencia.rutaArchivo)) {
+        window.open(evidencia.rutaArchivo, "_blank");
+        return;
+    }
 
     const token =
         obtenerToken();

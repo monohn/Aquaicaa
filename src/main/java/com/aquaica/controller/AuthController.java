@@ -26,10 +26,15 @@ public class AuthController {
 
     private final AuthService authService;
     private final UsuarioRepository usuarioRepository;
+    private final com.aquaica.service.CloudinaryService cloudinaryService;
 
-    public AuthController(AuthService authService, UsuarioRepository usuarioRepository) {
+    public AuthController(
+            AuthService authService,
+            UsuarioRepository usuarioRepository,
+            com.aquaica.service.CloudinaryService cloudinaryService) {
         this.authService = authService;
         this.usuarioRepository = usuarioRepository;
+        this.cloudinaryService = cloudinaryService;
     }
 
     @GetMapping("/mi-avatar")
@@ -52,6 +57,14 @@ public class AuthController {
         }
         Usuario u = usuarioRepository.findById(userDetails.getUsuario().getId()).orElseThrow();
         String avatar = body != null ? body.get("avatar") : null;
+        if (avatar != null && avatar.startsWith("data:image/")) {
+            String cloudinaryUrl = cloudinaryService
+                    .subirImagenDataUrl(avatar, "aquaica/avatars", "avatar_" + u.getUsername() + ".jpg")
+                    .orElse(null);
+            if (cloudinaryUrl != null) {
+                avatar = cloudinaryUrl;
+            }
+        }
         u.setAvatarBase64(avatar);
         usuarioRepository.save(u);
         return ResponseEntity.ok(Map.of("mensaje", "Foto de perfil actualizada", "avatar", avatar != null ? avatar : ""));

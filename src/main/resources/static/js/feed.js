@@ -674,7 +674,11 @@ function crearTarjeta(item) {
     const notasGuardadas = JSON.parse(localStorage.getItem(notasClave) || '[]');
     const numNotas = notasGuardadas.length;
 
-    const autorAvatarUrl = (item.autorAvatar && String(item.autorAvatar).startsWith('data:image/'))
+    const esAvatarValido = (v) => typeof esUrlImagenValida === 'function'
+        ? esUrlImagenValida(v)
+        : /^(data:image\/|https?:\/\/)/i.test(String(v || ''));
+
+    const autorAvatarUrl = esAvatarValido(item.autorAvatar)
         ? item.autorAvatar
         : null;
     const cardAvatarHtml = autorAvatarUrl
@@ -749,7 +753,7 @@ function crearTarjeta(item) {
         const toggleBtnHtml = restoActs.length > 0
             ? `<button type="button" class="btn-toggle-updates" onclick="toggleUpdates(${item.id})">Ver historial (${item.actualizaciones.length})</button>`
             : '';
-        const ultimaActAvatarHtml = (ultimaAct.autorAvatar && String(ultimaAct.autorAvatar).startsWith('data:image/'))
+        const ultimaActAvatarHtml = esAvatarValido(ultimaAct.autorAvatar)
             ? `<img src="${ultimaAct.autorAvatar}" alt="${escapeHtml(ultimaAct.autor || 'Autor')}" class="official-mini-avatar">`
             : '';
 
@@ -769,7 +773,7 @@ function crearTarjeta(item) {
                 ${restoActs.length > 0 ? `
                     <div class="official-updates-history" id="updates-hist-${item.id}" style="display:none;">
                         ${restoActs.map(act => {
-                            const subAvatarHtml = (act.autorAvatar && String(act.autorAvatar).startsWith('data:image/'))
+                            const subAvatarHtml = esAvatarValido(act.autorAvatar)
                                 ? `<img src="${act.autorAvatar}" alt="${escapeHtml(act.autor || 'Autor')}" class="official-mini-avatar">`
                                 : '';
                             return `
